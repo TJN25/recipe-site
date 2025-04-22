@@ -15,10 +15,10 @@
 - [ ] Generate examples
 
 ## Much later TODO items
+- [ ] css
+- [ ] alpine.js
 - [ ] Search
 - [ ] Notes
-- [ ] 
-- [ ] 
 - [ ] 
 - [ ] 
 - [ ] 
