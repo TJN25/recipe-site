@@ -1,0 +1,8 @@
+{{/* This template expects a slice of Ingredient structs directly */}}
+{{ define "ingredient-list" }}
+<ul id="ingredients-list-items">
+    {{ range . }}
+        <li>{{ .Quantity }} {{ .Unit }} {{ .Name }}</li>
+    {{ end }}
+</ul>
+{{ end }}

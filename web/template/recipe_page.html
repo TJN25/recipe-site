@@ -1,0 +1,70 @@
+{{/* Use the "base" layout template */}}
+{{ template "base" . }}
+
+{{/* Define the content for the "title" block in base.html */}}
+{{ define "title" }}
+    {{ .Recipe.Title }} - My Recipe Site
+{{ end }}
+
+{{/* Define the content for the "content" block in base.html */}}
+{{ define "content" }}
+    <article class="recipe">
+        <!-- Placeholder for Banner Image -->
+        <div class="recipe-banner-placeholder" style="height: 200px; background-color: #eee; text-align: center; line-height: 200px; margin-bottom: 20px;">
+            [Recipe Banner Image Placeholder]
+        </div>
+
+        <!-- Recipe Title -->
+        <h2>{{ .Recipe.Title }}</h2>
+
+        <!-- Short Description -->
+        <p class="recipe-description">
+            <em>{{ .Recipe.Description }}</em>
+        </p>
+
+        <!-- Ingredient List -->
+        <section class="recipe-ingredients">
+            <h3>Ingredients</h3>
+
+            <!-- Form for adjusting servings -->
+            <!-- Using hx-post to send data -->
+            <!-- hx-target points to the div that will be replaced -->
+            <!-- hx-swap="outerHTML" will replace the entire #ingredients-list-container -->
+            <form hx-post="/update-servings"
+                  hx-target="#ingredients-list-container"
+                  hx-swap="outerHTML"
+                  style="margin-bottom: 1em;" >
+                <label for="servings">Adjust Servings:</label>
+                <input type="number" id="servings" name="servings" value="{{ .Recipe.Servings }}" min="1" required style="width: 50px; margin-right: 5px;">
+                <button type="submit">Update</button>
+            </form>
+
+            <!-- This container will be targeted and replaced by HTMX -->
+            <div id="ingredients-list-container">
+                <!-- Render the initial list using the partial template -->
+                <!-- Pass the Ingredients slice to the partial -->
+                {{ template "ingredient-list" .Recipe.Ingredients }}
+            </div>
+
+        </section>
+
+        <!-- Method -->
+        <section class="recipe-method">
+            <h3>Method</h3>
+            <ol>
+                {{ range .Recipe.Method }}
+                    <li>{{ . }}</li>
+                {{ end }}
+            </ol>
+        </section>
+
+        <!-- Notes -->
+        <section class="recipe-notes">
+            <h3>Notes</h3>
+            <p>{{ .Recipe.Notes }}</p>
+            <!-- Placeholder for technique/equipment links later -->
+        </section>
+
+    </article>
+{{ end }}
+
