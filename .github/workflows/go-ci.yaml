@@ -1,0 +1,44 @@
+# .github/workflows/go-ci.yaml
+name: Go CI # Name of the workflow displayed on GitHub
+
+# Controls when the workflow will run
+on:
+  push: # Run on pushes to these branches
+    branches: [ main ] # Adjust if your main branch is named differently (e.g., master)
+  pull_request: # Run on pull requests targeting these branches
+    branches: [ main ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build-and-test: # Name of the job
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest # Use the latest Ubuntu Linux runner
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v4 # Use a pre-built GitHub Action
+
+      # Sets up the Go environment
+      - name: Set up Go
+        uses: actions/setup-go@v5 # Use another pre-built Action
+        with:
+          go-version: '1.21' # Specify your Go version (adjust if needed)
+          # Optional: cache Go modules to speed up subsequent runs
+          # cache: true
+
+      # Build the application - checks for compile errors
+      # './...' means check all packages within the current directory and subdirectories
+      - name: Build
+        run: go build -v ./...
+
+      # Run go vet - checks for suspicious constructs
+      - name: Vet
+        run: go vet ./...
+
+      # Run tests - will find and run any *_test.go files
+      # (We don't have any yet, but it's good practice to include)
+      - name: Test
+        run: go test -v ./...
+
