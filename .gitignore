@@ -1,0 +1,50 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build artifacts
+*.test
+*.out
+/recipe-site # Ignore the compiled binary (adjust if you name it differently, e.g., 'server')
+/server      # Common alternative name for the binary in cmd/server
+
+# Dependency directory (if you decide to use vendoring)
+/vendor/
+
+# Go Module cache
+go.sum # Often committed, but can be ignored if desired - keeping it helps ensure consistent builds
+
+# Environment variables / Secrets
+.env
+.env.*
+!/.env.example # Allow example env files to be committed
+secrets/
+*.secret
+
+# Log files
+*.log
+log/
+logs/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE / Editor directories and files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Coverage profiling files
+coverage.out
+profile.out
+
