@@ -10,8 +10,12 @@
 {{ define "content" }}
 
     <!-- Homepage Banner Placeholder -->
-    <div class="home-banner-placeholder" style="height: 150px; background-color: #e0e0e0; text-align: center; line-height: 150px; margin-bottom: 25px; font-style: italic; color: #666;">
-        [ Site Banner Area ]
+    <div class="home-banner" style="text-align: center; margin-bottom: 25px;">
+        {{/* Directly link to the static image */}}
+        <img src="/static/img/food.png"
+             alt="Recipe Site Banner"
+             style="max-width: 100%; height: auto; max-height: 200px; border-radius: 5px;">
+             {{/* Adjusted max-height and added basic styling */}}
     </div>
 
     <!-- Site Introduction / Welcome Message -->

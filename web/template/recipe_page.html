@@ -3,10 +3,20 @@
 
 {{define "content"}}
     <article class="recipe">
-        <!-- Placeholder for Banner Image -->
-        <div class="recipe-banner-placeholder" style="height: 200px; background-color: #eee; text-align: center; line-height: 200px; margin-bottom: 20px;">
-           [Recipe Banner Image Placeholder: {{ .Recipe.ImagePath }}] <!-- Added image path -->
-        </div>
+        {{ if .Recipe.ImagePath }}
+            <div class="recipe-banner" style="margin-bottom: 20px; text-align: center;">
+                {{/* Construct the full URL path to the static image */}}
+                <img src="/static/{{ .Recipe.ImagePath }}"
+                     alt="{{ .Recipe.Title }}"
+                     style="max-width: 100%; height: auto; max-height: 300px; border-radius: 5px;">
+                     {{/* Added some basic styling */}}
+            </div>
+        {{ else }}
+            {{/* Fallback placeholder if no image path is set */}}
+            <div class="recipe-banner-placeholder" style="height: 200px; background-color: #eee; text-align: center; line-height: 200px; margin-bottom: 20px; font-style: italic;">
+               [ No Recipe Image Available ]
+            </div>
+        {{ end }}
 
         <!-- Recipe Title -->
         <h2>{{ .Recipe.Title }} (ID: {{ .Recipe.ID }})</h2> <!-- Added ID -->

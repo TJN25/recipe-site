@@ -273,7 +273,7 @@ var dummyRecipes = []model.Recipe{
 		Description: "A smoky, spicy twist on classic mac and cheese, featuring chipotle chicken.",
 		Servings:    2,
 		Notes:       "Let rest 5 minutes before eating. Best fresh, but refrigerates up to 3 days.",
-		ImagePath:   "recipe-images/mac-and-cheese.jpg",
+		ImagePath:   "img/mac-and-cheese.png",
 		Tags: []model.Tag{
 			{ID: 1, Name: "American", Type: "cuisine"},
 			{ID: 2, Name: "Comfort", Type: "mood"},
@@ -313,7 +313,7 @@ var dummyRecipes = []model.Recipe{
 		Description: "Crispy spiced chicken tucked into soft bao buns with cool slaw and spicy mayo.",
 		Servings:    4,
 		Notes:       "Assemble just before eating to keep chicken crispy.",
-		ImagePath:   "recipe-images/bao-buns.jpg",
+		ImagePath:   "img/bao-buns.png",
 		Tags: []model.Tag{
 			{ID: 3, Name: "Asian", Type: "cuisine"},
 			{ID: 4, Name: "Snack", Type: "meal_type"},
