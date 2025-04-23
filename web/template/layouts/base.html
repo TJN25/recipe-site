@@ -1,40 +1,27 @@
-{{/* Defines the start of a template block named "base" */}}
-{{ define "base" }}
+<!-- File: web/template/layouts/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Title will be overridden by specific pages -->
-    <title>{{ block "title" . }}Default Title{{ end }}</title>
-    <!-- Link to CSS (we'll create this file later) -->
-    <link rel="stylesheet" href="/static/css/style.css">
-    <!-- Include HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    <title>{{block "title" .}}Base Title{{end}}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+    <!--<link rel="stylesheet" href="/static/css/style.css">-->
+
 </head>
 <body>
     <header>
-        <!-- Placeholder for a potential site header/navigation later -->
-        <h1>My Recipe Site</h1>
+        <h1>Minimal Base Header</h1>
         <hr>
     </header>
-
     <main>
-        <!-- This is the main content block that specific pages will define -->
-        {{ block "content" . }}
-            <p>Default page content goes here if not overridden.</p>
-        {{ end }}
+        {{block "content" .}}
+            <p>Base default content.</p>
+        {{end}}
     </main>
-
     <footer>
         <hr>
-        <!-- Placeholder for a site footer -->
-        <p>&copy; {{ .CurrentYear }} Recipe Site</p>
+        <p>Minimal Footer</p>
     </footer>
-
-    <!-- Placeholder for page-specific JS or global JS file -->
-    <!-- <script src="/static/js/main.js"></script> -->
 </body>
 </html>
-{{ end }} {{/* Ends the "base" template block */}}
 

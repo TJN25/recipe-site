@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"math"
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/TJN25/recipe-site/internal/model"
@@ -15,7 +17,256 @@ import (
 // some relational linking of all the recipes by a score (shared ingredients, shared tags, shared equipment)
 // Matrix of Recipes, by Recipes with score (but maybe more efficient?)
 
-var templates *template.Template
+var templateSets map[string]*template.Template
+
+func main() {
+	log.SetFormatter(&log.TextFormatter{})
+	log.SetLevel(log.InfoLevel)
+
+	// Initialize the map
+	templateSets = make(map[string]*template.Template)
+
+	// --- PARSE TEMPLATES AT STARTUP (Separate Sets Pattern) ---
+	log.Println("Parsing templates...")
+	templateDir := "web/template"
+	baseFile := filepath.Join(templateDir, "layouts", "base.html")
+
+	// 1. Parse template set for the Index Page
+	indexPageFiles := []string{
+		baseFile,
+		filepath.Join(templateDir, "index.html"),
+	}
+	log.Printf("Parsing set 'index': %v", indexPageFiles)
+	// Parse using the base name of baseFile ("base.html") as the root name
+	indexSet := template.Must(template.New(filepath.Base(baseFile)).
+		Funcs(funcMap). // Include funcs if base or index needs them
+		ParseFiles(indexPageFiles...))
+	templateSets["index"] = indexSet
+	log.Printf("Stored template set: index")
+
+	// 2. Parse template set for the Recipe Page (keep for later)
+	recipePageFiles := []string{
+		baseFile, // web/template/layouts/base.html
+		filepath.Join(templateDir, "recipe_page.html"),
+		// We can omit ingredients.html for this minimal test if recipe_page doesn't {{template}} it
+		filepath.Join(templateDir, "partials", "ingredients.html"),
+	}
+	log.Printf("Parsing set 'recipe': %v", recipePageFiles)
+	recipeSet := template.Must(template.New(filepath.Base(baseFile)). // Rooted at base.html
+										Funcs(funcMap).
+										ParseFiles(recipePageFiles...))
+	templateSets["recipe"] = recipeSet
+	log.Printf("Stored template set: recipe")
+
+	// 3. Parse standalone partial for HTMX swap (ingredients.html) (keep for later)
+	ingredientPartialFiles := []string{
+		filepath.Join(templateDir, "partials", "ingredients.html"),
+	}
+	log.Printf("Parsing set 'ingredient-list': %v", ingredientPartialFiles)
+
+	// *** CHANGE NAME IN New() HERE ***
+	// Use a different root name for the set, e.g., "ingredients-root" or just the filename base
+	ingredientSet := template.Must(template.New(filepath.Base(ingredientPartialFiles[0])). // Use "ingredients.html" as root name
+												Funcs(funcMap).
+												ParseFiles(ingredientPartialFiles...))
+	// **********************************
+
+	// Keep storing under the logical key "ingredient-list"
+	templateSets["ingredient-list"] = ingredientSet
+	log.Printf("Stored template set: ingredient-list")
+	// --- END TEMPLATE PARSING ---
+
+	// --- Setup Routes ---
+	http.HandleFunc("/", handleIndexPage)         // Focus on this route
+	http.HandleFunc("/recipe/", handleShowRecipe) // Keep other routes defined
+	http.HandleFunc("/update-servings", handleUpdateServings)
+
+	// --- Serve Static Files ---
+	fs := http.FileServer(http.Dir("./web/static/"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	log.Info("Serving static files from ./web/static/ at /static/")
+
+	// --- Start Server ---
+	port := ":8080"
+	log.Infof("Starting server on http://localhost%s", port)
+	err := http.ListenAndServe(port, nil)
+	if err != nil {
+		log.Fatalf("Could not start server: %s\n", err)
+	}
+}
+
+func handleIndexPage(w http.ResponseWriter, r *http.Request) {
+	log.Info("--- Running handleIndexPage (Simplified) ---")
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+	// Minimal data, or nil if index.html and base.html don't need it
+	data := map[string]interface{}{
+		"CurrentYear": time.Now().Year(), // Keep if base.html uses it
+	}
+
+	// Retrieve the pre-parsed set for "index"
+	tmplSet, ok := templateSets["index"]
+	if !ok {
+		log.Error("Template set 'index' not found")
+		http.Error(w, "Internal Server Error: Template set 'index' missing", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// *** EXECUTE "base.html" within the 'index' set ***
+	// This matches the successful pattern from your minimal example
+	err := tmplSet.ExecuteTemplate(w, "base.html", data)
+	if err != nil {
+		log.Errorf("Error executing simplified index template set: %v", err)
+		// Don't write http.Error if potentially already written headers/body
+		return
+	}
+	log.Info("Served simplified index page")
+}
+
+// handleShowRecipe handles requests for the main recipe page
+func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
+	log.Info("--- Running handleShowRecipe (Simplified Test) ---")
+	// ... (keep logic to extract ID and find recipe) ...
+	recipeID, recipeCopy, found := getRecipeDetailsFromRequest(r)
+	if !found {
+		http.NotFound(w, r)
+		return
+	}
+
+	// Data includes the Recipe struct needed by the simplified template
+	data := map[string]interface{}{
+		"Recipe":      recipeCopy,
+		"CurrentYear": time.Now().Year(), // If base.html uses it
+	}
+
+	// Retrieve the pre-parsed set for "recipe"
+	tmplSet, ok := templateSets["recipe"]
+	if !ok {
+		log.Error("Template set 'recipe' not found")
+		http.Error(w, "Internal Server Error: Template set 'recipe' missing", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// *** EXECUTE "base.html" within the 'recipe' set ***
+	err := tmplSet.ExecuteTemplate(w, "base.html", data)
+	if err != nil {
+		log.Errorf("Error executing simplified recipe page template set for ID %d: %v", recipeID, err)
+		return
+	}
+	log.Infof("Served simplified recipe page for: %s (ID: %d)", recipeCopy.Title, recipeCopy.ID)
+}
+
+func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
+	log.Info("HandleUpdateServings: Received request")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusInternalServerError) // Corrected Status Code
+		return
+	}
+	recipeID, newServings, baseRecipe, ok := getUpdateServingsDetails(r)
+	if !ok {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	scalingFactor := float32(newServings) / float32(baseRecipe.Servings)
+	adjustedIngredients := calculateAdjustedIngredients(baseRecipe, scalingFactor)
+
+	// **** ADD THIS LOG ****
+	log.Infof("HandleUpdateServings: Calculated adjustedIngredients (len %d): %+v", len(adjustedIngredients), adjustedIngredients)
+	// *********************
+
+	tmplSet, found := templateSets["ingredient-list"]
+	if !found {
+		log.Error("Template set 'ingredient-list' not found")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	// Wrap the output because the target expects the container div
+	fmt.Fprintln(w, `<div id="ingredients-list-container">`)
+	// Execute the "ingredients.html" template directly (it's the only one in its set)
+	// We use the partial's *filename* here as the template name within its set
+	err := tmplSet.ExecuteTemplate(w, "ingredient-list", adjustedIngredients)
+	if err != nil {
+		log.Errorf("Error executing ingredient-list template set for recipe ID %d: %v", recipeID, err)
+		// Avoid sending another error if headers/body already partially sent
+		fmt.Fprintln(w, `<!-- Error executing template -->`) // Add comment for debugging
+	}
+	fmt.Fprintln(w, `</div>`)
+
+	log.Infof("Served updated ingredients list for '%s' (%d servings)", baseRecipe.Title, newServings)
+
+}
+
+func getRecipeDetailsFromRequest(r *http.Request) (id int64, recipe model.Recipe, found bool) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/recipe/")
+	idStr = strings.TrimSuffix(idStr, "/")
+	recipeID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Warnf("Invalid recipe ID requested: %s", idStr)
+		return 0, model.Recipe{}, false
+	}
+	recipePtr, found := findRecipeByID(recipeID)
+	if !found {
+		log.Warnf("Recipe ID not found: %d", recipeID)
+		return recipeID, model.Recipe{}, false
+	}
+	recipeCopy := *recipePtr
+	recipeCopy.CalculateTotals()
+	return recipeID, recipeCopy, true
+}
+
+func getUpdateServingsDetails(r *http.Request) (id int64, servings int, recipe *model.Recipe, ok bool) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Errorf("Error parsing form: %v", err)
+		return 0, 0, nil, false
+	}
+	recipeIDStr := r.FormValue("recipe_id")
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
+	if err != nil {
+		log.Warnf("Invalid recipe_id value received in form: '%s'", recipeIDStr)
+		return 0, 0, nil, false
+	}
+	servingsStr := r.FormValue("servings")
+	newServings, err := strconv.Atoi(servingsStr)
+	if err != nil || newServings <= 0 {
+		log.Warnf("Invalid servings value received: '%s'", servingsStr)
+		return recipeID, 0, nil, false
+	}
+	baseRecipe, found := findRecipeByID(recipeID)
+	if !found {
+		log.Errorf("Recipe ID %d not found during update servings request", recipeID)
+		return recipeID, newServings, nil, false
+	}
+	if baseRecipe.Servings <= 0 {
+		log.Errorf("Base recipe '%s' (ID %d) has invalid original servings: %d", baseRecipe.Title, baseRecipe.ID, baseRecipe.Servings)
+		return recipeID, newServings, nil, false
+	}
+	return recipeID, newServings, baseRecipe, true
+}
+
+func calculateAdjustedIngredients(baseRecipe *model.Recipe, scalingFactor float32) []model.RecipeIngredient {
+	adjustedIngredients := make([]model.RecipeIngredient, len(baseRecipe.Ingredients))
+	for i, ing := range baseRecipe.Ingredients {
+		foodItemCopy := ing.FoodItem
+		adjustedIngredients[i] = model.RecipeIngredient{
+			FoodItem:   foodItemCopy,
+			Quantity:   ing.Quantity * scalingFactor,
+			Unit:       ing.Unit,
+			IsOptional: ing.IsOptional,
+			Purpose:    ing.Purpose,
+		}
+	}
+	return adjustedIngredients
+}
 
 var dummyRecipes = []model.Recipe{
 	{
@@ -107,137 +358,38 @@ var dummyRecipes = []model.Recipe{
 	},
 }
 
-func main() {
-	log.SetFormatter(&log.TextFormatter{})
-	log.SetLevel(log.InfoLevel)
-
-	// --- Parse Templates ---
-	// Parse all files in layouts and the specific page file
-	// IMPORTANT: This simple parsing happens on every run. Better to parse once.
-	// The base template must be listed FIRST if using ParseFiles with layouts
-	var err error
-	templates, err = template.ParseFiles(
-		filepath.Join("web", "template", "layouts", "base.html"),
-		filepath.Join("web", "template", "recipe_page.html"),
-		filepath.Join("web", "template", "partials", "ingredients.html"),
-		// Add other page templates here as you create them
-		filepath.Join("web", "template", "index.html"),
-	)
-	if err != nil {
-		log.Fatalf("Could not parse templates: %s", err)
-	} else {
-		log.Info("Templates parsed successfully")
+func formatQuantity(q float32) string {
+	// Check if the number is effectively an integer (within a small tolerance)
+	if math.Abs(float64(q)-math.Round(float64(q))) < 0.001 {
+		return fmt.Sprintf("%.0f", q)
 	}
 
-	http.HandleFunc("/", handleShowRecipe)
-	http.HandleFunc("/update-servings", handleUpdateServings)
-
-	fs := http.FileServer(http.Dir("./web/static/"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
-	log.Info("Serving static files from ./web/static/ at /static/")
-
-	port := ":8080"
-	log.Infof("Starting server on http://localhost%s", port)
-
-	err = http.ListenAndServe(port, nil)
-	if err != nil {
-		log.Fatalf("Could not start server: %s\n", err)
+	// strconv 'g' might still produce more than 2 decimal places in some cases (e.g., scientific notation for very small/large)
+	// Let's explicitly format to 2dp and trim if needed for typical recipe quantities.
+	sFixed := fmt.Sprintf("%.2f", q)
+	// Remove trailing ".00"
+	if strings.HasSuffix(sFixed, ".00") {
+		return sFixed[:len(sFixed)-3]
 	}
+	// Remove trailing "0" for things like "2.50" -> "2.5"
+	if strings.HasSuffix(sFixed, "0") {
+		return sFixed[:len(sFixed)-1]
+	}
+	// Otherwise return the 2dp fixed version
+	return sFixed
 }
 
-// handleShowRecipe handles requests for the main recipe page
-func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
-	if len(dummyRecipes) == 0 {
-		log.Error("No dummy recipes loaded!")
-		http.Error(w, "No recipes available", http.StatusInternalServerError)
-		return
-	}
-
-	recipeToShow := dummyRecipes[0]
-	recipeToShow.CalculateTotals()
-
-	data := map[string]interface{}{
-		"Recipe":      recipeToShow,
-		"CurrentYear": time.Now().Year(), // Pass the year for the footer
-	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err := templates.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		log.Errorf("Error executing template: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	log.Infof("Served recipe page for: %s", recipeToShow.Title)
+// Create a FuncMap to register the function
+var funcMap = template.FuncMap{
+	"formatQuantity": formatQuantity,
 }
 
-func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// 1. Parse the form data submitted (required for POST requests)
-	err := r.ParseForm()
-	if err != nil {
-		log.Errorf("Error parsing form: %v", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
-	}
-
-	// 2. Get the new servings value from the form
-	servingsStr := r.FormValue("servings") // Get value by input's "name" attribute
-	newServings, err := strconv.Atoi(servingsStr)
-	if err != nil || newServings <= 0 {
-		log.Warnf("Invalid servings value received: %s", servingsStr)
-		// Optional: could return an error message snippet to HTMX
-		http.Error(w, "Invalid servings number", http.StatusBadRequest)
-		return
-	}
-	log.Infof("Received request to update servings to: %d", newServings)
-
-	if len(dummyRecipes) == 0 {
-		log.Error("No dummy recipes loaded for update!")
-		http.Error(w, "Internal Server Error: No recipe data", http.StatusInternalServerError)
-		return
-	}
-
-	baseRecipe := dummyRecipes[0]
-	if baseRecipe.Servings <= 0 {
-		// Safety check for the base recipe's servings
-		log.Errorf("Base recipe '%s' (ID %d) has invalid original servings: %d", baseRecipe.Title, baseRecipe.ID, baseRecipe.Servings)
-		http.Error(w, "Internal Server Error: Invalid base recipe data", http.StatusInternalServerError)
-		return
-	}
-
-	// 4. Calculate the scaling factor
-	// Ensure float division
-	scalingFactor := float32(newServings) / float32(baseRecipe.Servings)
-
-	// 5. Create the new list of ingredients with adjusted quantities
-	adjustedIngredients := make([]model.RecipeIngredient, len(baseRecipe.Ingredients))
-	for i, ing := range baseRecipe.Ingredients {
-		adjustedIngredients[i] = model.RecipeIngredient{
-			FoodItem:   ing.FoodItem,                 // Copy the FoodItem details
-			Quantity:   ing.Quantity * scalingFactor, // Scale the quantity
-			Unit:       ing.Unit,
-			IsOptional: ing.IsOptional,
-			Purpose:    ing.Purpose,
+func findRecipeByID(id int64) (*model.Recipe, bool) {
+	for i := range dummyRecipes {
+		if dummyRecipes[i].ID == id {
+			// Return a pointer to the recipe in the slice
+			return &dummyRecipes[i], true
 		}
 	}
-
-	// 6. Execute *only* the partial template with the adjusted ingredients
-	// The data passed is the slice itself, matching what the partial expects
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	// We need to re-wrap the output in the target div because we used outerHTML swap
-	// Alternatively, target the ul directly and use innerHTML swap in the form
-	fmt.Fprintln(w, `<div id="ingredients-list-container">`) // Start the replacement container
-	err = templates.ExecuteTemplate(w, "ingredient-list", adjustedIngredients)
-	if err != nil {
-		log.Errorf("Error executing ingredient-list template: %v", err)
-		// Don't write http.Error here if you already started writing the response
-		return // Or handle more gracefully
-	}
-	fmt.Fprintln(w, `</div>`) // End the replacement container
-	log.Infof("Served updated ingredients list for %d servings", newServings)
+	return nil, false // Not found
 }

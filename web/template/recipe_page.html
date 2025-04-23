@@ -1,75 +1,55 @@
-{{/* Use the "base" layout template */}}
-{{ template "base" . }}
+<!-- File: web/template/recipe_page.html -->
+{{define "title"}}{{ .Recipe.Title }} - My Recipe Site{{end}}
 
-{{/* Define the content for the "title" block in base.html */}}
-{{ define "title" }}
-    {{ .Recipe.Title }} - My Recipe Site
-{{ end }}
-
-{{/* Define the content for the "content" block in base.html */}}
-{{ define "content" }}
+{{define "content"}}
     <article class="recipe">
         <!-- Placeholder for Banner Image -->
         <div class="recipe-banner-placeholder" style="height: 200px; background-color: #eee; text-align: center; line-height: 200px; margin-bottom: 20px;">
-            [Recipe Banner Image Placeholder]
+           [Recipe Banner Image Placeholder: {{ .Recipe.ImagePath }}] <!-- Added image path -->
         </div>
 
         <!-- Recipe Title -->
-        <h2>{{ .Recipe.Title }}</h2>
+        <h2>{{ .Recipe.Title }} (ID: {{ .Recipe.ID }})</h2> <!-- Added ID -->
 
         <!-- Short Description -->
         <p class="recipe-description">
             <em>{{ .Recipe.Description }}</em>
         </p>
 
-        <!-- Ingredient List -->
+        <!-- Ingredient List Structure -->
         <section class="recipe-ingredients">
             <h3>Ingredients</h3>
-
-            <!-- Form for adjusting servings -->
-            <!-- Using hx-post to send data -->
-            <!-- hx-target points to the div that will be replaced -->
-            <!-- hx-swap="outerHTML" will replace the entire #ingredients-list-container -->
-            <form hx-post="/update-servings"
-                  hx-target="#ingredients-list-container"
-                  hx-swap="outerHTML"
-                  style="margin-bottom: 1em;" >
-                <label for="servings">Adjust Servings:</label>
-                <input type="number" id="servings" name="servings" value="{{ .Recipe.Servings }}" min="1" required style="width: 50px; margin-right: 5px;">
+             <form hx-post="/update-servings" hx-target="#ingredients-list-container" hx-swap="outerHTML" style="margin-bottom: 1em;">
+                <input type="hidden" name="recipe_id" value="{{ .Recipe.ID }}">
+                <label for="servings-{{ .Recipe.ID }}">Adjust Servings:</label>
+                <input type="number" id="servings-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required style="width: 50px; margin-right: 5px;">
                 <button type="submit">Update</button>
             </form>
-
-            <!-- This container will be targeted and replaced by HTMX -->
+            <!-- Container for the list, replaced by HTMX -->
             <div id="ingredients-list-container">
-                <!-- Render the initial list using the partial template -->
-                <!-- Pass the Ingredients slice to the partial -->
+                {{/* *** Include the ingredient list partial *** */}}
                 {{ template "ingredient-list" .Recipe.Ingredients }}
             </div>
-
         </section>
 
-        <!-- Method -->
-                <section class="recipe-method">
+        <!-- Method Structure -->
+        <section class="recipe-method">
             <h3>Method</h3>
             <ol>
-                {{/* Loop through MethodSteps instead of Method */}}
+                {{/* *** Add the range loop for method steps *** */}}
                 {{ range .Recipe.MethodSteps }}
-                    {{/* Access the Instruction field within each step */}}
-                    <li>{{ .Instruction }}</li>
-                    {{/* We can add stage/timing info later */}}
+                    <li>{{ .Instruction }} {{ if .Stage }}(Stage: {{ .Stage }}){{ end }}</li> <!-- Also showing Stage -->
                 {{ else }}
                     <li>No method steps provided.</li>
                 {{ end }}
             </ol>
         </section>
 
-        <!-- Notes -->
+        <!-- Notes Structure -->
         <section class="recipe-notes">
             <h3>Notes</h3>
             <p>{{ .Recipe.Notes }}</p>
-            <!-- Placeholder for technique/equipment links later -->
         </section>
-
     </article>
-{{ end }}
+{{end}}
 
