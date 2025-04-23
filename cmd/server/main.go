@@ -77,8 +77,8 @@ func main() {
 	// --- END TEMPLATE PARSING ---
 
 	// --- Setup Routes ---
-	http.HandleFunc("/", handleIndexPage)         // Focus on this route
-	http.HandleFunc("/recipe/", handleShowRecipe) // Keep other routes defined
+	http.HandleFunc("/", handleIndexPage)
+	http.HandleFunc("/recipe/", handleShowRecipe)
 	http.HandleFunc("/update-servings", handleUpdateServings)
 
 	// --- Serve Static Files ---
@@ -127,7 +127,7 @@ func handleIndexPage(w http.ResponseWriter, r *http.Request) {
 
 // handleShowRecipe handles requests for the main recipe page
 func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
-	log.Info("--- Running handleShowRecipe (Simplified Test) ---")
+	log.Info("--- Running handleShowRecipe ---")
 	// ... (keep logic to extract ID and find recipe) ...
 	recipeID, recipeCopy, found := getRecipeDetailsFromRequest(r)
 	if !found {
@@ -154,10 +154,10 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 	// *** EXECUTE "base.html" within the 'recipe' set ***
 	err := tmplSet.ExecuteTemplate(w, "base.html", data)
 	if err != nil {
-		log.Errorf("Error executing simplified recipe page template set for ID %d: %v", recipeID, err)
+		log.Errorf("Error executing recipe page template set for ID %d: %v", recipeID, err)
 		return
 	}
-	log.Infof("Served simplified recipe page for: %s (ID: %d)", recipeCopy.Title, recipeCopy.ID)
+	log.Infof("Served recipe page for: %s (ID: %d)", recipeCopy.Title, recipeCopy.ID)
 }
 
 func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
@@ -175,9 +175,7 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	scalingFactor := float32(newServings) / float32(baseRecipe.Servings)
 	adjustedIngredients := calculateAdjustedIngredients(baseRecipe, scalingFactor)
 
-	// **** ADD THIS LOG ****
 	log.Infof("HandleUpdateServings: Calculated adjustedIngredients (len %d): %+v", len(adjustedIngredients), adjustedIngredients)
-	// *********************
 
 	tmplSet, found := templateSets["ingredient-list"]
 	if !found {
