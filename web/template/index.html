@@ -1,8 +1,60 @@
 <!-- File: web/template/index.html -->
-{{define "title"}}Minimal Index{{end}}
 
-{{define "content"}}
-    <h2>Hello World Index!</h2>
-    <p>This content is from the simplified index.html.</p>
-{{end}}
+{{/* Use the base layout */}}
+{{ template "base" . }}
+
+{{/* Define the page title */}}
+{{ define "title" }}Welcome to My Recipe Site{{ end }}
+
+{{/* Define the main content for the index page */}}
+{{ define "content" }}
+
+    <!-- Homepage Banner Placeholder -->
+    <div class="home-banner-placeholder" style="height: 150px; background-color: #e0e0e0; text-align: center; line-height: 150px; margin-bottom: 25px; font-style: italic; color: #666;">
+        [ Site Banner Area ]
+    </div>
+
+    <!-- Site Introduction / Welcome Message -->
+    <section class="site-intro" style="margin-bottom: 30px; padding: 0 1em;">
+        <h2>Welcome to Your Recipe Collection!</h2>
+        <p>This is your personal space to store, browse, and cook your favourite recipes. Easily adjust servings, check preparation times, and explore different culinary ideas.</p>
+        <p>Select a recipe below to get started.</p>
+        <!-- You can add more introductory text or features here later -->
+    </section>
+
+    <!-- List of Available Recipes -->
+    <section class="recipe-list" style="padding: 0 1em;">
+        <h3>Available Recipes</h3>
+
+        {{/* Check if the Recipes slice passed from the handler has data */}}
+        {{ if .Recipes }}
+            <ul style="list-style: none; padding: 0;">
+                {{/* Loop through each recipe in the slice */}}
+                {{ range .Recipes }}
+                    <li style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                        {{/* Link to the specific recipe page */}}
+                        <a href="/recipe/{{ .ID }}" style="font-size: 1.2em; font-weight: bold; text-decoration: none; color: #333;">
+                            {{ .Title }}
+                        </a>
+                        {{/* Display the description if available */}}
+                        {{ if .Description }}
+                            <p style="margin-top: 5px; margin-bottom: 0; font-size: 0.9em; color: #555;">
+                                <em>{{ .Description }}</em>
+                            </p>
+                        {{ end }}
+                        {{/* Add more details later? e.g., Tags, Time? */}}
+                    </li>
+                {{ else }}
+                    {{/* Message if .Recipes exists but is empty */}}
+                     <li>No recipes have been loaded into the list yet.</li>
+                {{ end }}
+            </ul>
+        {{ else }}
+            {{/* Message if .Recipes was nil or not passed */}}
+            <p>No recipe data available to display.</p>
+        {{ end }}
+    </section>
+
+{{ end }} {{/* End of content block */}}
+
 

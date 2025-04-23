@@ -96,14 +96,15 @@ func main() {
 }
 
 func handleIndexPage(w http.ResponseWriter, r *http.Request) {
-	log.Info("--- Running handleIndexPage (Simplified) ---")
+	log.Info("--- Running handleIndexPage ---") // Updated log message
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
-	// Minimal data, or nil if index.html and base.html don't need it
+	// Ensure Recipes data is passed
 	data := map[string]interface{}{
-		"CurrentYear": time.Now().Year(), // Keep if base.html uses it
+		"Recipes":     dummyRecipes,
+		"CurrentYear": time.Now().Year(),
 	}
 
 	// Retrieve the pre-parsed set for "index"
@@ -115,16 +116,13 @@ func handleIndexPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// *** EXECUTE "base.html" within the 'index' set ***
-	// This matches the successful pattern from your minimal example
+	// Execute "base.html" WITHIN the 'index' set
 	err := tmplSet.ExecuteTemplate(w, "base.html", data)
 	if err != nil {
-		log.Errorf("Error executing simplified index template set: %v", err)
-		// Don't write http.Error if potentially already written headers/body
+		log.Errorf("Error executing index template set: %v", err)
 		return
 	}
-	log.Info("Served simplified index page")
+	log.Info("Served index page")
 }
 
 // handleShowRecipe handles requests for the main recipe page

@@ -3,24 +3,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{block "title" .}}Base Title{{end}}</title>
+    <title>{{block "title" .}}My Recipe Site{{end}}</title>
     <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
     <!--<link rel="stylesheet" href="/static/css/style.css">-->
 
 </head>
 <body>
     <header>
-        <h1>Minimal Base Header</h1>
-        <hr>
+        <h1>
+            <a href="/" style="text-decoration: none; color: inherit;">My Recipe Site</a>
+        </h1>
     </header>
-    <main>
+    <main style="padding: 0 1em;">
         {{block "content" .}}
-            <p>Base default content.</p>
+            <p>Default page content goes here if not overridden.</p>
         {{end}}
     </main>
-    <footer>
-        <hr>
-        <p>Minimal Footer</p>
+    <footer style="margin-top: 30px; padding: 1em 1em; border-top: 1px solid #ccc; text-align: center; font-size: 0.9em; color: #666;">
+        <p>&copy; {{ .CurrentYear }} My Recipe Site</p>
     </footer>
 </body>
 </html>
