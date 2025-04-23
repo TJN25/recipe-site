@@ -49,11 +49,16 @@
         </section>
 
         <!-- Method -->
-        <section class="recipe-method">
+                <section class="recipe-method">
             <h3>Method</h3>
             <ol>
-                {{ range .Recipe.Method }}
-                    <li>{{ . }}</li>
+                {{/* Loop through MethodSteps instead of Method */}}
+                {{ range .Recipe.MethodSteps }}
+                    {{/* Access the Instruction field within each step */}}
+                    <li>{{ .Instruction }}</li>
+                    {{/* We can add stage/timing info later */}}
+                {{ else }}
+                    <li>No method steps provided.</li>
                 {{ end }}
             </ol>
         </section>

@@ -121,6 +121,7 @@ func main() {
 		filepath.Join("web", "template", "recipe_page.html"),
 		filepath.Join("web", "template", "partials", "ingredients.html"),
 		// Add other page templates here as you create them
+		filepath.Join("web", "template", "index.html"),
 	)
 	if err != nil {
 		log.Fatalf("Could not parse templates: %s", err)
@@ -130,8 +131,8 @@ func main() {
 
 	http.HandleFunc("/", handleShowRecipe)
 	http.HandleFunc("/update-servings", handleUpdateServings)
-	fs := http.FileServer(http.Dir("./web/static/"))
 
+	fs := http.FileServer(http.Dir("./web/static/"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	log.Info("Serving static files from ./web/static/ at /static/")
 
@@ -146,47 +147,36 @@ func main() {
 
 // handleShowRecipe handles requests for the main recipe page
 func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
-	// --- Prepare Dummy Data ---
-	// In a real app, you'd fetch this from a database based on r.URL.Path maybe
-	dummyRecipe := model.RecipeData{
-		Title:       "Simple Example Recipe",
-		Description: "A basic recipe structure to demonstrate Go templates and quantity adjustment.",
-		Servings:    2, // This recipe is originally for 2 servings
-		Ingredients: []model.Ingredient{
-			{Name: "Flour", Quantity: 1.5, Unit: "cup"}, // Example using float
-			{Name: "Large Egg", Quantity: 1, Unit: "whole"},
-			{Name: "Milk", Quantity: 0.5, Unit: "cup"},
-			{Name: "Salt", Quantity: 1, Unit: "pinch"}, // Unit can be descriptive
-		},
-		Method: []string{
-			"Combine dry ingredients.",
-			"Whisk in egg and milk.",
-			"Cook on medium heat.",
-		},
-		Notes: "This is just a placeholder structure. Try adjusting the servings!",
+	if len(dummyRecipes) == 0 {
+		log.Error("No dummy recipes loaded!")
+		http.Error(w, "No recipes available", http.StatusInternalServerError)
+		return
 	}
 
-	// Data to pass to the template
-	// Note the structure matches how we access it in the template (e.g., .Recipe.Title)
+	recipeToShow := dummyRecipes[0]
+	recipeToShow.CalculateTotals()
+
 	data := map[string]interface{}{
-		"Recipe":      dummyRecipe,
+		"Recipe":      recipeToShow,
 		"CurrentYear": time.Now().Year(), // Pass the year for the footer
 	}
 
-	// --- Execute Template ---
-	// We want to execute the "base" template, which will in turn include
-	// the correct "content" block from recipe_page.html
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err := templates.ExecuteTemplate(w, "base", data) // Execute the "base" template block
+	err := templates.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		log.Errorf("Error executing template: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	log.Info("Served recipe page")
+	log.Infof("Served recipe page for: %s", recipeToShow.Title)
 }
 
 func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	// 1. Parse the form data submitted (required for POST requests)
 	err := r.ParseForm()
 	if err != nil {
@@ -204,25 +194,20 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid servings number", http.StatusBadRequest)
 		return
 	}
-
 	log.Infof("Received request to update servings to: %d", newServings)
 
-	// 3. Get the original recipe data (using the same dummy data for now)
-	// In a real app, fetch this from DB or a more persistent source
-	// NOTE: For simplicity, we recreate the dummy data here. A better approach
-	// would be to have the base recipe defined once globally or loaded on startup.
-	baseRecipe := model.RecipeData{
-		// Title:       "Simple Example Recipe", // Not needed for calculation
-		// Description: "...",                  // Not needed
-		Servings: 2, // Base servings
-		Ingredients: []model.Ingredient{
-			{Name: "Flour", Quantity: 1.5, Unit: "cup"},
-			{Name: "Large Egg", Quantity: 1, Unit: "whole"},
-			{Name: "Milk", Quantity: 0.5, Unit: "cup"},
-			{Name: "Salt", Quantity: 1, Unit: "pinch"},
-		},
-		// Method: []string{...}, // Not needed
-		// Notes:  "...",         // Not needed
+	if len(dummyRecipes) == 0 {
+		log.Error("No dummy recipes loaded for update!")
+		http.Error(w, "Internal Server Error: No recipe data", http.StatusInternalServerError)
+		return
+	}
+
+	baseRecipe := dummyRecipes[0]
+	if baseRecipe.Servings <= 0 {
+		// Safety check for the base recipe's servings
+		log.Errorf("Base recipe '%s' (ID %d) has invalid original servings: %d", baseRecipe.Title, baseRecipe.ID, baseRecipe.Servings)
+		http.Error(w, "Internal Server Error: Invalid base recipe data", http.StatusInternalServerError)
+		return
 	}
 
 	// 4. Calculate the scaling factor
@@ -230,13 +215,14 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	scalingFactor := float32(newServings) / float32(baseRecipe.Servings)
 
 	// 5. Create the new list of ingredients with adjusted quantities
-	adjustedIngredients := make([]model.Ingredient, len(baseRecipe.Ingredients))
+	adjustedIngredients := make([]model.RecipeIngredient, len(baseRecipe.Ingredients))
 	for i, ing := range baseRecipe.Ingredients {
-		adjustedIngredients[i] = model.Ingredient{
-			Name: ing.Name,
-			// Scale quantity, handle potential floating point inaccuracies if needed later
-			Quantity: ing.Quantity * scalingFactor,
-			Unit:     ing.Unit,
+		adjustedIngredients[i] = model.RecipeIngredient{
+			FoodItem:   ing.FoodItem,                 // Copy the FoodItem details
+			Quantity:   ing.Quantity * scalingFactor, // Scale the quantity
+			Unit:       ing.Unit,
+			IsOptional: ing.IsOptional,
+			Purpose:    ing.Purpose,
 		}
 	}
 

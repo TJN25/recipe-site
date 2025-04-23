@@ -1,8 +1,12 @@
-{{/* This template expects a slice of Ingredient structs directly */}}
+{{/* This template expects a slice of model.RecipeIngredient structs */}}
 {{ define "ingredient-list" }}
 <ul id="ingredients-list-items">
     {{ range . }}
-        <li>{{ .Quantity }} {{ .Unit }} {{ .Name }}</li>
+        {{/* Access the Name field within the nested FoodItem struct */}}
+        <li>{{ printf "%.2f" .Quantity }} {{ .Unit }} {{ .FoodItem.Name }}{{ if .IsOptional }} (optional){{ end }}{{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+        {{/* Added optional/purpose display, and formatted quantity */}}
+    {{ else }}
+        <li>No ingredients listed.</li>
     {{ end }}
 </ul>
 {{ end }}
