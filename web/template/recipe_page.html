@@ -1,65 +1,129 @@
 <!-- File: web/template/recipe_page.html -->
-{{define "title"}}{{ .Recipe.Title }} - My Recipe Site{{end}}
+{{define "title"}}{{ .Recipe.Title }} - The Serving Station{{end}}
 
 {{define "content"}}
-    <article class="recipe">
-        {{ if .Recipe.ImagePath }}
-            <div class="recipe-banner" style="margin-bottom: 20px; text-align: center;">
-                {{/* Construct the full URL path to the static image */}}
-                <img src="/static/{{ .Recipe.ImagePath }}"
-                     alt="{{ .Recipe.Title }}"
-                     style="max-width: 100%; height: auto; max-height: 300px; border-radius: 5px;">
-                     {{/* Added some basic styling */}}
-            </div>
-        {{ else }}
-            {{/* Fallback placeholder if no image path is set */}}
-            <div class="recipe-banner-placeholder" style="height: 200px; background-color: #eee; text-align: center; line-height: 200px; margin-bottom: 20px; font-style: italic;">
-               [ No Recipe Image Available ]
-            </div>
-        {{ end }}
+<article class="recipe">
 
-        <!-- Recipe Title -->
-        <h2>{{ .Recipe.Title }} (ID: {{ .Recipe.ID }})</h2> <!-- Added ID -->
-
-        <!-- Short Description -->
-        <p class="recipe-description">
+    <!-- 1. Banner & Description (Collapsible) -->
+    <details class="recipe-summary-section" open> {{/* Starts open */}}
+        <summary style="font-size: 1.5em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+            {{ .Recipe.Title }} {{/* Title acts as the summary */}}
+        </summary>
+        <div class="recipe-banner" style="margin-bottom: 20px; text-align: center;">
+            {{ if .Recipe.ImagePath }}
+                <img src="/static/{{ .Recipe.ImagePath }}" alt="{{ .Recipe.Title }}" style="max-width: 100%; height: auto;  border-radius: 5px;">
+            {{ else }}
+                 <div class="recipe-banner-placeholder" style="height: 200px; /* ... placeholder styles ... */">[ No Recipe Image Available ]</div>
+            {{ end }}
+        </div>
+        <p class="recipe-description" style="margin-top: 10px;">
             <em>{{ .Recipe.Description }}</em>
         </p>
+    </details>
 
-        <!-- Ingredient List Structure -->
-        <section class="recipe-ingredients">
-            <h3>Ingredients</h3>
-             <form hx-post="/update-servings" hx-target="#ingredients-list-container" hx-swap="outerHTML" style="margin-bottom: 1em;">
-                <input type="hidden" name="recipe_id" value="{{ .Recipe.ID }}">
-                <label for="servings-{{ .Recipe.ID }}">Adjust Servings:</label>
-                <input type="number" id="servings-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required style="width: 50px; margin-right: 5px;">
-                <button type="submit">Update</button>
-            </form>
-            <!-- Container for the list, replaced by HTMX -->
+    <hr style="margin: 25px 0;">
+
+    <!-- 2. View Options / Controls (Collapsible) -->
+    <details class="recipe-options-section">
+        <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+            View Options
+        </summary>
+        <div class="options-controls" style="padding: 10px; background-color: #f8f8f8; border-radius: 5px;">
+
+            <!-- Servings -->
+            <div class="option-group" style="margin-bottom: 10px;">
+                <form method="post" hx-post="/update-servings" hx-target="#ingredients-list-container" hx-swap="outerHTML" >
+                    <input type="hidden" name="recipe_id" value="{{ .Recipe.ID }}">
+                    <label for="servings-{{ .Recipe.ID }}">Servings:</label>
+                    <input type="number" id="servings-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required style="width: 50px; margin-right: 5px;">
+                    <button type="submit">Update</button>
+                </form>
+            </div>
+
+            <!-- Stage Filtering (Buttons will go here) -->
+            <div class="option-group" id="stage-filter-controls" style="margin-bottom: 10px;">
+                <label>Filter Method by Stage:</label>
+                <div id="stage-buttons">
+                    <button hx-get="/recipe/{{.Recipe.ID}}/stage/all" hx-target="#method-steps-display" hx-swap="innerHTML">All Stages</button>
+                    {{/* Buttons for specific stages will be generated here later */}}
+                    <span>[Stage buttons placeholder]</span>
+                </div>
+            </div>
+
+            <!-- Other Toggles (Placeholders for now) -->
+            <div class="option-group" style="margin-bottom: 10px;">
+                <label>Show Nutritional Info:</label> <input type="checkbox" disabled> [Later]
+            </div>
+            <div class="option-group" style="margin-bottom: 10px;">
+                 <label>Show Price Estimate:</label> <input type="checkbox" disabled> [Later]
+            </div>
+             <div class="option-group" style="margin-bottom: 10px;">
+                <label>Ingredient Details:</label> <input type="checkbox" disabled> [Later]
+            </div>
+             <div class="option-group" style="margin-bottom: 10px;">
+                <label>Highlight Equipment:</label> <input type="checkbox" disabled> [Later]
+            </div>
+            <div class="option-group">
+                <button disabled>Generate Shopping List</button> [Later]
+            </div>
+        </div>
+    </details>
+
+    <hr style="margin: 25px 0;">
+
+    <!-- 3. Ingredients (Collapsible) -->
+    <details class="recipe-ingredients-section" open> {{/* Starts open */}}
+         <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+            Ingredients
+        </summary>
+        <div x-data="{ showOptionals: false }" style="margin-bottom: 10px;">
+            <button @click="showOptionals = !showOptionals" type="button" style="margin-bottom: 10px;">
+                <span x-show="!showOptionals">Show Optional Ingredients</span>
+                <span x-show="showOptionals">Hide Optional Ingredients</span>
+            </button>
             <div id="ingredients-list-container">
-                {{/* *** Include the ingredient list partial *** */}}
+                {{/* This includes the list via the partial */}}
                 {{ template "ingredient-list" .Recipe.Ingredients }}
             </div>
-        </section>
+        </div>
+        {{/* Add sections for optional ingredients/substitutions later */}}
+    </details>
 
-        <!-- Method Structure -->
-        <section class="recipe-method">
-            <h3>Method</h3>
-            <ol>
-                {{/* *** Add the range loop for method steps *** */}}
+    <hr style="margin: 25px 0;">
+
+    <!-- 4. Method (Collapsible) -->
+    <details class="recipe-method-section" open> {{/* Starts open */}}
+        <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+            Method
+        </summary>
+        {{/* This div will be the target for stage filtering HTMX swaps */}}
+        <div id="method-steps-display">
+            {{/* Render ALL steps initially, grouped by stage (We'll do this next) */}}
+            {{ if .Recipe.MethodSteps }}
+                <ol style="padding-left: 20px; margin-top: 0;">
                 {{ range .Recipe.MethodSteps }}
-                    <li>{{ .Instruction }} {{ if .Stage }}(Stage: {{ .Stage }}){{ end }}</li> <!-- Also showing Stage -->
+                    <li style="margin-bottom: 8px;">{{ .Instruction }}</li>
                 {{ else }}
-                    <li>No method steps provided.</li>
+                    <li>No method steps available for this recipe.</li>
                 {{ end }}
             </ol>
-        </section>
+            {{ else }}
+                <p>Method steps not available.</p>
+            {{ end }}
+        </div>
+    </details>
 
-        <!-- Notes Structure -->
-        <section class="recipe-notes">
-            <h3>Notes</h3>
-            <p>{{ .Recipe.Notes }}</p>
-        </section>
-    </article>
+    <hr style="margin: 25px 0;">
+
+    <!-- 5. Notes (Collapsible) -->
+    <details class="recipe-notes-section">
+        <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+            Notes
+        </summary>
+        <p>{{ .Recipe.Notes }}</p>
+    </details>
+
+</article>
+
 {{end}}
 

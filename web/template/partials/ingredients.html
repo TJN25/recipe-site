@@ -2,8 +2,13 @@
 {{ define "ingredient-list" }}
 <ul id="ingredients-list-items">
     {{ range . }}
-        {{/* Use the custom formatQuantity function */}}
-        <li>{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }}{{ if .IsOptional }} (optional){{ end }}{{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+        {{ if not .IsOptional }}
+            <li>{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }}{{ if .IsOptional }} (optional){{ end }}{{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+        {{ else }}
+            <template x-if="showOptionals">
+                 <li style="font-style: italic; color: #666;">{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }} (optional){{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+            </template>
+        {{ end }}
     {{ else }}
         <li>No ingredients listed.</li>
     {{ end }}

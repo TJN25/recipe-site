@@ -74,7 +74,6 @@ func main() {
 	// Keep storing under the logical key "ingredient-list"
 	templateSets["ingredient-list"] = ingredientSet
 	log.Printf("Stored template set: ingredient-list")
-	// --- END TEMPLATE PARSING ---
 
 	// --- Setup Routes ---
 	http.HandleFunc("/", handleIndexPage)
@@ -277,9 +276,11 @@ var dummyRecipes = []model.Recipe{
 			{ID: 2, Name: "Comfort", Type: "mood"},
 		},
 		Equipment: []model.Equipment{
-			{ID: 1, Name: "Large Saucepan", Type: "Cookware", CleaningDifficulty: model.CleaningDifficultyEasy},
-			{ID: 2, Name: "Cheese Grater", Type: "Utensil", CleaningDifficulty: model.CleaningDifficultyEasy},
-			{ID: 3, Name: "Casserole Dish", Type: "Cookware", CleaningDifficulty: model.CleaningDifficultyHard},
+			{ID: 1, Name: "Large Saucepan", Type: "Cookware", CleaningDifficulty: model.CleaningDifficultyMedium},
+			{ID: 4, Name: "Small Saucepan", Type: "Cookware", CleaningDifficulty: model.CleaningDifficultyEasy},
+			{ID: 2, Name: "Cheese Grater", Type: "Utensil", CleaningDifficulty: model.CleaningDifficultyMedium},
+			{ID: 3, Name: "Knife", Type: "Utensil", CleaningDifficulty: model.CleaningDifficultyMedium},
+			{ID: 5, Name: "Container", Type: "Utensil", CleaningDifficulty: model.CleaningDifficultyEasy},
 		},
 		Ingredients: []model.RecipeIngredient{
 			{FoodItem: model.FoodItem{Name: "Everyday Cheese", BaseUnit: "g", PricePerBaseUnit: 0.02}, Quantity: 112, Unit: "g", Purpose: "melting base"},
@@ -289,18 +290,18 @@ var dummyRecipes = []model.Recipe{
 			{FoodItem: model.FoodItem{Name: "All‑Purpose Flour", BaseUnit: "tbsp", PricePerBaseUnit: 0.03}, Quantity: 2.25, Unit: "tbsp", Purpose: "thickener"},
 			{FoodItem: model.FoodItem{Name: "Full Fat Milk", BaseUnit: "ml", PricePerBaseUnit: 0.002}, Quantity: 265, Unit: "ml", Purpose: "sauce base"},
 			{FoodItem: model.FoodItem{Name: "Salt", BaseUnit: "tsp", PricePerBaseUnit: 0.005}, Quantity: 1.5, Unit: "tbsp", Purpose: "seasoning"},
-			{FoodItem: model.FoodItem{Name: "Mustard Powder", BaseUnit: "tsp", PricePerBaseUnit: 0.02}, Quantity: 0.25, Unit: "tsp", Purpose: "enhance cheese flavor"},
-			{FoodItem: model.FoodItem{Name: "Smoked Paprika", BaseUnit: "tsp", PricePerBaseUnit: 0.03}, Quantity: 0.75, Unit: "tsp", Purpose: "smoky depth"},
+			{FoodItem: model.FoodItem{Name: "Mustard Powder", BaseUnit: "tsp", PricePerBaseUnit: 0.02}, Quantity: 0.25, Unit: "tsp", IsOptional: true, Purpose: "enhance cheese flavor"},
+			{FoodItem: model.FoodItem{Name: "Smoked Paprika", BaseUnit: "tsp", PricePerBaseUnit: 0.03}, Quantity: 0.75, Unit: "tsp", IsOptional: true, Purpose: "smoky depth"},
 			{FoodItem: model.FoodItem{Name: "Chipotle Powder", BaseUnit: "tsp", PricePerBaseUnit: 0.04}, Quantity: 0.5, Unit: "tsp", IsOptional: true, Purpose: "smoky heat"},
-			{FoodItem: model.FoodItem{Name: "Mexican Chicken", BaseUnit: "g", PricePerBaseUnit: 0.015}, Quantity: 150, Unit: "g", Purpose: "protein"},
+			{FoodItem: model.FoodItem{Name: "Mexican Chicken", BaseUnit: "g", PricePerBaseUnit: 0.015}, Quantity: 150, Unit: "g", IsOptional: true, Purpose: "protein"},
 		},
 		MethodSteps: []model.MethodStep{
-			{StepNumber: 1, Instruction: "Grate cheeses and set aside 74g for topping.", Stage: "Prep/Roux", PrepTimeMinutes: 5},
+			{StepNumber: 1, Instruction: "Grate cheeses and set aside 1/3 for topping.", Stage: "Prep/Roux", PrepTimeMinutes: 5},
 			{StepNumber: 2, Instruction: "Cook macaroni pasta until 1–2 minutes past al dente.", Stage: "Pasta", CookTimeMinutes: 12},
 			{StepNumber: 3, Instruction: "Melt butter, whisk in flour, cook 2 minutes.", Stage: "Prep/Roux", PrepTimeMinutes: 3},
 			{StepNumber: 4, Instruction: "Whisk in milk gradually, cook until thickened.", Stage: "Prep/Roux", CookTimeMinutes: 5},
-			{StepNumber: 5, Instruction: "Remove from heat, stir in cheese mix and spices.", Stage: "Prep/Roux", PrepTimeMinutes: 2},
-			{StepNumber: 6, Instruction: "Fold in chicken and pasta, transfer to dish.", Stage: "Assembly", PrepTimeMinutes: 3},
+			{StepNumber: 5, Instruction: "Remove from heat, stir in cheese mix and any spices.", Stage: "Prep/Roux", PrepTimeMinutes: 2},
+			{StepNumber: 6, Instruction: "Fold pasta into sauce in large ovenproof saucepan.", Stage: "Assembly", PrepTimeMinutes: 3},
 			{StepNumber: 7, Instruction: "Top with reserved cheese, grill 5–6 minutes.", Stage: "Assembly", CookTimeMinutes: 6},
 		},
 	},

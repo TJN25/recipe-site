@@ -4,7 +4,7 @@
 {{ template "base" . }}
 
 {{/* Define the page title */}}
-{{ define "title" }}Welcome to My Recipe Site{{ end }}
+{{ define "title" }}The Serving Station{{ end }}
 
 {{/* Define the main content for the index page */}}
 {{ define "content" }}
@@ -13,14 +13,14 @@
     <div class="home-banner" style="text-align: center; margin-bottom: 25px;">
         {{/* Directly link to the static image */}}
         <img src="/static/img/food.png"
-             alt="Recipe Site Banner"
+             alt="A long table with food laid out for a feast."
              style="max-width: 100%; height: auto; max-height: 200px; border-radius: 5px;">
              {{/* Adjusted max-height and added basic styling */}}
     </div>
 
     <!-- Site Introduction / Welcome Message -->
     <section class="site-intro" style="margin-bottom: 30px; padding: 0 1em;">
-        <h2>Welcome to Your Recipe Collection!</h2>
+        <h2>Your recipes, your way!</h2>
         <p>This is your personal space to store, browse, and cook your favourite recipes. Easily adjust servings, check preparation times, and explore different culinary ideas.</p>
         <p>Select a recipe below to get started.</p>
         <!-- You can add more introductory text or features here later -->
