@@ -10,17 +10,17 @@
 {{ define "content" }}
 
     <!-- Homepage Banner Placeholder -->
-    <div class="home-banner" style="text-align: center; margin-bottom: 25px;">
+    <div class="home-banner text-center mb-6">
         {{/* Directly link to the static image */}}
         <img src="/static/img/food.png"
              alt="A long table with food laid out for a feast."
-             style="max-width: 100%; height: auto; max-height: 200px; border-radius: 5px;">
+             class="max-w-full h-auto max-h-[200px] rounded-md inline-block">
              {{/* Adjusted max-height and added basic styling */}}
     </div>
 
     <!-- Site Introduction / Welcome Message -->
-    <section class="site-intro" style="margin-bottom: 30px; padding: 0 1em;">
-        <h2>Your recipes, your way!</h2>
+    <section class="site-intro mb-8 px-4">
+        <h2 class="text-2xl font-semibold mb-2">Your recipes, your way!</h2>
         <p>This is your personal space to store, browse, and cook your favourite recipes. Easily adjust servings, check preparation times, and explore different culinary ideas.</p>
         <p>Select a recipe below to get started.</p>
         <!-- You can add more introductory text or features here later -->
@@ -28,24 +28,23 @@
 
     <!-- List of Available Recipes -->
     <section class="recipe-list" style="padding: 0 1em;">
-        <h3>Available Recipes</h3>
+        <h3 class="text-xl font-semibold mb-4">Available Recipes</h3>
 
         {{/* Check if the Recipes slice passed from the handler has data */}}
         {{ if .Recipes }}
-            <ul style="list-style: none; padding: 0;">
-                {{/* Loop through each recipe in the slice */}}
+            <ul class="list-none p-0">
                 {{ range .Recipes }}
-                    <li style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    <li class="mb-4 border-b border-slate-200 dark:border-slate-700 pb-3">
                         {{/* Link to the specific recipe page */}}
-                        <a href="/recipe/{{ .ID }}" style="font-size: 1.2em; font-weight: bold; text-decoration: none; color: #333;">
+                        <a href="/recipe/{{ .ID }}" class="text-lg font-bold no-underline text-slate-800 dark:text-slate-100 hover:text-sky-600 dark:hover:text-sky-400">
                             {{ .Title }}
-                        </a>
                         {{/* Display the description if available */}}
                         {{ if .Description }}
-                            <p style="margin-top: 5px; margin-bottom: 0; font-size: 0.9em; color: #555;">
+                            <p class="mt-1 mb-0 text-sm text-slate-600 dark:text-slate-400">
                                 <em>{{ .Description }}</em>
                             </p>
                         {{ end }}
+                        </a>
                         {{/* Add more details later? e.g., Tags, Time? */}}
                     </li>
                 {{ else }}

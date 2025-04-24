@@ -48,3 +48,5 @@ Thumbs.db
 coverage.out
 profile.out
 
+node_modules/
+tailwindcss

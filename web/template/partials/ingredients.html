@@ -1,21 +1,21 @@
 {{/* File: web/template/partials/ingredients.html */}}
 {{ define "ingredient-list" }}
-<ul id="ingredients-list-items">
+<ul id="ingredients-list-items" class="list-disc pl-5 mt-0">
     {{ range . }}
         <template x-if="showMethods">
-            <h3>{{ .Title }}</h3>
+            <h3 class="text-lg font-semibold mt-3 mb-1">{{ .Title }}</h3>
         </template>
         {{ range .Ingredients }}
             {{ if not .IsOptional }}
                 <li>{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }}{{ if .IsOptional }} (optional){{ end }}{{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
             {{ else }}
                 <template x-if="showOptionals">
-                     <li style="font-style: italic; color: #666;">{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }} (optional){{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+                     <li class="italic text-slate-500 dark:text-slate-400">{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }} (optional){{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
                 </template>
             {{ end }}
         {{ end }}
     {{ else }}
-        <li>No ingredients listed.</li>
+        <li class="list-none italic">No ingredients listed.</li>
     {{ end }}
 </ul>
 {{ end }}

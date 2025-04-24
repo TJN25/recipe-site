@@ -6,61 +6,63 @@
 
     <!-- 1. Banner & Description (Collapsible) -->
     <details class="recipe-summary-section" open> {{/* Starts open */}}
-        <summary style="font-size: 1.5em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+        <summary  class="text-2xl font-bold cursor-pointer mb-4">
             {{ .Recipe.Title }} {{/* Title acts as the summary */}}
         </summary>
-        <div class="recipe-banner" style="margin-bottom: 20px; text-align: center;">
+        <div  class="recipe-banner mb-5 text-center">
             {{ if .Recipe.ImagePath }}
-                <img src="/static/{{ .Recipe.ImagePath }}" alt="{{ .Recipe.Title }}" style="max-width: 100%; height: auto;  border-radius: 5px;">
+                <img src="/static/{{ .Recipe.ImagePath }}" alt="{{ .Recipe.Title }}" class="max-w-full h-auto max-h-[300px] rounded-md inline-block">
             {{ else }}
-                 <div class="recipe-banner-placeholder" style="height: 200px; /* ... placeholder styles ... */">[ No Recipe Image Available ]</div>
+                 <div class="recipe-banner-placeholder h-[200px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 italic rounded-md">[ No Recipe Image Available ]</div>
             {{ end }}
         </div>
-        <p class="recipe-description" style="margin-top: 10px;">
+        <p class="recipe-description mt-3">
             <em>{{ .Recipe.Description }}</em>
         </p>
     </details>
 
-    <hr style="margin: 25px 0;">
+    <hr class="my-6 border-slate-200 dark:border-slate-700">
 
     <!-- 2. View Options / Controls (Collapsible) -->
     <details class="recipe-options-section">
-        <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+        <summary class="text-lg font-bold cursor-pointer mb-4">
             View Options
         </summary>
-        <div class="options-controls" style="padding: 10px; background-color: #f8f8f8; border-radius: 5px;">
+        <div class="options-controls p-3 bg-slate-100 dark:bg-slate-800 rounded-md">
 
             <!-- Servings -->
-            <div class="option-group" style="margin-bottom: 10px;">
+            <div class="option-group mb-3">
                 <form method="post" hx-post="/update-servings" hx-target="#ingredients-list-container" hx-swap="outerHTML" >
                     <input type="hidden" name="recipe_id" value="{{ .Recipe.ID }}">
-                    <label for="servings-{{ .Recipe.ID }}">Servings:</label>
-                    <input type="number" id="servings-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required style="width: 50px; margin-right: 5px;">
-                    <button type="submit">Update</button>
+                    <label for="servings-{{ .Recipe.ID }}" class="mr-2 font-medium">Servings:</label>
+                    <input type="number" id="servings-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required class="w-14 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-700">
+                    <button type="submit" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Update</button>
                 </form>
             </div>
 
             <!-- Stage Filtering (Buttons will go here) -->
-            <div class="option-group" id="stage-filter-controls" style="margin-bottom: 10px;">
+            <div class="option-group mb-3">
                 <label>Filter Method by Stage:</label>
                 <div id="stage-buttons">
-                    <button hx-get="/recipe/{{.Recipe.ID}}/stage/all" hx-target="#method-steps-display" hx-swap="innerHTML">All Stages</button>
+                    <button hx-get="/recipe/{{.Recipe.ID}}/stage/all" hx-target="#method-steps-display" hx-swap="innerHTML" class="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-sm">
+                        All Stages
+                    </button>
                     {{/* Buttons for specific stages will be generated here later */}}
                     <span>[Stage buttons placeholder]</span>
                 </div>
             </div>
 
             <!-- Other Toggles (Placeholders for now) -->
-            <div class="option-group" style="margin-bottom: 10px;">
+            <div class="option-group mb-3">
                 <label>Show Nutritional Info:</label> <input type="checkbox" disabled> [Later]
             </div>
-            <div class="option-group" style="margin-bottom: 10px;">
+            <div class="option-group mb-3">
                  <label>Show Price Estimate:</label> <input type="checkbox" disabled> [Later]
             </div>
-             <div class="option-group" style="margin-bottom: 10px;">
+            <div class="option-group mb-3">
                 <label>Ingredient Details:</label> <input type="checkbox" disabled> [Later]
             </div>
-             <div class="option-group" style="margin-bottom: 10px;">
+            <div class="option-group mb-3">
                 <label>Highlight Equipment:</label> <input type="checkbox" disabled> [Later]
             </div>
             <div class="option-group">
@@ -69,16 +71,16 @@
         </div>
     </details>
 
-    <hr style="margin: 25px 0;">
+    <hr class="my-6 border-slate-200 dark:border-slate-700">
 
     <div x-data="{ showMethods: true }" style="margin-bottom: 10px;">
         <!-- 3. Ingredients (Collapsible) -->
         <details class="recipe-ingredients-section" open> {{/* Starts open */}}
-             <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+             <summary class="text-lg font-bold cursor-pointer mb-4">
                 Ingredients
             </summary>
-            <div x-data="{ showOptionals: false }" style="margin-bottom: 10px;">
-                <button @click="showOptionals = !showOptionals" type="button" style="margin-bottom: 10px;">
+            <div x-data="{ showOptionals: false }" class="mb-3">
+                <button @click="showOptionals = !showOptionals" type="button" class="mb-3 px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded text-sm">
                     <span x-show="!showOptionals">Show Optional Ingredients</span>
                     <span x-show="showOptionals">Hide Optional Ingredients</span>
                 </button>
@@ -90,43 +92,43 @@
             {{/* Add sections for optional ingredients/substitutions later */}}
         </details>
 
-        <hr style="margin: 25px 0;">
+        <hr class="my-6 border-slate-200 dark:border-slate-700">
 
         <!-- 4. Method (Collapsible) -->
         <details class="recipe-method-section" open> {{/* Starts open */}}
-            <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+            <summary class="text-lg font-bold cursor-pointer mb-4">
                 Method
             </summary>
             {{/* This div will be the target for stage filtering HTMX swaps */}}
-                <button @click="showMethods = !showMethods" type="button" style="margin-bottom: 10px;">
+                <button @click="showMethods = !showMethods" type="button" class="mb-3 px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded text-sm">
                     <span x-show="!showMethods">Show Stages</span>
                     <span x-show="showMethods">Hide Stages</span>
                 </button>
                 <div id="method-steps-display">
                     {{/* Render ALL steps initially, grouped by stage (We'll do this next) */}}
-                    <ol style="padding-left: 20px; margin-top: 0;"> 
+                    <ol class="list-decimal pl-5 mt-0"> 
                         {{ range .Recipe.RecipeSteps }}
                                 <template x-if="showMethods">
-                                    <h3>{{ .Title }}</h3>
+                                    <h3 class="text-lg font-semibold mt-3 mb-1">{{ .Title }}</h3>
                                 </template>
                                 {{ range .MethodSteps }}
-                                    <li style="margin-bottom: 8px;">{{ .Instruction }}</li>
+                                    <li class="mb-2">{{ .Instruction }}</li>
                                 {{ else }}
-                                    <li>No method steps available for this recipe.</li>
+                                    <li class="list-none italic text-sm text-slate-500">No method steps available for this recipe.</li>
                                 {{ end }}
                         {{ else }}
-                                <p>Method steps not available.</p>
+                                <li class="list-none">Method steps not available.</li>
                         {{ end }}
                     </ol>
                 </div>
         </details>
     </div>
 
-    <hr style="margin: 25px 0;">
+    <hr class="my-6 border-slate-200 dark:border-slate-700">
 
     <!-- 5. Notes (Collapsible) -->
     <details class="recipe-notes-section">
-        <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+        <summary class="text-lg font-bold cursor-pointer mb-4">
             Notes
         </summary>
         <p>{{ .Recipe.Notes }}</p>
