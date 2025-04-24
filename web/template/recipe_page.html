@@ -71,47 +71,56 @@
 
     <hr style="margin: 25px 0;">
 
-    <!-- 3. Ingredients (Collapsible) -->
-    <details class="recipe-ingredients-section" open> {{/* Starts open */}}
-         <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
-            Ingredients
-        </summary>
-        <div x-data="{ showOptionals: false }" style="margin-bottom: 10px;">
-            <button @click="showOptionals = !showOptionals" type="button" style="margin-bottom: 10px;">
-                <span x-show="!showOptionals">Show Optional Ingredients</span>
-                <span x-show="showOptionals">Hide Optional Ingredients</span>
-            </button>
-            <div id="ingredients-list-container">
-                {{/* This includes the list via the partial */}}
-                {{ template "ingredient-list" .Recipe.Ingredients }}
+    <div x-data="{ showMethods: true }" style="margin-bottom: 10px;">
+        <!-- 3. Ingredients (Collapsible) -->
+        <details class="recipe-ingredients-section" open> {{/* Starts open */}}
+             <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+                Ingredients
+            </summary>
+            <div x-data="{ showOptionals: false }" style="margin-bottom: 10px;">
+                <button @click="showOptionals = !showOptionals" type="button" style="margin-bottom: 10px;">
+                    <span x-show="!showOptionals">Show Optional Ingredients</span>
+                    <span x-show="showOptionals">Hide Optional Ingredients</span>
+                </button>
+                <div id="ingredients-list-container">
+                    {{/* This includes the list via the partial */}}
+                    {{ template "ingredient-list" .Recipe.RecipeSteps }}
+                </div>
             </div>
-        </div>
-        {{/* Add sections for optional ingredients/substitutions later */}}
-    </details>
+            {{/* Add sections for optional ingredients/substitutions later */}}
+        </details>
 
-    <hr style="margin: 25px 0;">
+        <hr style="margin: 25px 0;">
 
-    <!-- 4. Method (Collapsible) -->
-    <details class="recipe-method-section" open> {{/* Starts open */}}
-        <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
-            Method
-        </summary>
-        {{/* This div will be the target for stage filtering HTMX swaps */}}
-        <div id="method-steps-display">
-            {{/* Render ALL steps initially, grouped by stage (We'll do this next) */}}
-            {{ if .Recipe.MethodSteps }}
-                <ol style="padding-left: 20px; margin-top: 0;">
-                {{ range .Recipe.MethodSteps }}
-                    <li style="margin-bottom: 8px;">{{ .Instruction }}</li>
-                {{ else }}
-                    <li>No method steps available for this recipe.</li>
-                {{ end }}
-            </ol>
-            {{ else }}
-                <p>Method steps not available.</p>
-            {{ end }}
-        </div>
-    </details>
+        <!-- 4. Method (Collapsible) -->
+        <details class="recipe-method-section" open> {{/* Starts open */}}
+            <summary style="font-size: 1.2em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+                Method
+            </summary>
+            {{/* This div will be the target for stage filtering HTMX swaps */}}
+                <button @click="showMethods = !showMethods" type="button" style="margin-bottom: 10px;">
+                    <span x-show="!showMethods">Show Stages</span>
+                    <span x-show="showMethods">Hide Stages</span>
+                </button>
+                <div id="method-steps-display">
+                    {{/* Render ALL steps initially, grouped by stage (We'll do this next) */}}
+                    <ol style="padding-left: 20px; margin-top: 0;"> 
+                        {{ range .Recipe.RecipeSteps }}
+                                <template x-if="showMethods">
+                                    <h3>{{ .Title }}</h3>
+                                </template>
+                                {{ range .MethodSteps }}
+                                    <li style="margin-bottom: 8px;">{{ .Instruction }}</li>
+                                {{ else }}
+                                    <li>No method steps available for this recipe.</li>
+                                {{ end }}
+                        {{ else }}
+                                <p>Method steps not available.</p>
+                        {{ end }}
+                    </ol>
+                </div>
+        </details>
+    </div>
 
     <hr style="margin: 25px 0;">
 

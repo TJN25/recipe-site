@@ -17,11 +17,13 @@ type Nutrition struct {
 }
 
 type FoodItem struct {
-	ID               int64     `json:"id"`
-	Name             string    `json:"name"`                // Unique name, e.g., "All-Purpose Flour"
-	BaseUnit         string    `json:"base_unit"`           // Canonical unit for price/nutrition (e.g., "g", "ml", "whole")
-	PricePerBaseUnit float32   `json:"price_per_base_unit"` // Price for one BaseUnit
-	Nutrition        Nutrition `json:"nutrition"`           // Embedded nutrition info per BaseUnit
+	ID                      int64     `json:"id"`
+	Name                    string    `json:"name"`                // Unique name, e.g., "All-Purpose Flour"
+	BaseUnit                string    `json:"base_unit"`           // Canonical unit for price/nutrition (e.g., "g", "ml", "whole")
+	PricePerBaseUnit        float32   `json:"price_per_base_unit"` // Price for one BaseUnit
+	Nutrition               Nutrition `json:"nutrition"`           // Embedded nutrition info per BaseUnit
+	AlternateUnits          []string  `json:"alternate_units"`
+	AlternateUnitConversion []float32 `json:"alternate_unit_conversion"`
 	// Potential future fields: category, brand, substitutes[]
 }
 
@@ -40,10 +42,24 @@ type MethodStep struct {
 	RecipeID        int64  `json:"-"`                 // Foreign key back to Recipe (db only)
 	StepNumber      int    `json:"step_number"`       // Order of the step (unique per recipe)
 	Instruction     string `json:"instruction"`       // What to do in this step
-	Stage           string `json:"stage,omitempty"`   // Optional grouping (e.g., "Prep", "Make Sauce", "Assembly")
 	PrepTimeMinutes int    `json:"prep_time_minutes"` // Active time for this step
 	CookTimeMinutes int    `json:"cook_time_minutes"` // Passive/cooking time for this step
 	// Potential V2: IngredientsUsed []int64, EquipmentUsed []int64
+}
+
+type RecipeStep struct {
+	ID       int64 `json:"id"`        // Will be DB ID later
+	RecipeID int64 `json:"recipe_id"` // can be used in multiple recipes
+	// RecipeIDs   []int64            `json:"recipe_ids"` // can be used in multiple recipes
+	StepOrder   int                `json:"step_order"` // We will just determine this by it's position in the array. Allows it to be moved around without needing to renumber
+	Title       string             `json:"title"`      // e.g., "Prepare Chicken", "Make Sauce"
+	Description string             `json:"description,omitempty"`
+	Notes       string             `json:"notes,omitempty"`
+	Ingredients []RecipeIngredient `json:"ingredients"`  // Ingredients *specific* to this step
+	MethodSteps []MethodStep       `json:"method_steps"` // Sub-steps *within* this step
+	Equipment   []Equipment        `json:"equipment"`    // Equipment *specific* to this step
+	// Servings    int                `json:"servings"`     // Define the scaling used in the section. We may need to ensure this is consistent across steps
+	// Tags        []Tag           `json:"tags"`        // We need this for enabling searching for steps as though they are recipes e.g. bao bun chicken, roux for mac and cheese, mexican chicken marinade.
 }
 
 type Tag struct {
@@ -60,23 +76,26 @@ type Equipment struct {
 }
 
 type Recipe struct {
-	ID          int64 // Database primary key
-	Title       string
-	Description string
-	Servings    int
-	Notes       string
-	ImagePath   string
-	// Relationships (populated by joining data from other tables)
-	Ingredients []RecipeIngredient // Ingredients needed for the recipe
-	MethodSteps []MethodStep       // Steps to make the recipe
-	Equipment   []Equipment        // Unique equipment needed
-	Tags        []Tag              // Tags associated
-	// Calculated/Derived fields (usually not stored in DB)
-	TotalPrepTimeMinutes int
-	TotalCookTimeMinutes int
-	TotalCleaningScore   int
-	CalculatedNutrition  Nutrition `json:"calculated_nutrition"` // Estimated nutrition per serving
-	CalculatedPrice      float32   `json:"calculated_price"`     // Estimated price per serving
+	ID          int64  `json:"id"` // Database primary key
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Servings    int    `json:"servings"`        // Base servings for the whole recipe
+	Notes       string `json:"notes,omitempty"` // Overall notes
+	ImagePath   string `json:"image_path,omitempty"`
+
+	// Relationships / Components
+	RecipeSteps []RecipeStep `json:"recipe_steps"` // The ordered list of stages/steps
+	Tags        []Tag        `json:"tags"`         // Overall tags for the recipe
+
+	// --- Optional: Add aggregated list for convenience? ---
+	// AllIngredients []RecipeIngredient `json:"-"` // Could be calculated, not stored directly
+
+	// Calculated/Derived fields
+	TotalPrepTimeMinutes int       `json:"total_prep_time_minutes"`
+	TotalCookTimeMinutes int       `json:"total_cook_time_minutes"`
+	TotalCleaningScore   int       `json:"total_cleaning_score"`
+	CalculatedNutrition  Nutrition `json:"calculated_nutrition"`
+	CalculatedPrice      float32   `json:"calculated_price"`
 }
 
 // Helper function to calculate total nutrition for a recipe (example)
@@ -88,33 +107,57 @@ func (r *Recipe) CalculateTotals() {
 	r.CalculatedPrice = 0.0
 	r.CalculatedNutrition = Nutrition{} // Zero out nutrition
 
-	// Calculate time from steps
-	for _, step := range r.MethodSteps {
-		r.TotalPrepTimeMinutes += step.PrepTimeMinutes
-		r.TotalCookTimeMinutes += step.CookTimeMinutes
+	// Use maps to track unique equipment and aggregate ingredients
+	uniqueEquipment := make(map[int64]Equipment) // Assuming Equipment has an ID
+	allIngredients := []RecipeIngredient{}       // To calculate total nutrition/price
+
+	// Iterate through each major step/stage (RecipeStep)
+	for _, recipeStep := range r.RecipeSteps {
+		// Aggregate ingredients from this step
+		allIngredients = append(allIngredients, recipeStep.Ingredients...)
+
+		// Sum time from sub-steps (MethodStep)
+		for _, methodStep := range recipeStep.MethodSteps {
+			r.TotalPrepTimeMinutes += methodStep.PrepTimeMinutes
+			r.TotalCookTimeMinutes += methodStep.CookTimeMinutes
+		}
+
+		// Track unique equipment used in this step
+		// Note: Assumes Equipment struct has an ID field populated.
+		// If not, use Name as the map key.
+		for _, eq := range recipeStep.Equipment {
+			if eq.ID != 0 { // Use ID if available
+				uniqueEquipment[eq.ID] = eq
+			} else if eq.Name != "" { // Fallback to Name if ID is 0 (dummy data)
+				// Need a way to handle equipment without ID/Name uniquely if possible
+				// For now, just add based on Name if ID is missing
+				key := int64(0) // Or generate a temporary key/hash if needed
+				if _, exists := uniqueEquipment[key]; !exists || uniqueEquipment[key].Name != eq.Name {
+					// Crude check, assumes name is unique if ID is 0
+					uniqueEquipment[key] = eq
+					key-- // Ensure next potential 0-ID item gets a different temp key
+				}
+			}
+		}
 	}
 
 	// Calculate cleaning score from unique equipment
-	// Note: Assumes r.Equipment holds unique items for the recipe
-	for _, eq := range r.Equipment {
+	for _, eq := range uniqueEquipment {
 		r.TotalCleaningScore += int(eq.CleaningDifficulty)
 	}
 
-	// Calculate price and nutrition (more complex - needs unit conversion logic)
-	// This is a placeholder - requires a robust unit conversion system
+	// --- Calculate price and nutrition from aggregated ingredients ---
 	var totalNutrition Nutrition
 	var totalPrice float32
-	for _, ri := range r.Ingredients {
-		if ri.FoodItem.ID == 0 {
+	// IMPORTANT: This aggregation assumes quantities are directly comparable
+	//            WITHOUT UNIT CONVERSION, which is INCORRECT for real use.
+	//            We need the FoodItem lookup and conversion logic here eventually.
+	for _, ri := range allIngredients {
+		if ri.FoodItem.ID == 0 && ri.FoodItem.Name == "" {
 			continue
-		} // Skip if FoodItem wasn't loaded properly
+		} // Skip empty items
 
-		// !!! --- Placeholder --- !!!
-		// !!! This needs proper unit conversion between ri.Unit and ri.FoodItem.BaseUnit !!!
-		// For now, assume quantity is directly comparable (highly unlikely in reality)
-		// factor := ri.Quantity // This is wrong without conversion
-
-		// Example: If ri.Unit == ri.FoodItem.BaseUnit (simplest case)
+		// !!! --- Placeholder --- !!! Needs unit conversion
 		factor := ri.Quantity
 		if ri.FoodItem.BaseUnit != "" && ri.Unit == ri.FoodItem.BaseUnit { // Basic check
 			totalPrice += ri.FoodItem.PricePerBaseUnit * factor
@@ -123,7 +166,7 @@ func (r *Recipe) CalculateTotals() {
 			totalNutrition.ProteinGrams += ri.FoodItem.Nutrition.ProteinGrams * factor
 			totalNutrition.CaloriesKcal += ri.FoodItem.Nutrition.CaloriesKcal * factor
 		} else {
-			// TODO: Implement unit conversion logic here based on ri.Unit and ri.FoodItem.BaseUnit
+			// TODO: Implement unit conversion logic here
 			// log.Printf("Warning: Unit conversion needed for %s (%s vs %s)", ri.FoodItem.Name, ri.Unit, ri.FoodItem.BaseUnit)
 		}
 		// !!! --- End Placeholder --- !!!
@@ -137,4 +180,7 @@ func (r *Recipe) CalculateTotals() {
 		r.CalculatedNutrition.ProteinGrams = totalNutrition.ProteinGrams / float32(r.Servings)
 		r.CalculatedNutrition.CaloriesKcal = totalNutrition.CaloriesKcal / float32(r.Servings)
 	}
+
+	// Optional: Store the aggregated list if needed elsewhere
+	// r.AllIngredients = allIngredients
 }
