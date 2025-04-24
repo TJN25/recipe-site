@@ -20,7 +20,7 @@
 
     <!-- Site Introduction / Welcome Message -->
     <section class="site-intro mb-8 px-4">
-    <div class="bg-slate-50 rounded-3xl p-6">
+    <div class="group bg-white dark:bg-slate-800 p-4 rounded-md transition-colors duration-150 ease-in-out group-hover:bg-slate-100 dark:group-hover:bg-slate-700">
         <h2 class="text-2xl font-semibold mb-2">Welcome to The Serving Station!</h2>
         <p class="font-sans font-normal leading-relaxed">This is your personal space to store, browse, and cook your favourite recipes. Easily adjust servings, check preparation times, and explore different culinary ideas.</p>
         <p class="font-sans font-normal">Select a recipe below to get started.</p>
@@ -30,12 +30,12 @@
 
     <!-- List of Available Recipes -->
     <section class="recipe-list" style="padding: 0 1em;">
-        <div class="bg-slate-50 rounded-3xl p-6">
+        <div class="group bg-white rounded-3xl p-6 transition-colors duration-300 ease-in-out group-hover:bg-slate-50">
         <h3 class="font-serif text-xl font-semibold mb-4">Available Recipes</h3>
 
         {{/* Check if the Recipes slice passed from the handler has data */}}
         {{ if .Recipes }}
-            <ul class="list-none p-4 bg-slate-100">
+            <ul class="list-none">
                 {{ range .Recipes }}
                     <li class="mb-4 border-b border-slate-200 dark:border-slate-700 pb-3">
                         {{/* Link to the specific recipe page */}}
