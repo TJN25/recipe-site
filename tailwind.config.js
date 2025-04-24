@@ -1,25 +1,36 @@
 // File: tailwind.config.js
 /** @type {import('tailwindcss').Config} */
+const defaultTheme = require('tailwindcss/defaultTheme')
 module.exports = {
-        // 1. Add dark mode strategy ('selector' is recommended)
-        darkMode: 'selector', // Enables dark mode based on a `.dark` class on a parent (usually <html>)
+  content: [
+    "./web/template/**/*.html", // Scan templates
+  ],
+  darkMode: 'selector', // Enable dark mode
+  theme: {
+    extend: {
+      colors: {
 
-        // 2. Specify where Tailwind should scan for classes
-        content: [
-                "./web/template/layouts/base.html",
-        ],
-
-        // 3. Theme customizations (optional, keep empty for now or add later)
-        theme: {
-                extend: {
-                        // You can add custom colors, fonts, etc. here later
-                        // colors: {
-                        //   'brand-blue': '#1DA1F2',
-                        // },
-                },
+        accent: {
+          DEFAULT: '#C02F00',
+          50: '#FF9A79',
+          100: '#FF8A64',
+          200: '#FF6B3B',
+          300: '#FF4C13',
+          400: '#E93900',
+          500: '#C02F00',
+          600: '#882100',
+          700: '#501400',
+          800: '#180600',
+          900: '#000000',
+          950: '#000000'
         },
 
-        // 4. Plugins (optional, keep empty for now)
-        plugins: [],
+      },
+      fontFamily: {
+        sans: ['Nunito', ...defaultTheme.fontFamily.sans], // Use Nunito as the primary sans-serif
+        serif: ['Merriweather', ...defaultTheme.fontFamily.serif], // Replace 'Merriweather' with your chosen serif
+      },
+    },
+  },
+  plugins: [],
 }
-

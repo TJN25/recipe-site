@@ -6,7 +6,7 @@
 
     <!-- 1. Banner & Description (Collapsible) -->
     <details class="recipe-summary-section" open> {{/* Starts open */}}
-        <summary  class="text-2xl font-bold cursor-pointer mb-4">
+        <summary  class="font-serif text-3xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
             {{ .Recipe.Title }} {{/* Title acts as the summary */}}
         </summary>
         <div  class="recipe-banner mb-5 text-center">
@@ -16,7 +16,7 @@
                  <div class="recipe-banner-placeholder h-[200px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 italic rounded-md">[ No Recipe Image Available ]</div>
             {{ end }}
         </div>
-        <p class="recipe-description mt-3">
+        <p class="recipe-description mt-3 font-sans leading-relaxed">
             <em>{{ .Recipe.Description }}</em>
         </p>
     </details>
@@ -25,7 +25,7 @@
 
     <!-- 2. View Options / Controls (Collapsible) -->
     <details class="recipe-options-section">
-        <summary class="text-lg font-bold cursor-pointer mb-4">
+        <summary class="font-serif text-xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
             View Options
         </summary>
         <div class="options-controls p-3 bg-slate-100 dark:bg-slate-800 rounded-md">
@@ -36,7 +36,7 @@
                     <input type="hidden" name="recipe_id" value="{{ .Recipe.ID }}">
                     <label for="servings-{{ .Recipe.ID }}" class="mr-2 font-medium">Servings:</label>
                     <input type="number" id="servings-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required class="w-14 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-700">
-                    <button type="submit" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm">Update</button>
+                    <button type="submit" class="px-3 py-1 bg-accent-500 hover:bg-accent-600 text-white rounded text-sm font-sans">Update</button>
                 </form>
             </div>
 
@@ -44,7 +44,7 @@
             <div class="option-group mb-3">
                 <label>Filter Method by Stage:</label>
                 <div id="stage-buttons">
-                    <button hx-get="/recipe/{{.Recipe.ID}}/stage/all" hx-target="#method-steps-display" hx-swap="innerHTML" class="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-sm">
+                    <button hx-get="/recipe/{{.Recipe.ID}}/stage/all" hx-target="#method-steps-display" hx-swap="innerHTML" class="px-3 py-1 bg-slate-500 hover:bg-slate-600 text-white dark:bg-slate-600 dark:hover:bg-slate-500 rounded text-sm font-sans">
                         All Stages
                     </button>
                     {{/* Buttons for specific stages will be generated here later */}}
@@ -76,11 +76,11 @@
     <div x-data="{ showMethods: true }" style="margin-bottom: 10px;">
         <!-- 3. Ingredients (Collapsible) -->
         <details class="recipe-ingredients-section" open> {{/* Starts open */}}
-             <summary class="text-lg font-bold cursor-pointer mb-4">
+             <summary class="font-serif text-xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
                 Ingredients
             </summary>
             <div x-data="{ showOptionals: false }" class="mb-3">
-                <button @click="showOptionals = !showOptionals" type="button" class="mb-3 px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded text-sm">
+                <button @click="showOptionals = !showOptionals" type="button" class="mb-3 px-3 py-1 bg-accent-500 hover:bg-accent-600 text-white rounded text-sm">
                     <span x-show="!showOptionals">Show Optional Ingredients</span>
                     <span x-show="showOptionals">Hide Optional Ingredients</span>
                 </button>
@@ -96,23 +96,23 @@
 
         <!-- 4. Method (Collapsible) -->
         <details class="recipe-method-section" open> {{/* Starts open */}}
-            <summary class="text-lg font-bold cursor-pointer mb-4">
+            <summary class="font-serif text-xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
                 Method
             </summary>
             {{/* This div will be the target for stage filtering HTMX swaps */}}
-                <button @click="showMethods = !showMethods" type="button" class="mb-3 px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded text-sm">
+                <button @click="showMethods = !showMethods" type="button" class="mb-3 px-3 py-1 bg-accent-500 hover:bg-accent-600 text-white rounded text-sm">
                     <span x-show="!showMethods">Show Stages</span>
                     <span x-show="showMethods">Hide Stages</span>
                 </button>
                 <div id="method-steps-display">
                     {{/* Render ALL steps initially, grouped by stage (We'll do this next) */}}
-                    <ol class="list-decimal pl-5 mt-0"> 
+                    <ol class="list-decimal pl-5 mt-0 font-sans leading-relaxed"> 
                         {{ range .Recipe.RecipeSteps }}
                                 <template x-if="showMethods">
                                     <h3 class="text-lg font-semibold mt-3 mb-1">{{ .Title }}</h3>
                                 </template>
                                 {{ range .MethodSteps }}
-                                    <li class="mb-2">{{ .Instruction }}</li>
+                                    <li class="mb-2 font-sans leading-relaxed">{{ .Instruction }}</li>
                                 {{ else }}
                                     <li class="list-none italic text-sm text-slate-500">No method steps available for this recipe.</li>
                                 {{ end }}
@@ -128,7 +128,7 @@
 
     <!-- 5. Notes (Collapsible) -->
     <details class="recipe-notes-section">
-        <summary class="text-lg font-bold cursor-pointer mb-4">
+        <summary class="font-serif text-xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
             Notes
         </summary>
         <p>{{ .Recipe.Notes }}</p>
