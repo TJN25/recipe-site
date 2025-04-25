@@ -2,17 +2,7 @@
 {{define "title"}}{{ .Recipe.Title }} - The Serving Station{{end}}
 
 {{define "content"}}
-<article class="recipe relative" x-data="{ activeTab: 'full', 
-    showOptions: false, 
-    showOptionals: false, 
-    showMethods: true, 
-    groupByStage: true, 
-    isOptionsOpen: false, 
-    hoveredStepId: null,
-    zenModeIndex: 0,
-    zenModeTotalSteps: 4,
-    zenModeStepsBool: false,
-    }">
+<article class="recipe relative" >
     <div class="text-xl border-b border-slate-200 dark:border-slate-700 flex justify-evenly">
         <button type="button"
                 @click="activeTab = 'full'"

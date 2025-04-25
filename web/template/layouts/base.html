@@ -13,8 +13,18 @@
     <link rel="stylesheet" href="/static/css/output.css">
 
 </head>
-<body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-200 font-sans">
-    <header class="py-4 border-b border-slate-200 dark:border-slate-700">
+<body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-200 font-sans" x-data="{ activeTab: 'full', 
+    showOptions: false, 
+    showOptionals: false, 
+    showMethods: true, 
+    groupByStage: true, 
+    isOptionsOpen: false, 
+    hoveredStepId: null,
+    zenModeIndex: 0,
+    zenModeTotalSteps: 4,
+    zenModeStepsBool: false,
+    }">
+    <header x-show="activeTab !== 'zen'" class="py-4 border-b border-slate-200 dark:border-slate-700">
         <h1 class="font-serif text-3xl font-bold text-center bg-gradient-to-r from-accent-900 to-accent-600 text-transparent bg-clip-text">
             <a href="/" class="no-underline text-current hover:text-accent-600 dark:hover:text-accent-400">
                     The Serving Station
