@@ -291,8 +291,20 @@ func formatQuantity(q float32) string {
 // Create a FuncMap to register the function
 var funcMap = template.FuncMap{
 	"formatQuantity": formatQuantity,
-	"add":            func(a, b int) int { return a + b }, // If you use this anywhere
-	"len": func(s []model.RecipeStep) int { // Specific length function for RecipeStep slice
-		return len(s)
+	"len":            func(s []model.RecipeStep) int { return len(s) },
+	"add":            func(a, b int) int { return a + b },
+	"default": func(value, defaultValue string) string { // Keep if used
+		if value == "" {
+			return defaultValue
+		}
+		return value
+	},
+	"truncate": func(s string, length int) string { // New function
+		if len(s) <= length {
+			return s
+		}
+		// Consider rune length for Unicode safety if needed
+		// return string([]rune(s)[:length]) + "..."
+		return s[:length] + "..." // Simpler byte slice version
 	},
 }

@@ -12,12 +12,12 @@
     zenModeIndex: 0,
     zenModeTotalSteps: 4,
     }">
-    <div class="text-xl border-b border-slate-300 dark:border-slate-600 flex justify-evenly">
+    <div class="text-xl border-b border-slate-200 dark:border-slate-700 flex justify-evenly">
         <button type="button"
                 @click="activeTab = 'full'"
                 :class="{
                     'border-accent-500 text-accent-600 dark:text-accent-400': activeTab === 'full',
-                    'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:border-slate-500': activeTab !== 'full'
+                    'border-transparent text-slate-500 hover:text-slate-700 hover:border-accent-300 dark:text-accent-400 dark:hover:text-accent-200 dark:hover:border-accent-500': activeTab !== 'full'
                 }"
                 class="py-3 px-4 text-center font-medium border-b-2 -mb-px transition-colors duration-150 ease-in-out focus:outline-none">
             Full Look
@@ -27,14 +27,14 @@
                 @click="activeTab = 'zen'"
                 :class="{
                     'border-accent-500 text-accent-600 dark:text-accent-400': activeTab === 'zen',
-                    'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:border-slate-500': activeTab !== 'zen'
+                    'border-transparent text-slate-500 hover:text-slate-700 hover:border-accent-300 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:border-accent-500': activeTab !== 'zen'
                 }"
                 class="py-3 px-4 text-center font-medium border-b-2 -mb-px transition-colors duration-150 ease-in-out focus:outline-none">
             Zen Mode
         </button>
     </div>
 
-    <div class="mb-6 text-right"> 
+    <div class="mb-6 text-right text-accent-900 dark:text-accent-50"> 
         <button @click="showOptions = !showOptions" type="button"
                 class="p-1 text-accent-900 dark:text-accent-50 hover:text-accent-700 dark:hover:text-accent-200 rounded-full focus:outline-none">
              <span class="sr-only">Toggle View Options</span>
@@ -62,7 +62,7 @@
                          <input type="hidden" name="recipe_id" value="{{ .Recipe.ID }}">
                          <label for="servings-options-{{ .Recipe.ID }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Servings:</label>
                          <div class="flex items-center">
-                             <input type="number" id="servings-options-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required class="w-16 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-700 text-sm">
+                             <input type="number" id="servings-options-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required class="w-16 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-accent-700 text-sm">
                              <button type="submit" class="px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">Update</button>
                          </div>
                      </form>
@@ -107,14 +107,14 @@
     <!-- 1. Banner & Description (Collapsible) -->
     <div x-show="activeTab === 'full'">
     <div class="recipe-summary-section"> {{/* Starts open */}}
-        <h1  class="font-serif text-3xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
+        <h1  class="font-serif text-3xl font-bold cursor-pointer mb-4 text-accent-900 dark:text-accent-100">
             {{ .Recipe.Title }} {{/* Title acts as the summary */}}
         </h1>
         <div  class="recipe-banner mb-5 text-center">
             {{ if .Recipe.ImagePath }}
                 <img src="/static/{{ .Recipe.ImagePath }}" alt="{{ .Recipe.Title }}" class="max-w-full h-auto max-h-[300px] rounded-md inline-block">
             {{ else }}
-                 <div class="recipe-banner-placeholder h-[200px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 italic rounded-md">[ No Recipe Image Available ]</div>
+                 <div class="recipe-banner-placeholder h-[200px] bg-accent-100 dark:bg-accent-800 flex items-center justify-center text-slate-500 dark:text-slate-400 italic rounded-md">[ No Recipe Image Available ]</div>
             {{ end }}
         </div>
         <p class="recipe-description mt-3 font-sans leading-relaxed">
@@ -128,7 +128,7 @@
     <div style="margin-bottom: 10px;">
         <!-- 3. Ingredients (Collapsible) -->
         <div class="recipe-ingredients-section"> {{/* Starts open */}}
-             <h1 class="font-serif text-xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
+             <h1 class="font-serif text-xl font-bold cursor-pointer mb-4 text-accent-900 dark:text-accent-100">
                 Ingredients
             </h1>
             <div  class="mb-3">
@@ -144,7 +144,7 @@
 
         <!-- 4. Method (Collapsible) -->
         <div class="recipe-method-section" open> {{/* Starts open */}}
-            <h1 class="font-serif text-xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
+            <h1 class="font-serif text-xl font-bold cursor-pointer mb-4 text-accent-900 dark:text-accent-100">
                 Method
             </h1>
                 <div id="method-steps-display ">
@@ -176,78 +176,125 @@
 
     <!-- 5. Notes (Collapsible) -->
     <div class="recipe-notes-section">
-        <h1 class="font-serif text-xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
+        <h1 class="font-serif text-xl font-bold cursor-pointer mb-4 text-accent-900 dark:text-accent-100">
             Notes
         </h1>
         <p>{{ .Recipe.Notes }}</p>
     </div>
     </div>
 
-    <div x-show="activeTab === 'zen'">
-        <div class="flex justify-between items-center mb-4 p-2 border-b border-slate-200 dark:border-slate-700">
+        <div x-show="activeTab === 'zen'">
+
+        {{ $steps := .Recipe.RecipeSteps }}
+        {{ $totalSteps := len $steps }}
+
+            {{ if $steps }}
+            <div class="flex justify-between items-stretch mb-4 p-2 border-b border-slate-200 dark:border-slate-700 min-h-[4rem]">
                 <button type="button" @click="zenModeIndex--"
                         :disabled="zenModeIndex === 0"
-                        class="px-3 py-1 rounded text-sm disabled:opacity-50 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 disabled:dark:bg-slate-800">
-                    &larr; Previous
+                        class="px-3 py-1 rounded text-sm disabled:opacity-50 bg-accent-200 hover:bg-accent-300 dark:bg-accent-700 dark:hover:bg-accent-600 disabled:dark:bg-accent-800 flex flex-col justify-center items-start text-left w-1/4">
+                    <span>&larr; Previous</span>
+                            {{ range $index, $step := $steps }}
+                    <span x-show="zenModeIndex === {{ add $index 1 }}" class="text-xs italic mt-1 text-slate-600 dark:text-slate-400">
+                            {{ truncate $step.Title 20 }}
+                    </span>
+                    {{ end }}
                 </button>
 
-                <span class="text-sm font-medium text-slate-600 dark:text-slate-400">
-                     <span x-show="zenModeIndex === 0">Description</span>
-                     <span x-show="zenModeIndex === 1">Ingredients</span>
-                     <span x-show="zenModeIndex === 2">Method</span>
-                     <span x-show="zenModeIndex === 3">Notes</span>
+                <span class="text-sm font-medium text-slate-600 dark:text-slate-400 text-center px-2">
+                     
+                     Step <span x-text="zenModeIndex + 1"></span> of {{ len .Recipe.RecipeSteps }}
+                     {{ range $index, $step := .Recipe.RecipeSteps }}
+                        <p x-show="zenModeIndex === {{ $index }}" class="font-serif text-2xl font-bold mb-1 text-accent-900 dark:text-accent-100">{{ $step.Title }}</p>
+                     {{ end }}
                 </span>
 
                 <button type="button" @click="zenModeIndex++"
-                        :disabled="zenModeIndex >= zenModeTotalSteps - 1"
-                        class="px-3 py-1 rounded text-sm disabled:opacity-50 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 disabled:dark:bg-slate-800">
-                    Next &rarr;
+                        :disabled="zenModeIndex >= {{ len .Recipe.RecipeSteps }} - 1"
+                        class="px-3 py-1 rounded text-sm disabled:opacity-50 bg-accent-200 hover:bg-accent-300 dark:bg-accent-700 dark:hover:bg-accent-600 disabled:dark:bg-accent-800 flex flex-col justify-center items-end text-right w-1/4">
+                <span>Next &rarr;</span>
+                     {{ range $index, $step := $steps }}
+                         {{ if gt $index 0 }} 
+                             <span x-show="zenModeIndex === {{ add $index -1 }}" class="text-xs italic mt-1 text-slate-600 dark:text-slate-400">
+                                 {{ truncate $step.Title 20 }}
+                             </span>
+                         {{ end }}
+                     {{ end }}
                 </button>
             </div>
-    </div>
-    <div class="zen-content p-1"> 
+            {{ else }}
+                
+                 <p class="text-center italic text-slate-500 my-4">This recipe has no defined steps.</p>
+            {{ end }}
 
-                <div x-show="zenModeIndex === 0">
-                    <h1 class="font-serif text-3xl font-bold mb-4 text-slate-900 dark:text-slate-100">{{ .Recipe.Title }}</h1>
-                    <div class="recipe-banner mb-5 text-center">
-                        {{ if .Recipe.ImagePath }}
-                            <img src="/static/{{ .Recipe.ImagePath }}" alt="{{ .Recipe.Title }}" class="max-w-full h-auto max-h-[300px] rounded-md inline-block">
-                        {{ else }}
-                             <div class="recipe-banner-placeholder h-[200px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 italic rounded-md">[ No Recipe Image Available ]</div>
+
+            
+            <div class="zen-step-content">
+                {{ range $index, $step := .Recipe.RecipeSteps }}
+                    
+                    <div x-show="zenModeIndex === {{ $index }}" class="p-1"> 
+
+                        
+                        {{ if $step.Description }}
+                            <p class="text-sm italic text-slate-600 dark:text-slate-400 mb-4">{{ $step.Description }}</p>
                         {{ end }}
-                    </div>
-                    <p class="recipe-description mt-3 font-sans leading-relaxed">
-                        <em>{{ .Recipe.Description }}</em>
-                    </p>
-                </div>
 
-                <div x-show="zenModeIndex === 1">
-                    <h2 class="font-serif text-xl font-bold mb-2 text-slate-900 dark:text-slate-100">Ingredients</h2>
-                    <button @click="showOptionals = !showOptionals" type="button" class="mb-3 px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">
-                        <span x-show="!showOptionals">Show Opt</span><span x-show="showOptionals">Hide Opt</span>
-                    </button>
-                    <div id="ingredients-list-container-zen"> 
-                         <p class="italic text-slate-500">(Zen Ingredients List Structure Goes Here)</p> 
-                    </div>
-                </div>
+                        
+                        <div class="flex flex-col md:flex-row gap-4 md:gap-6 lg:gap-8">
 
-                <div x-show="zenModeIndex === 2">
-                     <h2 class="font-serif text-xl font-bold mb-2 text-slate-900 dark:text-slate-100">Method</h2>
-                     <button @click="showMethods = !showMethods" type="button" class="mb-3 px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">
-                        <span x-show="!showMethods">Show Titles</span><span x-show="showMethods">Hide Titles</span>
-                     </button>
-                      <div id="method-steps-display-zen"> 
-                         <p class="italic text-slate-500">(Zen Method List Structure Goes Here)</p> 
-                      </div>
-                </div>
+                            
+                            {{ if $step.Ingredients }}
+                            <div class="md:w-2/5 lg:w-1/3 border border-slate-200 dark:border-slate-700 rounded-md p-3">
+                                <h3 class="text-lg font-semibold mb-2 text-slate-700 dark:text-slate-300">Ingredients</h3>
+                                <ul class="list-disc pl-5 text-sm space-y-1">
+                                    {{ range $step.Ingredients }}
+                                        {{ if not .IsOptional }}
+                                            <li class="font-sans leading-relaxed">{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }}{{ if .Purpose }} <span class="text-xs italic text-slate-500">- {{ .Purpose }}</span>{{ end }}</li>
+                                        {{ else }}
+                                            <template x-if="showOptionals">
+                                                 <li class="italic text-slate-500 dark:text-slate-400">{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }} (optional){{ if .Purpose }} <span class="text-xs italic">- {{ .Purpose }}</span>{{ end }}</li>
+                                            </template>
+                                        {{ end }}
+                                    {{ end }}
+                                </ul>
+                            </div>
+                            {{ else }}
+                                
+                                <div class="md:w-2/5 lg:w-1/3 p-3 italic text-sm text-slate-400">(No ingredients specific to this step)</div>
+                            {{ end }}
 
-                <div x-show="zenModeIndex === 3">
-                     <h2 class="font-serif text-xl font-bold mb-2 text-slate-900 dark:text-slate-100">Notes</h2>
-                     <p>{{ .Recipe.Notes }}</p>
-                </div>
+                            
+                             {{ if $step.MethodSteps }}
+                            <div class="flex-1 border border-slate-200 dark:border-slate-700 rounded-md p-3">
+                                 <h3 class="text-lg font-semibold mb-2 text-slate-700 dark:text-slate-300">Method</h3>
+                                 <ol class="list-decimal pl-5 space-y-2">
+                                     {{ range $step.MethodSteps }}
+                                         <li class="font-sans leading-relaxed">{{ .Instruction }}</li>
+                                     {{ else }}
+                                         <li class="list-none italic text-sm text-slate-500">No instructions for this stage.</li>
+                                     {{ end }}
+                                 </ol>
+                            </div>
+                             {{ else }}
+                                
+                                <div class="flex-1 p-3 italic text-sm text-slate-400">(No method instructions specific to this step)</div>
+                             {{ end }}
 
+                        </div> 
+
+                         
+                         {{ if $step.Notes }}
+                            <div class="mt-4 pt-3 border-t border-accent-200 dark:border-accent-700">
+                                 <h4 class="text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400 uppercase tracking-wider">Notes for this step</h4>
+                                 <p class="text-sm">{{ $step.Notes }}</p>
+                            </div>
+                         {{ end }}
+
+                    </div> 
+                {{ end }} 
             </div> 
 
+        </div> 
 
 
 </article>
