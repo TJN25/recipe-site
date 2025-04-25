@@ -33,6 +33,33 @@
         </button>
     </div>
 
+        <div x-show="showOptions"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 -translate-y-2"
+         @click.outside="showOptions = false" 
+         class="mb-4 p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-sm">
+                <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-400 uppercase mb-3 tracking-wider">View Options</h3>
+
+        <div class="space-y-3">
+            <p class="text-sm italic text-slate-500">(Options like Servings, Filters, etc. will go here)</p>
+             <!-- Example: Servings Form -->
+             <div>
+                 <form method="post" hx-post="/update-servings" hx-target="#ingredients-list-container" hx-swap="outerHTML">
+                     <input type="hidden" name="recipe_id" value="{{ .Recipe.ID }}">
+                     <label for="servings-options-{{ .Recipe.ID }}" class="block text-sm font-medium mb-1">Servings:</label>
+                     <div class="flex items-center">
+                         <input type="number" id="servings-options-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required class="w-16 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-700 text-sm">
+                         <button type="submit" class="px-3 py-1 bg-accent-500 hover:bg-accent-600 text-white rounded text-sm font-sans">Update</button>
+                     </div>
+                 </form>
+             </div>
+        </div>
+    </div>
+
     <!-- 1. Banner & Description (Collapsible) -->
     <div class="recipe-summary-section" open> {{/* Starts open */}}
         <h1  class="font-serif text-3xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
