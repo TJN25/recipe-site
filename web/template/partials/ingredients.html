@@ -5,8 +5,7 @@
 
         <div class="mb-3 pl-7 pr-6 rounded-2xl transition-colors duration-150 ease-in-out"
                  :class="{ 'bg-accent-50 dark:bg-accent-700': hoveredStepId == {{ .ID }} }"
-                  @mouseenter="hoveredStepId = {{ .ID }}"
-                  @mouseleave="hoveredStepId = null">
+                @click="hoveredStepId = (hoveredStepId == {{ .ID }}) ? null : {{ .ID }}">
         <template x-if="showMethods">
             <h3 class="font-serif text-lg font-semibold mt-3 mb-1 text-slate-800 dark:text-slate-200">{{ .Title }}</h3>
         </template>
