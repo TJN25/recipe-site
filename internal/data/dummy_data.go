@@ -5,122 +5,122 @@ import (
 )
 
 var DummyFoodItems = []model.FoodItem{
-	{ID: 10, Name: "Macaroni Pasta", BaseUnit: "g", PricePerBaseUnit: 0.005},
-	{ID: 11, Name: "Everyday Cheese", BaseUnit: "g", PricePerBaseUnit: 0.02},
-	{ID: 12, Name: "Cheddar Cheese", BaseUnit: "g", PricePerBaseUnit: 0.025},
-	{ID: 13, Name: "Butter", BaseUnit: "g", PricePerBaseUnit: 0.01},
-	{ID: 14, Name: "All‑Purpose Flour", BaseUnit: "g", PricePerBaseUnit: 0.002}, // Price per gram might be better base
-	{ID: 15, Name: "Full Fat Milk", BaseUnit: "ml", PricePerBaseUnit: 0.002},
-	{ID: 16, Name: "Salt", BaseUnit: "g", PricePerBaseUnit: 0.001},
-	{ID: 17, Name: "Mustard Powder", BaseUnit: "g", PricePerBaseUnit: 0.05},
-	{ID: 18, Name: "Smoked Paprika", BaseUnit: "g", PricePerBaseUnit: 0.06},
-	{ID: 19, Name: "Chipotle Powder", BaseUnit: "g", PricePerBaseUnit: 0.08},
-	{ID: 20, Name: "Mexican Chicken", BaseUnit: "g", PricePerBaseUnit: 0.015}, // Assume pre-cooked/shredded
+	{ID: 10, Name: "Macaroni Pasta", CanonicalUnit: "g", PricePerCanonicalUnit: 0.005},
+	{ID: 11, Name: "Everyday Cheese", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},
+	{ID: 12, Name: "Cheddar Cheese", CanonicalUnit: "g", PricePerCanonicalUnit: 0.025},
+	{ID: 13, Name: "Butter", CanonicalUnit: "g", PricePerCanonicalUnit: 0.01},
+	{ID: 14, Name: "All‑Purpose Flour", CanonicalUnit: "g", PricePerCanonicalUnit: 0.002}, // Price per gram might be better base
+	{ID: 15, Name: "Full Fat Milk", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.002},
+	{ID: 16, Name: "Salt", CanonicalUnit: "g", PricePerCanonicalUnit: 0.001},
+	{ID: 17, Name: "Mustard Powder", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},
+	{ID: 18, Name: "Smoked Paprika", CanonicalUnit: "g", PricePerCanonicalUnit: 0.06},
+	{ID: 19, Name: "Chipotle Powder", CanonicalUnit: "g", PricePerCanonicalUnit: 0.08},
+	{ID: 20, Name: "Mexican Chicken", CanonicalUnit: "g", PricePerCanonicalUnit: 0.015}, // Assume pre-cooked/shredded
 
 	// --- New Items from Recipes ---
-	{ID: 21, Name: "Bread Flour", BaseUnit: "g", PricePerBaseUnit: 0.003},
-	{ID: 22, Name: "Active Dry Yeast", BaseUnit: "g", PricePerBaseUnit: 0.04},
-	{ID: 23, Name: "Raw Sugar", BaseUnit: "g", PricePerBaseUnit: 0.002},
-	{ID: 24, Name: "Olive Oil", BaseUnit: "ml", PricePerBaseUnit: 0.02},
-	{ID: 25, Name: "Water", BaseUnit: "ml", PricePerBaseUnit: 0.0001},
-	{ID: 26, Name: "Chicken Thighs", BaseUnit: "g", PricePerBaseUnit: 0.012}, // Boneless, skinless
-	{ID: 27, Name: "Greek Yogurt", BaseUnit: "g", PricePerBaseUnit: 0.02},
-	{ID: 28, Name: "Heavy Cream", BaseUnit: "ml", PricePerBaseUnit: 0.03},
-	{ID: 29, Name: "Onion", BaseUnit: "g", PricePerBaseUnit: 0.002},  // Assumed brown/yellow onion
-	{ID: 30, Name: "Ginger", BaseUnit: "g", PricePerBaseUnit: 0.02},  // Fresh ginger root
-	{ID: 31, Name: "Garlic", BaseUnit: "g", PricePerBaseUnit: 0.03},  // Fresh garlic cloves/minced
-	{ID: 32, Name: "Cashews", BaseUnit: "g", PricePerBaseUnit: 0.05}, // Raw, unsalted
-	{ID: 33, Name: "Canned Tomatoes", BaseUnit: "g", PricePerBaseUnit: 0.004},
-	{ID: 34, Name: "Canola Oil", BaseUnit: "ml", PricePerBaseUnit: 0.01},
-	{ID: 35, Name: "Baking Soda", BaseUnit: "g", PricePerBaseUnit: 0.01},
-	{ID: 36, Name: "Fenugreek Leaves", BaseUnit: "g", PricePerBaseUnit: 0.08}, // Kasoori Methi, dried
-	{ID: 37, Name: "Garam Masala", BaseUnit: "g", PricePerBaseUnit: 0.06},     // Spice blend
-	{ID: 38, Name: "Dried Chili", BaseUnit: "unit", PricePerBaseUnit: 0.15},   // Generic whole dried chili
-	{ID: 39, Name: "Black Cardamom Pod", BaseUnit: "unit", PricePerBaseUnit: 0.10},
-	{ID: 40, Name: "Clove", BaseUnit: "unit", PricePerBaseUnit: 0.05},             // Whole clove
-	{ID: 41, Name: "Basmati Rice", BaseUnit: "g", PricePerBaseUnit: 0.005},        // Dry weight
-	{ID: 42, Name: "White Pepper", BaseUnit: "g", PricePerBaseUnit: 0.04},         // Ground
-	{ID: 43, Name: "Spicy Burrito Sauce", BaseUnit: "ml", PricePerBaseUnit: 0.03}, // Derived item (potentially homemade)
-	{ID: 44, Name: "Corn Kernels", BaseUnit: "g", PricePerBaseUnit: 0.006},        // Frozen or Canned
-	{ID: 45, Name: "Lime Juice", BaseUnit: "ml", PricePerBaseUnit: 0.03},          // Fresh or bottled
-	{ID: 46, Name: "Cilantro", BaseUnit: "g", PricePerBaseUnit: 0.05},             // Fresh coriander
-	{ID: 47, Name: "Baguette", BaseUnit: "unit", PricePerBaseUnit: 1.50},
-	{ID: 48, Name: "Duck Breast", BaseUnit: "g", PricePerBaseUnit: 0.03},
-	{ID: 49, Name: "Daikon Radish", BaseUnit: "g", PricePerBaseUnit: 0.008},
-	{ID: 50, Name: "Carrot", BaseUnit: "g", PricePerBaseUnit: 0.003},
-	{ID: 51, Name: "Cucumber", BaseUnit: "g", PricePerBaseUnit: 0.005},
-	{ID: 52, Name: "Bird Eye Chilies", BaseUnit: "unit", PricePerBaseUnit: 0.20}, // Fresh
-	{ID: 53, Name: "Spring Onion", BaseUnit: "g", PricePerBaseUnit: 0.04},        // Scallion
-	{ID: 54, Name: "Mayonnaise", BaseUnit: "g", PricePerBaseUnit: 0.015},
-	{ID: 55, Name: "Soy Sauce", BaseUnit: "ml", PricePerBaseUnit: 0.01},
-	{ID: 56, Name: "Tabasco", BaseUnit: "ml", PricePerBaseUnit: 0.08},
-	{ID: 57, Name: "Honey", BaseUnit: "g", PricePerBaseUnit: 0.02},
-	{ID: 58, Name: "White Vinegar", BaseUnit: "ml", PricePerBaseUnit: 0.002}, // Distilled white vinegar
-	{ID: 59, Name: "Agria Potato", BaseUnit: "g", PricePerBaseUnit: 0.004},
-	{ID: 60, Name: "Avocado Oil", BaseUnit: "ml", PricePerBaseUnit: 0.03},
-	{ID: 61, Name: "Garlic Powder", BaseUnit: "g", PricePerBaseUnit: 0.04},
-	{ID: 62, Name: "Black Pepper", BaseUnit: "g", PricePerBaseUnit: 0.04},       // Ground
-	{ID: 63, Name: "Mixed Herbs", BaseUnit: "g", PricePerBaseUnit: 0.05},        // Dried blend (e.g., Italian seasoning)
-	{ID: 64, Name: "Cayenne Pepper", BaseUnit: "g", PricePerBaseUnit: 0.05},     // Ground
-	{ID: 65, Name: "Parmesan Cheese", BaseUnit: "g", PricePerBaseUnit: 0.04},    // Parmigiano Reggiano or Grana Padano
-	{ID: 66, Name: "Flour Tortilla", BaseUnit: "unit", PricePerBaseUnit: 0.50},  // Large size
-	{ID: 67, Name: "Lettuce", BaseUnit: "g", PricePerBaseUnit: 0.01},            // Generic (e.g., Iceberg, Romaine)
-	{ID: 68, Name: "Pickled Red Onions", BaseUnit: "g", PricePerBaseUnit: 0.02}, // Derived item (Recipe ID 3)
-	{ID: 69, Name: "Tomato", BaseUnit: "g", PricePerBaseUnit: 0.006},            // Fresh whole tomato
-	{ID: 70, Name: "Black Beans", BaseUnit: "g", PricePerBaseUnit: 0.005},       // Canned/Cooked, drained weight
-	{ID: 71, Name: "Avocado", BaseUnit: "unit", PricePerBaseUnit: 2.00},
-	{ID: 72, Name: "Sour Cream", BaseUnit: "g", PricePerBaseUnit: 0.015},
-	{ID: 73, Name: "Pickled Jalapeños", BaseUnit: "g", PricePerBaseUnit: 0.03},
-	{ID: 74, Name: "Egg", BaseUnit: "unit", PricePerBaseUnit: 0.50},       // Large egg
-	{ID: 75, Name: "Trim Milk", BaseUnit: "ml", PricePerBaseUnit: 0.0018}, // Low-fat milk
-	{ID: 76, Name: "Fettuccine", BaseUnit: "g", PricePerBaseUnit: 0.006},  // Assumed dry pasta
-	{ID: 77, Name: "Mushrooms", BaseUnit: "g", PricePerBaseUnit: 0.015},   // Generic fresh mushrooms (e.g., button, cremini)
-	{ID: 78, Name: "Celery", BaseUnit: "g", PricePerBaseUnit: 0.004},
-	{ID: 79, Name: "White Wine", BaseUnit: "ml", PricePerBaseUnit: 0.015},    // Dry white wine for cooking
-	{ID: 80, Name: "Chicken Stock", BaseUnit: "ml", PricePerBaseUnit: 0.003}, // Liquid stock/broth
-	{ID: 81, Name: "Spinach", BaseUnit: "g", PricePerBaseUnit: 0.02},         // Fresh spinach leaves
-	{ID: 82, Name: "Cherry Tomato", BaseUnit: "g", PricePerBaseUnit: 0.01},
-	{ID: 83, Name: "Chives", BaseUnit: "g", PricePerBaseUnit: 0.06}, // Fresh
-	{ID: 84, Name: "Feta Cheese", BaseUnit: "g", PricePerBaseUnit: 0.03},
-	{ID: 85, Name: "Lemon Juice", BaseUnit: "ml", PricePerBaseUnit: 0.03}, // Fresh or bottled
-	{ID: 86, Name: "Brown Sugar", BaseUnit: "g", PricePerBaseUnit: 0.003}, // Light or dark
-	{ID: 87, Name: "Chicken Stock Cube", BaseUnit: "unit", PricePerBaseUnit: 0.20},
-	{ID: 88, Name: "Red Taco Sauce", BaseUnit: "ml", PricePerBaseUnit: 0.025}, // Derived item (Recipe ID TBD)
-	{ID: 89, Name: "Worcestershire Sauce", BaseUnit: "ml", PricePerBaseUnit: 0.02},
-	{ID: 90, Name: "Egg Noodles", BaseUnit: "g", PricePerBaseUnit: 0.007},         // Assumed dry
-	{ID: 91, Name: "Fresh Hot Chilies", BaseUnit: "unit", PricePerBaseUnit: 0.30}, // Generic fresh hot chili (e.g., jalapeño, serrano)
-	{ID: 92, Name: "Canned Peach Halves", BaseUnit: "g", PricePerBaseUnit: 0.008}, // Drained weight, in syrup or juice
-	{ID: 93, Name: "Cardamom", BaseUnit: "g", PricePerBaseUnit: 0.12},             // Ground green cardamom
-	{ID: 94, Name: "Cabbage", BaseUnit: "g", PricePerBaseUnit: 0.003},             // Green or white cabbage
-	{ID: 95, Name: "Buttermilk", BaseUnit: "ml", PricePerBaseUnit: 0.005},
-	{ID: 96, Name: "Granulated Sugar", BaseUnit: "g", PricePerBaseUnit: 0.002}, // White sugar
-	{ID: 97, Name: "Smooth Peanut Butter", BaseUnit: "g", PricePerBaseUnit: 0.01},
-	{ID: 98, Name: "Chilli Powder", BaseUnit: "g", PricePerBaseUnit: 0.06},       // Generic chili powder blend
-	{ID: 99, Name: "Kashmiri Chilies", BaseUnit: "unit", PricePerBaseUnit: 0.40}, // Dried whole, mild heat, good color
-	{ID: 100, Name: "Chipotle Pepper", BaseUnit: "unit", PricePerBaseUnit: 0.50}, // Dried whole smoked jalapeño
-	{ID: 101, Name: "Chorizo Sausage", BaseUnit: "g", PricePerBaseUnit: 0.02},    // Assumed fresh Mexican chorizo
-	{ID: 102, Name: "Brioche Buns", BaseUnit: "unit", PricePerBaseUnit: 1.00},
-	{ID: 103, Name: "Smoky Salsa Verde", BaseUnit: "ml", PricePerBaseUnit: 0.03}, // Derived item (potentially homemade)
-	{ID: 104, Name: "Canned Diced Tomatoes", BaseUnit: "g", PricePerBaseUnit: 0.004},
-	{ID: 105, Name: "Tomato Paste", BaseUnit: "g", PricePerBaseUnit: 0.01},
-	{ID: 106, Name: "Dried Oregano", BaseUnit: "g", PricePerBaseUnit: 0.04},
-	{ID: 107, Name: "Red Pepper Flakes", BaseUnit: "g", PricePerBaseUnit: 0.05},  // Crushed red pepper
-	{ID: 108, Name: "Chipotles in Adobo", BaseUnit: "g", PricePerBaseUnit: 0.07}, // Whole chipotles packed in adobo sauce
-	{ID: 109, Name: "Cumin", BaseUnit: "g", PricePerBaseUnit: 0.05},              // Ground
-	{ID: 110, Name: "Apple Cider Vinegar", BaseUnit: "ml", PricePerBaseUnit: 0.003},
-	{ID: 111, Name: "Milk Powder", BaseUnit: "g", PricePerBaseUnit: 0.015}, // Non-fat dry milk powder
-	{ID: 112, Name: "Diastatic Malt Powder", BaseUnit: "g", PricePerBaseUnit: 0.05},
-	{ID: 113, Name: "Generic Rice", BaseUnit: "g", PricePerBaseUnit: 0.003},             // Medium or long grain white rice, dry
-	{ID: 114, Name: "Quick Pizza Sauce", BaseUnit: "ml", PricePerBaseUnit: 0.02},        // Derived item (Recipe ID 4)
-	{ID: 115, Name: "Ginger-Peach Fire Sauce", BaseUnit: "ml", PricePerBaseUnit: 0.035}, // Derived item (Recipe ID TBD)
-	{ID: 116, Name: "Sesame Oil", BaseUnit: "ml", PricePerBaseUnit: 0.05},
-	{ID: 117, Name: "Sichuan Pepper", BaseUnit: "g", PricePerBaseUnit: 0.15}, // Ground
-	{ID: 118, Name: "Allspice", BaseUnit: "g", PricePerBaseUnit: 0.07},       // Ground
-	{ID: 119, Name: "Cornflour", BaseUnit: "g", PricePerBaseUnit: 0.005},     // Cornstarch
-	{ID: 120, Name: "Kewpie Mayo", BaseUnit: "g", PricePerBaseUnit: 0.025},
-	{ID: 121, Name: "Sriracha Sauce", BaseUnit: "ml", PricePerBaseUnit: 0.03},
-	{ID: 122, Name: "Bao Buns", BaseUnit: "unit", PricePerBaseUnit: 0.80}, // Steamed buns
-	{ID: 123, Name: "Roasted Peanuts", BaseUnit: "g", PricePerBaseUnit: 0.02},
+	{ID: 21, Name: "Bread Flour", CanonicalUnit: "g", PricePerCanonicalUnit: 0.003},
+	{ID: 22, Name: "Active Dry Yeast", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},
+	{ID: 23, Name: "Raw Sugar", CanonicalUnit: "g", PricePerCanonicalUnit: 0.002},
+	{ID: 24, Name: "Olive Oil", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.02},
+	{ID: 25, Name: "Water", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.0001},
+	{ID: 26, Name: "Chicken Thighs", CanonicalUnit: "g", PricePerCanonicalUnit: 0.012}, // Boneless, skinless
+	{ID: 27, Name: "Greek Yogurt", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},
+	{ID: 28, Name: "Heavy Cream", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03},
+	{ID: 29, Name: "Onion", CanonicalUnit: "g", PricePerCanonicalUnit: 0.002},  // Assumed brown/yellow onion
+	{ID: 30, Name: "Ginger", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},  // Fresh ginger root
+	{ID: 31, Name: "Garlic", CanonicalUnit: "g", PricePerCanonicalUnit: 0.03},  // Fresh garlic cloves/minced
+	{ID: 32, Name: "Cashews", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05}, // Raw, unsalted
+	{ID: 33, Name: "Canned Tomatoes", CanonicalUnit: "g", PricePerCanonicalUnit: 0.004},
+	{ID: 34, Name: "Canola Oil", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.01},
+	{ID: 35, Name: "Baking Soda", CanonicalUnit: "g", PricePerCanonicalUnit: 0.01},
+	{ID: 36, Name: "Fenugreek Leaves", CanonicalUnit: "g", PricePerCanonicalUnit: 0.08}, // Kasoori Methi, dried
+	{ID: 37, Name: "Garam Masala", CanonicalUnit: "g", PricePerCanonicalUnit: 0.06},     // Spice blend
+	{ID: 38, Name: "Dried Chili", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.15},   // Generic whole dried chili
+	{ID: 39, Name: "Black Cardamom Pod", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.10},
+	{ID: 40, Name: "Clove", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.05},             // Whole clove
+	{ID: 41, Name: "Basmati Rice", CanonicalUnit: "g", PricePerCanonicalUnit: 0.005},        // Dry weight
+	{ID: 42, Name: "White Pepper", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},         // Ground
+	{ID: 43, Name: "Spicy Burrito Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03}, // Derived item (potentially homemade)
+	{ID: 44, Name: "Corn Kernels", CanonicalUnit: "g", PricePerCanonicalUnit: 0.006},        // Frozen or Canned
+	{ID: 45, Name: "Lime Juice", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03},          // Fresh or bottled
+	{ID: 46, Name: "Cilantro", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},             // Fresh coriander
+	{ID: 47, Name: "Baguette", CanonicalUnit: "unit", PricePerCanonicalUnit: 1.50},
+	{ID: 48, Name: "Duck Breast", CanonicalUnit: "g", PricePerCanonicalUnit: 0.03},
+	{ID: 49, Name: "Daikon Radish", CanonicalUnit: "g", PricePerCanonicalUnit: 0.008},
+	{ID: 50, Name: "Carrot", CanonicalUnit: "g", PricePerCanonicalUnit: 0.003},
+	{ID: 51, Name: "Cucumber", CanonicalUnit: "g", PricePerCanonicalUnit: 0.005},
+	{ID: 52, Name: "Bird Eye Chilies", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.20}, // Fresh
+	{ID: 53, Name: "Spring Onion", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},        // Scallion
+	{ID: 54, Name: "Mayonnaise", CanonicalUnit: "g", PricePerCanonicalUnit: 0.015},
+	{ID: 55, Name: "Soy Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.01},
+	{ID: 56, Name: "Tabasco", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.08},
+	{ID: 57, Name: "Honey", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},
+	{ID: 58, Name: "White Vinegar", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.002}, // Distilled white vinegar
+	{ID: 59, Name: "Agria Potato", CanonicalUnit: "g", PricePerCanonicalUnit: 0.004},
+	{ID: 60, Name: "Avocado Oil", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03},
+	{ID: 61, Name: "Garlic Powder", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},
+	{ID: 62, Name: "Black Pepper", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},       // Ground
+	{ID: 63, Name: "Mixed Herbs", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},        // Dried blend (e.g., Italian seasoning)
+	{ID: 64, Name: "Cayenne Pepper", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},     // Ground
+	{ID: 65, Name: "Parmesan Cheese", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},    // Parmigiano Reggiano or Grana Padano
+	{ID: 66, Name: "Flour Tortilla", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.50},  // Large size
+	{ID: 67, Name: "Lettuce", CanonicalUnit: "g", PricePerCanonicalUnit: 0.01},            // Generic (e.g., Iceberg, Romaine)
+	{ID: 68, Name: "Pickled Red Onions", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02}, // Derived item (Recipe ID 3)
+	{ID: 69, Name: "Tomato", CanonicalUnit: "g", PricePerCanonicalUnit: 0.006},            // Fresh whole tomato
+	{ID: 70, Name: "Black Beans", CanonicalUnit: "g", PricePerCanonicalUnit: 0.005},       // Canned/Cooked, drained weight
+	{ID: 71, Name: "Avocado", CanonicalUnit: "unit", PricePerCanonicalUnit: 2.00},
+	{ID: 72, Name: "Sour Cream", CanonicalUnit: "g", PricePerCanonicalUnit: 0.015},
+	{ID: 73, Name: "Pickled Jalapeños", CanonicalUnit: "g", PricePerCanonicalUnit: 0.03},
+	{ID: 74, Name: "Egg", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.50},       // Large egg
+	{ID: 75, Name: "Trim Milk", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.0018}, // Low-fat milk
+	{ID: 76, Name: "Fettuccine", CanonicalUnit: "g", PricePerCanonicalUnit: 0.006},  // Assumed dry pasta
+	{ID: 77, Name: "Mushrooms", CanonicalUnit: "g", PricePerCanonicalUnit: 0.015},   // Generic fresh mushrooms (e.g., button, cremini)
+	{ID: 78, Name: "Celery", CanonicalUnit: "g", PricePerCanonicalUnit: 0.004},
+	{ID: 79, Name: "White Wine", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.015},    // Dry white wine for cooking
+	{ID: 80, Name: "Chicken Stock", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.003}, // Liquid stock/broth
+	{ID: 81, Name: "Spinach", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},         // Fresh spinach leaves
+	{ID: 82, Name: "Cherry Tomato", CanonicalUnit: "g", PricePerCanonicalUnit: 0.01},
+	{ID: 83, Name: "Chives", CanonicalUnit: "g", PricePerCanonicalUnit: 0.06}, // Fresh
+	{ID: 84, Name: "Feta Cheese", CanonicalUnit: "g", PricePerCanonicalUnit: 0.03},
+	{ID: 85, Name: "Lemon Juice", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03}, // Fresh or bottled
+	{ID: 86, Name: "Brown Sugar", CanonicalUnit: "g", PricePerCanonicalUnit: 0.003}, // Light or dark
+	{ID: 87, Name: "Chicken Stock Cube", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.20},
+	{ID: 88, Name: "Red Taco Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.025}, // Derived item (Recipe ID TBD)
+	{ID: 89, Name: "Worcestershire Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.02},
+	{ID: 90, Name: "Egg Noodles", CanonicalUnit: "g", PricePerCanonicalUnit: 0.007},         // Assumed dry
+	{ID: 91, Name: "Fresh Hot Chilies", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.30}, // Generic fresh hot chili (e.g., jalapeño, serrano)
+	{ID: 92, Name: "Canned Peach Halves", CanonicalUnit: "g", PricePerCanonicalUnit: 0.008}, // Drained weight, in syrup or juice
+	{ID: 93, Name: "Cardamom", CanonicalUnit: "g", PricePerCanonicalUnit: 0.12},             // Ground green cardamom
+	{ID: 94, Name: "Cabbage", CanonicalUnit: "g", PricePerCanonicalUnit: 0.003},             // Green or white cabbage
+	{ID: 95, Name: "Buttermilk", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.005},
+	{ID: 96, Name: "Granulated Sugar", CanonicalUnit: "g", PricePerCanonicalUnit: 0.002}, // White sugar
+	{ID: 97, Name: "Smooth Peanut Butter", CanonicalUnit: "g", PricePerCanonicalUnit: 0.01},
+	{ID: 98, Name: "Chilli Powder", CanonicalUnit: "g", PricePerCanonicalUnit: 0.06},       // Generic chili powder blend
+	{ID: 99, Name: "Kashmiri Chilies", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.40}, // Dried whole, mild heat, good color
+	{ID: 100, Name: "Chipotle Pepper", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.50}, // Dried whole smoked jalapeño
+	{ID: 101, Name: "Chorizo Sausage", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},    // Assumed fresh Mexican chorizo
+	{ID: 102, Name: "Brioche Buns", CanonicalUnit: "unit", PricePerCanonicalUnit: 1.00},
+	{ID: 103, Name: "Smoky Salsa Verde", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03}, // Derived item (potentially homemade)
+	{ID: 104, Name: "Canned Diced Tomatoes", CanonicalUnit: "g", PricePerCanonicalUnit: 0.004},
+	{ID: 105, Name: "Tomato Paste", CanonicalUnit: "g", PricePerCanonicalUnit: 0.01},
+	{ID: 106, Name: "Dried Oregano", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},
+	{ID: 107, Name: "Red Pepper Flakes", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},  // Crushed red pepper
+	{ID: 108, Name: "Chipotles in Adobo", CanonicalUnit: "g", PricePerCanonicalUnit: 0.07}, // Whole chipotles packed in adobo sauce
+	{ID: 109, Name: "Cumin", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},              // Ground
+	{ID: 110, Name: "Apple Cider Vinegar", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.003},
+	{ID: 111, Name: "Milk Powder", CanonicalUnit: "g", PricePerCanonicalUnit: 0.015}, // Non-fat dry milk powder
+	{ID: 112, Name: "Diastatic Malt Powder", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},
+	{ID: 113, Name: "Generic Rice", CanonicalUnit: "g", PricePerCanonicalUnit: 0.003},             // Medium or long grain white rice, dry
+	{ID: 114, Name: "Quick Pizza Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.02},        // Derived item (Recipe ID 4)
+	{ID: 115, Name: "Ginger-Peach Fire Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.035}, // Derived item (Recipe ID TBD)
+	{ID: 116, Name: "Sesame Oil", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.05},
+	{ID: 117, Name: "Sichuan Pepper", CanonicalUnit: "g", PricePerCanonicalUnit: 0.15}, // Ground
+	{ID: 118, Name: "Allspice", CanonicalUnit: "g", PricePerCanonicalUnit: 0.07},       // Ground
+	{ID: 119, Name: "Cornflour", CanonicalUnit: "g", PricePerCanonicalUnit: 0.005},     // Cornstarch
+	{ID: 120, Name: "Kewpie Mayo", CanonicalUnit: "g", PricePerCanonicalUnit: 0.025},
+	{ID: 121, Name: "Sriracha Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03},
+	{ID: 122, Name: "Bao Buns", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.80}, // Steamed buns
+	{ID: 123, Name: "Roasted Peanuts", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},
 
 	// ... add food items for Bao Buns etc ...
 }

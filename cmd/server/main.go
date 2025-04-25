@@ -247,6 +247,7 @@ func getUpdateServingsDetails(r *http.Request) (id int64, servings int, recipe *
 	return recipeID, newServings, baseRecipe, true
 }
 
+// TODO: I don't think this is working because we have change the FoodItem reference to FoodItemID without fixing what it does
 func calculateAdjustedIngredients(recipeStep *model.RecipeStep, scalingFactor float32) []model.RecipeIngredient {
 	// 1. Aggregate all ingredients from the base recipe's steps
 	baseIngredients := recipeStep.Ingredients
@@ -255,9 +256,9 @@ func calculateAdjustedIngredients(recipeStep *model.RecipeStep, scalingFactor fl
 	adjustedIngredients := make([]model.RecipeIngredient, len(baseIngredients))
 	for i, ing := range baseIngredients {
 		// Create a copy of the FoodItem to avoid modifying the original
-		foodItemCopy := ing.FoodItem
+		foodItemCopy := ing.FoodItemID
 		adjustedIngredients[i] = model.RecipeIngredient{
-			FoodItem:   foodItemCopy,                 // Use the copy
+			FoodItemID: foodItemCopy,                 // Use the copy
 			Quantity:   ing.Quantity * scalingFactor, // Scale the quantity
 			Unit:       ing.Unit,
 			IsOptional: ing.IsOptional,

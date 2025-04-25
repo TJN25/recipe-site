@@ -90,7 +90,7 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 				}
 
 				recipeStep.Ingredients = append(recipeStep.Ingredients, model.RecipeIngredient{
-					FoodItem:   foodItem,
+					FoodItemID: foodItem.ID,
 					Quantity:   ingRef.Quantity,
 					Unit:       ingRef.Unit,
 					IsOptional: ingRef.IsOptional,
@@ -123,7 +123,7 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 	}
 
 	// 4. Calculate derived totals
-	recipe.CalculateTotals() // Call the method on the assembled recipe
+	// recipe.CalculateTotals() // Call the method on the assembled recipe
 
 	return recipe, nil
 
