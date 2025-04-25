@@ -185,8 +185,8 @@
             {{ if $steps }}
                 {{ range $index, $step := .Recipe.RecipeSteps }}
                     
-                    <div @click="zenModeStepsBool = !zenModeStepsBool" x-show="zenModeIndex === {{ $index }}" class="mt-2"> 
-                            <div class="text-center mb-4 px-2 pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <div x-show="zenModeIndex === {{ $index }}" class="mt-2"> 
+                            <div @click="zenModeStepsBool = !zenModeStepsBool" class="text-center mb-4 px-2 pb-2 border-b border-slate-200 dark:border-slate-700">
                                 <h2 class="font-serif font-semibold text-lg mt-0.5">{{ $step.Title }}</h2>
                                 <template x-if="zenModeStepsBool">
                                     <span class="text-sm font-medium text-slate-600 dark:text-slate-400">
