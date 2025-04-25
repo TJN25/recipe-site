@@ -2,7 +2,7 @@
 {{define "title"}}{{ .Recipe.Title }} - The Serving Station{{end}}
 
 {{define "content"}}
-<article class="recipe">
+<article class="recipe relative" x-data="{ showOptionals: false, groupByStage: true, isOptionsOpen: false, hoveredStepId: null }">
 
     <button type="button"
             class="absolute top-2 right-2 p-2 rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none z-20">
@@ -149,16 +149,22 @@
                 </button>
                 <div id="method-steps-display ">
                     {{/* Render ALL steps initially, grouped by stage (We'll do this next) */}}
-                    <ol class="list-decimal pl-5 mt-0 font-sans leading-relaxed rounded-2xl transition-colors duration-150 ease-in-out hover:bg-accent-50 dark:hover:bg-accent-700"> 
+                    <ol class="list-decimal pl-5 mt-0 font-sans leading-relaxed"> 
                         {{ range .Recipe.RecipeSteps }}
+                    <!--<div class="p-6 rounded-2xl transition-colors duration-150 ease-in-out hover:bg-accent-50 dark:hover:bg-accent-700">-->
+                    <div class="rounded-2xl pl-7 pr-6 transition-colors duration-150 ease-in-out"
+                         :class="{ 'bg-accent-50 dark:bg-accent-700': hoveredStepId == {{ .ID }} }"
+                        @mouseenter="hoveredStepId = {{ .ID }}"
+                        @mouseleave="hoveredStepId = null">
                                 <template x-if="showMethods">
-                                    <h3 class="text-lg font-semibold mt-3 mb-1">{{ .Title }}</h3>
+                                    <h3 class="text-lg font-serif font-semibold mt-3 mb-1">{{ .Title }}</h3>
                                 </template>
                                 {{ range .MethodSteps }}
                                     <li class="mb-2 font-sans leading-relaxed">{{ .Instruction }}</li>
                                 {{ else }}
                                     <li class="list-none italic text-sm text-slate-500">No method steps available for this recipe.</li>
                                 {{ end }}
+                    </div>
                         {{ else }}
                                 <li class="list-none">Method steps not available.</li>
                         {{ end }}
