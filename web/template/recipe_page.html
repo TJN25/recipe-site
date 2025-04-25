@@ -147,9 +147,9 @@
                     <span x-show="!showMethods">Show Stages</span>
                     <span x-show="showMethods">Hide Stages</span>
                 </button>
-                <div id="method-steps-display">
+                <div id="method-steps-display ">
                     {{/* Render ALL steps initially, grouped by stage (We'll do this next) */}}
-                    <ol class="list-decimal pl-5 mt-0 font-sans leading-relaxed"> 
+                    <ol class="list-decimal pl-5 mt-0 font-sans leading-relaxed rounded-2xl transition-colors duration-150 ease-in-out hover:bg-accent-50 dark:hover:bg-accent-700"> 
                         {{ range .Recipe.RecipeSteps }}
                                 <template x-if="showMethods">
                                     <h3 class="text-lg font-semibold mt-3 mb-1">{{ .Title }}</h3>
