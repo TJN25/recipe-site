@@ -2,7 +2,16 @@
 {{define "title"}}{{ .Recipe.Title }} - The Serving Station{{end}}
 
 {{define "content"}}
-<article class="recipe relative" x-data="{ activeTab: 'full', showOptions: false, showOptionals: false, groupByStage: true, isOptionsOpen: false, hoveredStepId: null }">
+<article class="recipe relative" x-data="{ activeTab: 'full', 
+    showOptions: false, 
+    showOptionals: false, 
+    showMethods: true, 
+    groupByStage: true, 
+    isOptionsOpen: false, 
+    hoveredStepId: null,
+    zenModeIndex: 0,
+    zenModeTotalSteps: 4,
+    }">
     <div class="text-xl border-b border-slate-300 dark:border-slate-600 flex justify-evenly">
         <button type="button"
                 @click="activeTab = 'full'"
@@ -47,21 +56,57 @@
         <div class="space-y-3">
             <p class="text-sm italic text-slate-500">(Options like Servings, Filters, etc. will go here)</p>
              <!-- Example: Servings Form -->
-             <div>
-                 <form method="post" hx-post="/update-servings" hx-target="#ingredients-list-container" hx-swap="outerHTML">
-                     <input type="hidden" name="recipe_id" value="{{ .Recipe.ID }}">
-                     <label for="servings-options-{{ .Recipe.ID }}" class="block text-sm font-medium mb-1">Servings:</label>
-                     <div class="flex items-center">
-                         <input type="number" id="servings-options-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required class="w-16 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-700 text-sm">
-                         <button type="submit" class="px-3 py-1 bg-accent-500 hover:bg-accent-600 text-white rounded text-sm font-sans">Update</button>
+            <div class="flex items-start gap-4 md:gap-6">
+                <div class="flex-1 md:w-1/2">
+                     <form method="post" hx-post="/update-servings" hx-target="#ingredients-list-container" hx-swap="outerHTML">
+                         <input type="hidden" name="recipe_id" value="{{ .Recipe.ID }}">
+                         <label for="servings-options-{{ .Recipe.ID }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Servings:</label>
+                         <div class="flex items-center">
+                             <input type="number" id="servings-options-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required class="w-16 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-700 text-sm">
+                             <button type="submit" class="px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">Update</button>
+                         </div>
+                     </form>
+                </div>
+
+                <div class="flex-1 md:w-1/2 space-y-2">
+                     <div class="flex-1 flex items-center justify-end gap-x-4"> 
+                         <span class="text-sm font-medium text-slate-700 dark:text-slate-300" id="toggle-optionals-label">
+                             Show Optional Ingredients
+                         </span>
+                         <button type="button"
+                                 class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500"
+                                 role="switch" :aria-checked="showOptionals.toString()" aria-labelledby="toggle-optionals-label"
+                                 @click="showOptionals = !showOptionals"
+                                 :class="showOptionals ? 'bg-accent-600' : 'bg-gray-200 dark:bg-gray-600'">
+                             <span aria-hidden="true"
+                                   class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
+                                   :class="showOptionals ? 'translate-x-5' : 'translate-x-0'"></span>
+                         </button>
                      </div>
-                 </form>
+
+                     <div class="flex-1 flex items-center justify-end gap-x-4"> 
+                         <span class="text-sm font-medium text-slate-700 dark:text-slate-300" id="toggle-optionals-label">
+                             Show Method Steps
+                         </span>
+                         <button type="button"
+                                 class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500"
+                                 role="switch" :aria-checked="showMethods.toString()" aria-labelledby="toggle-methods-label"
+                                 @click="showMethods = !showMethods"
+                                 :class="showMethods ? 'bg-accent-600' : 'bg-gray-200 dark:bg-gray-600'">
+                             <span aria-hidden="true"
+                                   class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
+                                   :class="showMethods ? 'translate-x-5' : 'translate-x-0'"></span>
+                         </button>
+                     </div>
+                </div>
+
              </div>
         </div>
     </div>
 
     <!-- 1. Banner & Description (Collapsible) -->
-    <div class="recipe-summary-section" open> {{/* Starts open */}}
+    <div x-show="activeTab === 'full'">
+    <div class="recipe-summary-section"> {{/* Starts open */}}
         <h1  class="font-serif text-3xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
             {{ .Recipe.Title }} {{/* Title acts as the summary */}}
         </h1>
@@ -80,17 +125,13 @@
     <hr class="my-6 border-slate-200 dark:border-slate-700">
 
 
-    <div x-data="{ showMethods: true }" style="margin-bottom: 10px;">
+    <div style="margin-bottom: 10px;">
         <!-- 3. Ingredients (Collapsible) -->
         <div class="recipe-ingredients-section"> {{/* Starts open */}}
              <h1 class="font-serif text-xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
                 Ingredients
             </h1>
-            <div x-data="{ showOptionals: false }" class="mb-3">
-                <button @click="showOptionals = !showOptionals" type="button" class="mb-3 px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">
-                    <span x-show="!showOptionals">Show Optional Ingredients</span>
-                    <span x-show="showOptionals">Hide Optional Ingredients</span>
-                </button>
+            <div  class="mb-3">
                 <div id="ingredients-list-container">
                     {{/* This includes the list via the partial */}}
                     {{ template "ingredient-list" .Recipe.RecipeSteps }}
@@ -106,11 +147,6 @@
             <h1 class="font-serif text-xl font-bold cursor-pointer mb-4 text-slate-900 dark:text-slate-100">
                 Method
             </h1>
-            {{/* This div will be the target for stage filtering HTMX swaps */}}
-                <button @click="showMethods = !showMethods" type="button" class="mb-3 px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">
-                    <span x-show="!showMethods">Show Stages</span>
-                    <span x-show="showMethods">Hide Stages</span>
-                </button>
                 <div id="method-steps-display ">
                     {{/* Render ALL steps initially, grouped by stage (We'll do this next) */}}
                     <ol class="list-decimal pl-5 mt-0 font-sans leading-relaxed"> 
@@ -145,6 +181,74 @@
         </h1>
         <p>{{ .Recipe.Notes }}</p>
     </div>
+    </div>
+
+    <div x-show="activeTab === 'zen'">
+        <div class="flex justify-between items-center mb-4 p-2 border-b border-slate-200 dark:border-slate-700">
+                <button type="button" @click="zenModeIndex--"
+                        :disabled="zenModeIndex === 0"
+                        class="px-3 py-1 rounded text-sm disabled:opacity-50 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 disabled:dark:bg-slate-800">
+                    &larr; Previous
+                </button>
+
+                <span class="text-sm font-medium text-slate-600 dark:text-slate-400">
+                     <span x-show="zenModeIndex === 0">Description</span>
+                     <span x-show="zenModeIndex === 1">Ingredients</span>
+                     <span x-show="zenModeIndex === 2">Method</span>
+                     <span x-show="zenModeIndex === 3">Notes</span>
+                </span>
+
+                <button type="button" @click="zenModeIndex++"
+                        :disabled="zenModeIndex >= zenModeTotalSteps - 1"
+                        class="px-3 py-1 rounded text-sm disabled:opacity-50 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 disabled:dark:bg-slate-800">
+                    Next &rarr;
+                </button>
+            </div>
+    </div>
+    <div class="zen-content p-1"> 
+
+                <div x-show="zenModeIndex === 0">
+                    <h1 class="font-serif text-3xl font-bold mb-4 text-slate-900 dark:text-slate-100">{{ .Recipe.Title }}</h1>
+                    <div class="recipe-banner mb-5 text-center">
+                        {{ if .Recipe.ImagePath }}
+                            <img src="/static/{{ .Recipe.ImagePath }}" alt="{{ .Recipe.Title }}" class="max-w-full h-auto max-h-[300px] rounded-md inline-block">
+                        {{ else }}
+                             <div class="recipe-banner-placeholder h-[200px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 italic rounded-md">[ No Recipe Image Available ]</div>
+                        {{ end }}
+                    </div>
+                    <p class="recipe-description mt-3 font-sans leading-relaxed">
+                        <em>{{ .Recipe.Description }}</em>
+                    </p>
+                </div>
+
+                <div x-show="zenModeIndex === 1">
+                    <h2 class="font-serif text-xl font-bold mb-2 text-slate-900 dark:text-slate-100">Ingredients</h2>
+                    <button @click="showOptionals = !showOptionals" type="button" class="mb-3 px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">
+                        <span x-show="!showOptionals">Show Opt</span><span x-show="showOptionals">Hide Opt</span>
+                    </button>
+                    <div id="ingredients-list-container-zen"> 
+                         <p class="italic text-slate-500">(Zen Ingredients List Structure Goes Here)</p> 
+                    </div>
+                </div>
+
+                <div x-show="zenModeIndex === 2">
+                     <h2 class="font-serif text-xl font-bold mb-2 text-slate-900 dark:text-slate-100">Method</h2>
+                     <button @click="showMethods = !showMethods" type="button" class="mb-3 px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">
+                        <span x-show="!showMethods">Show Titles</span><span x-show="showMethods">Hide Titles</span>
+                     </button>
+                      <div id="method-steps-display-zen"> 
+                         <p class="italic text-slate-500">(Zen Method List Structure Goes Here)</p> 
+                      </div>
+                </div>
+
+                <div x-show="zenModeIndex === 3">
+                     <h2 class="font-serif text-xl font-bold mb-2 text-slate-900 dark:text-slate-100">Notes</h2>
+                     <p>{{ .Recipe.Notes }}</p>
+                </div>
+
+            </div> 
+
+
 
 </article>
 
