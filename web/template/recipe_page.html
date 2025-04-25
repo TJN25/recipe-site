@@ -11,6 +11,7 @@
     hoveredStepId: null,
     zenModeIndex: 0,
     zenModeTotalSteps: 4,
+    zenModeStepsBool: false,
     }">
     <div class="text-xl border-b border-slate-200 dark:border-slate-700 flex justify-evenly">
         <button type="button"
@@ -188,58 +189,31 @@
         {{ $steps := .Recipe.RecipeSteps }}
         {{ $totalSteps := len $steps }}
 
-            {{ if $steps }}
-            <div class="flex justify-between items-stretch mb-4 p-2 border-b border-slate-200 dark:border-slate-700 min-h-[4rem]">
-                <button type="button" @click="zenModeIndex--"
-                        :disabled="zenModeIndex === 0"
-                        class="px-3 py-1 rounded text-sm disabled:opacity-50 bg-accent-200 hover:bg-accent-300 dark:bg-accent-700 dark:hover:bg-accent-600 disabled:dark:bg-accent-800 flex flex-col justify-center items-start text-left w-1/4">
-                    <span>&larr; Previous</span>
-                            {{ range $index, $step := $steps }}
-                    <span x-show="zenModeIndex === {{ add $index 1 }}" class="text-xs italic mt-1 text-slate-600 dark:text-slate-400">
-                            {{ truncate $step.Title 20 }}
-                    </span>
-                    {{ end }}
-                </button>
-
-                <span class="text-sm font-medium text-slate-600 dark:text-slate-400 text-center px-2">
-                     
-                     Step <span x-text="zenModeIndex + 1"></span> of {{ len .Recipe.RecipeSteps }}
-                     {{ range $index, $step := .Recipe.RecipeSteps }}
-                        <p x-show="zenModeIndex === {{ $index }}" class="font-serif text-2xl font-bold mb-1 text-accent-900 dark:text-accent-100">{{ $step.Title }}</p>
-                     {{ end }}
-                </span>
-
-                <button type="button" @click="zenModeIndex++"
-                        :disabled="zenModeIndex >= {{ len .Recipe.RecipeSteps }} - 1"
-                        class="px-3 py-1 rounded text-sm disabled:opacity-50 bg-accent-200 hover:bg-accent-300 dark:bg-accent-700 dark:hover:bg-accent-600 disabled:dark:bg-accent-800 flex flex-col justify-center items-end text-right w-1/4">
-                <span>Next &rarr;</span>
-                     {{ range $index, $step := $steps }}
-                         {{ if gt $index 0 }} 
-                             <span x-show="zenModeIndex === {{ add $index -1 }}" class="text-xs italic mt-1 text-slate-600 dark:text-slate-400">
-                                 {{ truncate $step.Title 20 }}
-                             </span>
-                         {{ end }}
-                     {{ end }}
-                </button>
-            </div>
-            {{ else }}
-                
-                 <p class="text-center italic text-slate-500 my-4">This recipe has no defined steps.</p>
-            {{ end }}
-
 
             
             <div class="zen-step-content">
+            {{ if $steps }}
                 {{ range $index, $step := .Recipe.RecipeSteps }}
                     
-                    <div x-show="zenModeIndex === {{ $index }}" class="p-1"> 
+                    <div @click="zenModeStepsBool = !zenModeStepsBool" x-show="zenModeIndex === {{ $index }}" class="mt-2"> 
+                            <div class="text-center mb-4 px-2 pb-2 border-b border-slate-200 dark:border-slate-700">
+                                <h2 class="font-serif font-semibold text-lg mt-0.5">{{ $step.Title }}</h2>
+                                <template x-if="zenModeStepsBool">
+                                    <span class="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                        Step <span x-text="zenModeIndex + 1"></span> of {{ $totalSteps }}
+                                    </span>
+                                </template>
+                            </div>
 
-                        
-                        {{ if $step.Description }}
-                            <p class="text-sm italic text-slate-600 dark:text-slate-400 mb-4">{{ $step.Description }}</p>
-                        {{ end }}
+                        <div class="flex items-stretch gap-3 md:gap-4">
+                            <button type="button" @click="zenModeIndex--"
+                                                :disabled="zenModeIndex === 0"
+                                                class="px-2 md:px-3 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent transition-colors">
+                                            <span class="sr-only">Previous Step</span>
+                                            <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
 
-                        
+                    <div class="flex-1 min-w-0">
                         <div class="flex flex-col md:flex-row gap-4 md:gap-6 lg:gap-8">
 
                             
@@ -280,18 +254,21 @@
                                 <div class="flex-1 p-3 italic text-sm text-slate-400">(No method instructions specific to this step)</div>
                              {{ end }}
 
+                                </div> 
+                            </div> 
+                        <button type="button" @click="zenModeIndex++"
+                        :disabled="zenModeIndex >= {{ $totalSteps }} - 1"
+                            class="px-2 md:px-3 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent transition-colors">
+                            <span class="sr-only">Next Step</span>
+                            <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                         </div> 
-
-                         
-                         {{ if $step.Notes }}
-                            <div class="mt-4 pt-3 border-t border-accent-200 dark:border-accent-700">
-                                 <h4 class="text-sm font-semibold mb-1 text-slate-600 dark:text-slate-400 uppercase tracking-wider">Notes for this step</h4>
-                                 <p class="text-sm">{{ $step.Notes }}</p>
-                            </div>
-                         {{ end }}
 
                     </div> 
                 {{ end }} 
+            {{ else }}
+                 <p class="text-center italic text-slate-500 my-4">This recipe has no defined steps.</p>
+            {{ end }}
             </div> 
 
         </div> 
