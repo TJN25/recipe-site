@@ -83,44 +83,31 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 			}
 
 			for _, ingRef := range dummyStep.Ingredients {
+				// 1. Lookup FoodItem
 				foodItem, found := findFoodItem(ingRef.FoodItemID)
 				if !found {
-					log.Warnf("Warning: FoodItem ID %d not found for RecipeStep ID %d\n", ingRef.FoodItemID, dummyStep.ID)
-					continue // Skip this ingredient if not found
-				}
-
-				if foodItem.Forms == nil {
-					log.Errorf("Store: FoodItem ID %d ('%s') has nil Forms map. Skipping ingredient.", foodItem.ID, foodItem.Name)
+					log.Warnf("Store: FoodItem ID %d not found referenced in RecipeStep ID %d. Skipping ingredient.", ingRef.FoodItemID, dummyStep.ID)
 					continue
 				}
 
+				// 2. Basic Validation (Optional but good)
 				if foodItem.DefaultFormName == "" {
-					log.Errorf("Store: FoodItem ID %d ('%s') has empty DefaultFormName. Skipping ingredient.", foodItem.ID, foodItem.Name)
-					continue
+					log.Warnf("Store: FoodItem ID %d ('%s') has empty DefaultFormName. Data might be incomplete.", foodItem.ID, foodItem.Name)
+					// We can still proceed, DefaultFormName is mostly for substitutions now
 				}
 
-				defaultFormDetails, formExists := foodItem.Forms[foodItem.DefaultFormName]
-				if !formExists {
-					log.Errorf("Store: DefaultFormName '%s' not found in Forms map for FoodItem ID %d ('%s'). Skipping ingredient.", foodItem.DefaultFormName, foodItem.ID, foodItem.Name)
-					continue
-				}
-
-				if ingRef.Unit != "" && ingRef.Unit != defaultFormDetails.Unit {
-					log.Warnf("Store: Dummy data unit ('%s') for FoodItemID %d ('%s') in RecipeStep %d "+
-						"does not match DefaultForm ('%s') unit ('%s'). Using default form unit '%s'. "+
-						"Verify Quantity (%f) in dummy data.",
-						ingRef.Unit, foodItem.ID, foodItem.Name, dummyStep.ID, foodItem.DefaultFormName,
-						defaultFormDetails.Unit, defaultFormDetails.Unit, ingRef.Quantity)
-				}
-
+				// 3. Create the RecipeIngredient - Directly recording source data
 				newIngredient := model.RecipeIngredient{
-					FoodItemID: foodItem.ID,              // Set the ID
-					FormName:   foodItem.DefaultFormName, // Set the default form name
-					Quantity:   ingRef.Quantity,          // Set the quantity from the dummy reference
-					IsOptional: ingRef.IsOptional,        // Set optional flag
-					Purpose:    ingRef.Purpose,           // Set purpose
+					FoodItemID: foodItem.ID,
+					// Store the default form name for reference / potential initial display choice
+					FormName:      foodItem.DefaultFormName,
+					Quantity:      ingRef.Quantity, // Store quantity as given
+					SpecifiedUnit: ingRef.Unit,     // <<< STORE THE UNIT FROM THE SOURCE
+					IsOptional:    ingRef.IsOptional,
+					Purpose:       ingRef.Purpose,
 				}
 
+				// 4. Append
 				recipeStep.Ingredients = append(recipeStep.Ingredients, newIngredient)
 			}
 
@@ -174,3 +161,8 @@ func InitFoodItemCache(allFoodItemsCache *map[int64]model.FoodItem) {
 	}
 	log.Infof("Cached %d FoodItems", len(*allFoodItemsCache))
 }
+
+// Use the following to find the correct form for the recipe, and ensure units are correct (along with quantity)
+// func FindFoodItemForm(unit string, forms map[string]model.FoodItemFormDetails) (string, string) // find the FormName based on the unit
+// // Not sure if we need to do this
+// func SetFoodItemQuantity(q float64, unit string, form model.FoodItemFormDetails) (float64, string) // take the relevant Form, the current unit and the current quantity and set the new quantity and unit based on the default for that form

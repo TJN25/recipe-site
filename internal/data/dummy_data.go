@@ -82,9 +82,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              16,
 		Name:            "Salt",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Fine", // Specify the default type/form
+		DefaultFormName: "Kosher", // Specify the default type/form
 		Forms: map[string]model.FoodItemFormDetails{
-			"Fine":   {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 6.0}},
+			"Kosher": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 6.0}},
 			"Coarse": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 4.0}}, // Example if you add coarse salt later
 		},
 		PricePerCanonicalUnit: 0.001,
@@ -104,10 +104,10 @@ var DummyFoodItems = []model.FoodItem{
 	{
 		ID:              18,
 		Name:            "Smoked Paprika",
-		CanonicalUnit:   "g",
+		CanonicalUnit:   "ml",
 		DefaultFormName: "Ground",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Ground": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+			"Ground": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
 		},
 		PricePerCanonicalUnit: 0.06,
 		Nutrition:             placeholderNutrition,
@@ -137,10 +137,10 @@ var DummyFoodItems = []model.FoodItem{
 	{
 		ID:              124,
 		Name:            "Ground Coriander", // New
-		CanonicalUnit:   "g",
+		CanonicalUnit:   "ml",
 		DefaultFormName: "Ground",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Ground": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.0}}, // Estimate ~2g/tsp
+			"Ground": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.0}}, // Estimate ~2g/tsp
 		},
 		PricePerCanonicalUnit: 0.06, // Guess
 		Nutrition:             placeholderNutrition,
@@ -200,8 +200,30 @@ var DummyFoodItems = []model.FoodItem{
 	{ID: 22, Name: "Active Dry Yeast", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},
 	{ID: 23, Name: "Raw Sugar", CanonicalUnit: "g", PricePerCanonicalUnit: 0.002},
 	{ID: 24, Name: "Olive Oil", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.02},
-	{ID: 25, Name: "Water", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.0001},
-	{ID: 26, Name: "Chicken Thighs", CanonicalUnit: "g", PricePerCanonicalUnit: 0.012}, // Boneless, skinless
+	// {ID: 25, Name: "Water", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.0001},
+	{
+		ID:              25,
+		Name:            "Water",
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Default",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
+	// {ID: 26, Name: "Chicken Thighs", CanonicalUnit: "g", PricePerCanonicalUnit: 0.012}, // Boneless, skinless
+	{
+		ID:              26,
+		Name:            "Chicken Thigh", // Assume pre-cooked/shredded
+		CanonicalUnit:   "g",
+		DefaultFormName: "Default",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "g", ConversionToCanonical: 1.0}, // Estimate ~140g/cup cooked shredded
+		},
+		PricePerCanonicalUnit: 0.012,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 27, Name: "Greek Yogurt", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},
 	{ID: 28, Name: "Heavy Cream", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03},
 	{
@@ -220,27 +242,71 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              30,
 		Name:            "Ginger",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Fresh Root", // Assuming fresh root is default unless specified
+		DefaultFormName: "Paste", // Assuming fresh root is default unless specified
 		Forms: map[string]model.FoodItemFormDetails{
 			"Fresh Root": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp minced": 6.0, "inch": 15.0}},
-			"Paste":      {Unit: "tsp", ConversionToCanonical: 4.0}, // Estimate ~4g/tsp paste
-			"Ground":     {Unit: "tsp", ConversionToCanonical: 2.0}, // Estimate ~2g/tsp ground
+			"Paste":      {Unit: "ml", ConversionToCanonical: 4.0}, // Estimate ~4g/tsp paste
+			"Ground":     {Unit: "ml", ConversionToCanonical: 2.0}, // Estimate ~2g/tsp ground
 		},
 		PricePerCanonicalUnit: 0.02,
 		Nutrition:             placeholderNutrition,
 	},
-	{ID: 31, Name: "Garlic", CanonicalUnit: "g", PricePerCanonicalUnit: 0.03},  // Fresh garlic cloves/minced
+	// {ID: 31, Name: "Garlic", CanonicalUnit: "g", PricePerCanonicalUnit: 0.03}, // Fresh garlic cloves/minced
+	{
+		ID:              31,
+		Name:            "Garlic", // Assume pre-cooked/shredded
+		CanonicalUnit:   "cloves",
+		DefaultFormName: "Cloves",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Cloves": {Unit: "cloves", ConversionToCanonical: 1.0}, // Estimate ~140g/cup cooked shredded
+		},
+		PricePerCanonicalUnit: 0.03,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 32, Name: "Cashews", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05}, // Raw, unsalted
 	{ID: 33, Name: "Canned Tomatoes", CanonicalUnit: "g", PricePerCanonicalUnit: 0.004},
-	{ID: 34, Name: "Canola Oil", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.01},
+	// {ID: 34, Name: "Canola Oil", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.01},
+	{
+		ID:              34,
+		Name:            "Canola Oil",
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Default", // Standard liquid form
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 240.0, "tbsp": 15.0, "litre": 1000.0}},
+		},
+		PricePerCanonicalUnit: 0.002,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 35, Name: "Baking Soda", CanonicalUnit: "g", PricePerCanonicalUnit: 0.01},
 	{ID: 36, Name: "Fenugreek Leaves", CanonicalUnit: "g", PricePerCanonicalUnit: 0.08}, // Kasoori Methi, dried
-	{ID: 37, Name: "Garam Masala", CanonicalUnit: "g", PricePerCanonicalUnit: 0.06},     // Spice blend
-	{ID: 38, Name: "Dried Chili", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.15},   // Generic whole dried chili
+	// {ID: 37, Name: "Garam Masala", CanonicalUnit: "g", PricePerCanonicalUnit: 0.06},     // Spice blend
+	{
+		ID:              37,
+		Name:            "Garam Masala",
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Ground",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Ground": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
+	{ID: 38, Name: "Dried Chili", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.15}, // Generic whole dried chili
 	{ID: 39, Name: "Black Cardamom Pod", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.10},
-	{ID: 40, Name: "Clove", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.05},             // Whole clove
-	{ID: 41, Name: "Basmati Rice", CanonicalUnit: "g", PricePerCanonicalUnit: 0.005},        // Dry weight
-	{ID: 42, Name: "White Pepper", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},         // Ground
+	{ID: 40, Name: "Clove", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.05},      // Whole clove
+	{ID: 41, Name: "Basmati Rice", CanonicalUnit: "g", PricePerCanonicalUnit: 0.005}, // Dry weight
+	// {ID: 42, Name: "White Pepper", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},  // Ground
+	{
+		ID:              42,
+		Name:            "White Pepper",
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Corns",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Corns": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 43, Name: "Spicy Burrito Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03}, // Derived item (potentially homemade)
 	{ID: 44, Name: "Corn Kernels", CanonicalUnit: "g", PricePerCanonicalUnit: 0.006},        // Frozen or Canned
 	{ID: 45, Name: "Lime Juice", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03},          // Fresh or bottled
@@ -248,21 +314,74 @@ var DummyFoodItems = []model.FoodItem{
 	{ID: 47, Name: "Baguette", CanonicalUnit: "unit", PricePerCanonicalUnit: 1.50},
 	{ID: 48, Name: "Duck Breast", CanonicalUnit: "g", PricePerCanonicalUnit: 0.03},
 	{ID: 49, Name: "Daikon Radish", CanonicalUnit: "g", PricePerCanonicalUnit: 0.008},
-	{ID: 50, Name: "Carrot", CanonicalUnit: "g", PricePerCanonicalUnit: 0.003},
+	// {ID: 50, Name: "Carrot", CanonicalUnit: "g", PricePerCanonicalUnit: 0.003},
+	{
+		ID:              50,
+		Name:            "Carrot", // Assume pre-cooked/shredded
+		CanonicalUnit:   "g",
+		DefaultFormName: "Default",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "g", ConversionToCanonical: 1.0}, // Estimate ~140g/cup cooked shredded
+		},
+		PricePerCanonicalUnit: 0.01,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 51, Name: "Cucumber", CanonicalUnit: "g", PricePerCanonicalUnit: 0.005},
 	{ID: 52, Name: "Bird Eye Chilies", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.20}, // Fresh
 	{ID: 53, Name: "Spring Onion", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},        // Scallion
 	{ID: 54, Name: "Mayonnaise", CanonicalUnit: "g", PricePerCanonicalUnit: 0.015},
-	{ID: 55, Name: "Soy Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.01},
+	// {ID: 55, Name: "Soy Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.01},
+	{
+		ID:              55,
+		Name:            "Soy sauce", // Assume pre-cooked/shredded
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Default",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "ml", ConversionToCanonical: 1.0}, // Estimate ~140g/cup cooked shredded
+		},
+		PricePerCanonicalUnit: 0.01,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 56, Name: "Tabasco", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.08},
-	{ID: 57, Name: "Honey", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},
+	// {ID: 57, Name: "Honey", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},
+	{
+		ID:              57,
+		Name:            "Honey",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Default",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 58, Name: "White Vinegar", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.002}, // Distilled white vinegar
 	{ID: 59, Name: "Agria Potato", CanonicalUnit: "g", PricePerCanonicalUnit: 0.004},
 	{ID: 60, Name: "Avocado Oil", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03},
 	{ID: 61, Name: "Garlic Powder", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},
-	{ID: 62, Name: "Black Pepper", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},       // Ground
-	{ID: 63, Name: "Mixed Herbs", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},        // Dried blend (e.g., Italian seasoning)
-	{ID: 64, Name: "Cayenne Pepper", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},     // Ground
+	{
+		ID:              62,
+		Name:            "Black Pepper",
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Corns",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Corns": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
+	{ID: 63, Name: "Mixed Herbs", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05}, // Dried blend (e.g., Italian seasoning)
+	{
+		ID:              64,
+		Name:            "Cayenne pepper",
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Ground",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Ground": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 65, Name: "Parmesan Cheese", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},    // Parmigiano Reggiano or Grana Padano
 	{ID: 66, Name: "Flour Tortilla", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.50},  // Large size
 	{ID: 67, Name: "Lettuce", CanonicalUnit: "g", PricePerCanonicalUnit: 0.01},            // Generic (e.g., Iceberg, Romaine)
@@ -272,14 +391,45 @@ var DummyFoodItems = []model.FoodItem{
 	{ID: 71, Name: "Avocado", CanonicalUnit: "unit", PricePerCanonicalUnit: 2.00},
 	{ID: 72, Name: "Sour Cream", CanonicalUnit: "g", PricePerCanonicalUnit: 0.015},
 	{ID: 73, Name: "Pickled Jalapeños", CanonicalUnit: "g", PricePerCanonicalUnit: 0.03},
-	{ID: 74, Name: "Egg", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.50},       // Large egg
+	{
+		ID:              74,
+		Name:            "Egg",
+		CanonicalUnit:   "unit",
+		DefaultFormName: "Whole",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Whole": {Unit: "unit", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 75, Name: "Trim Milk", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.0018}, // Low-fat milk
 	{ID: 76, Name: "Fettuccine", CanonicalUnit: "g", PricePerCanonicalUnit: 0.006},  // Assumed dry pasta
-	{ID: 77, Name: "Mushrooms", CanonicalUnit: "g", PricePerCanonicalUnit: 0.015},   // Generic fresh mushrooms (e.g., button, cremini)
+	{
+		ID:              77,
+		Name:            "Mushrooms", // Assume pre-cooked/shredded
+		CanonicalUnit:   "g",
+		DefaultFormName: "Default",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "g", ConversionToCanonical: 1.0}, // Estimate ~140g/cup cooked shredded
+		},
+		PricePerCanonicalUnit: 0.01,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 78, Name: "Celery", CanonicalUnit: "g", PricePerCanonicalUnit: 0.004},
 	{ID: 79, Name: "White Wine", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.015},    // Dry white wine for cooking
 	{ID: 80, Name: "Chicken Stock", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.003}, // Liquid stock/broth
-	{ID: 81, Name: "Spinach", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},         // Fresh spinach leaves
+	// {ID: 81, Name: "Spinach", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},         // Fresh spinach leaves
+	{
+		ID:              81,
+		Name:            "Spinach",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Default",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 82, Name: "Cherry Tomato", CanonicalUnit: "g", PricePerCanonicalUnit: 0.01},
 	{ID: 83, Name: "Chives", CanonicalUnit: "g", PricePerCanonicalUnit: 0.06}, // Fresh
 	{ID: 84, Name: "Feta Cheese", CanonicalUnit: "g", PricePerCanonicalUnit: 0.03},
@@ -288,7 +438,18 @@ var DummyFoodItems = []model.FoodItem{
 	{ID: 87, Name: "Chicken Stock Cube", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.20},
 	{ID: 88, Name: "Red Taco Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.025}, // Derived item (Recipe ID TBD)
 	{ID: 89, Name: "Worcestershire Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.02},
-	{ID: 90, Name: "Egg Noodles", CanonicalUnit: "g", PricePerCanonicalUnit: 0.007},         // Assumed dry
+	// {ID: 90, Name: "Egg Noodles", CanonicalUnit: "g", PricePerCanonicalUnit: 0.007}, // Assumed dry
+	{
+		ID:              90,
+		Name:            "Egg Noodles",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Default",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 91, Name: "Fresh Hot Chilies", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.30}, // Generic fresh hot chili (e.g., jalapeño, serrano)
 	{ID: 92, Name: "Canned Peach Halves", CanonicalUnit: "g", PricePerCanonicalUnit: 0.008}, // Drained weight, in syrup or juice
 	{ID: 93, Name: "Cardamom", CanonicalUnit: "g", PricePerCanonicalUnit: 0.12},             // Ground green cardamom
@@ -307,17 +468,61 @@ var DummyFoodItems = []model.FoodItem{
 	{ID: 106, Name: "Dried Oregano", CanonicalUnit: "g", PricePerCanonicalUnit: 0.04},
 	{ID: 107, Name: "Red Pepper Flakes", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},  // Crushed red pepper
 	{ID: 108, Name: "Chipotles in Adobo", CanonicalUnit: "g", PricePerCanonicalUnit: 0.07}, // Whole chipotles packed in adobo sauce
-	{ID: 109, Name: "Cumin", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},              // Ground
+	// {ID: 109, Name: "Cumin", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},              // Ground
+	{
+		ID:              109,
+		Name:            "Cumin",
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Ground",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Ground": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 110, Name: "Apple Cider Vinegar", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.003},
 	{ID: 111, Name: "Milk Powder", CanonicalUnit: "g", PricePerCanonicalUnit: 0.015}, // Non-fat dry milk powder
 	{ID: 112, Name: "Diastatic Malt Powder", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05},
 	{ID: 113, Name: "Generic Rice", CanonicalUnit: "g", PricePerCanonicalUnit: 0.003},             // Medium or long grain white rice, dry
 	{ID: 114, Name: "Quick Pizza Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.02},        // Derived item (Recipe ID 4)
 	{ID: 115, Name: "Ginger-Peach Fire Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.035}, // Derived item (Recipe ID TBD)
-	{ID: 116, Name: "Sesame Oil", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.05},
-	{ID: 117, Name: "Sichuan Pepper", CanonicalUnit: "g", PricePerCanonicalUnit: 0.15}, // Ground
-	{ID: 118, Name: "Allspice", CanonicalUnit: "g", PricePerCanonicalUnit: 0.07},       // Ground
-	{ID: 119, Name: "Cornflour", CanonicalUnit: "g", PricePerCanonicalUnit: 0.005},     // Cornstarch
+	// {ID: 116, Name: "Sesame Oil", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.05},
+	{
+		ID:              116,
+		Name:            "Sesame Oil",
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Ground",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Ground": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+		},
+		PricePerCanonicalUnit: 0.05,
+		Nutrition:             placeholderNutrition,
+	},
+	// {ID: 117, Name: "Sichuan Pepper", CanonicalUnit: "g", PricePerCanonicalUnit: 0.15}, // Ground
+	{
+		ID:              117,
+		Name:            "Sichuan Pepper",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Default", // Assuming fresh root is default unless specified
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "g", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: 0.15,
+		Nutrition:             placeholderNutrition,
+	},
+	{ID: 118, Name: "Allspice", CanonicalUnit: "g", PricePerCanonicalUnit: 0.07}, // Ground
+	// {ID: 119, Name: "Cornflour", CanonicalUnit: "g", PricePerCanonicalUnit: 0.005}, // Cornstarch
+	{
+		ID:              119,
+		Name:            "Cornflour",
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Default", // Standard liquid form
+		Forms: map[string]model.FoodItemFormDetails{
+			"Default": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 240.0, "tbsp": 15.0, "litre": 1000.0}},
+		},
+		PricePerCanonicalUnit: 0.002,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 120, Name: "Kewpie Mayo", CanonicalUnit: "g", PricePerCanonicalUnit: 0.025},
 	{ID: 121, Name: "Sriracha Sauce", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03},
 	{ID: 122, Name: "Bao Buns", CanonicalUnit: "unit", PricePerCanonicalUnit: 0.80}, // Steamed buns
@@ -802,7 +1007,7 @@ var DummyRecipeSteps = []dummyRecipeStep{
 			{FoodItemID: 26, Quantity: 500, Unit: "g", Purpose: "protein"},         // Chicken Thighs, cut into 2.5cm pieces
 			{FoodItemID: 27, Quantity: 30, Unit: "ml", Purpose: "base marinade"},   // Greek Yogurt
 			{FoodItemID: 30, Quantity: 8, Unit: "g", Purpose: "base marinade"},     // Ginger, grated (~2cm)
-			{FoodItemID: 16, Quantity: 1.5, Unit: "tsp", Purpose: "base marinade"}, // Kosher Salt
+			{FoodItemID: 16, Quantity: 5, Unit: "g", Purpose: "base marinade"},     // Kosher Salt
 			{FoodItemID: 37, Quantity: 1.5, Unit: "tsp", Purpose: "base marinade"}, // Garam Masala
 			// Fenugreek from above is ground and added here
 		},
@@ -832,7 +1037,7 @@ var DummyRecipeSteps = []dummyRecipeStep{
 			{FoodItemID: 38, Quantity: 1, Unit: "unit", Purpose: "spice blend"},  // Dried Chili
 			{FoodItemID: 39, Quantity: 1, Unit: "unit", Purpose: "spice blend"},  // Black Cardamom Pod (or 2 green)
 			{FoodItemID: 40, Quantity: 1, Unit: "unit", Purpose: "spice blend"},  // Clove
-			{FoodItemID: 37, Quantity: 1.5, Unit: "tsp", Purpose: "spice blend"}, // Garam Masala
+			{FoodItemID: 37, Quantity: 7.5, Unit: "ml", Purpose: "spice blend"},  // Garam Masala
 			{FoodItemID: 32, Quantity: 15, Unit: "g", Purpose: "thickener"},      // Cashews
 			{FoodItemID: 25, Quantity: 60, Unit: "ml", Purpose: "soaking"},       // Hot Water
 			{FoodItemID: 29, Quantity: 75, Unit: "g", Purpose: "aromatic"},       // Onion (~1/2 medium), diced
@@ -2270,7 +2475,7 @@ var DummyRecipeSteps = []dummyRecipeStep{
 			{FoodItemID: 118, Quantity: 1, Unit: "g", Purpose: "marinade spice"},  // Allspice, ground (1/4 tsp)
 			{FoodItemID: 18, Quantity: 2.5, Unit: "g", Purpose: "marinade spice"}, // Smoked Paprika (1/2 tsp)
 			{FoodItemID: 74, Quantity: 1, Unit: "unit", Purpose: "binding"},       // Egg
-			{FoodItemID: 119, Quantity: 35, Unit: "g", Purpose: "coating"},        // Cornflour (3 Tbsp)
+			{FoodItemID: 119, Quantity: 45, Unit: "ml", Purpose: "coating"},       // Cornflour (3 Tbsp)
 		},
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Slice chicken thighs into bite-sized pieces (approx 1cm thick strips or cubes). Place in a medium bowl."},
@@ -2379,11 +2584,11 @@ var DummyRecipeSteps = []dummyRecipeStep{
 	// === Recipe 3: Chicken Stir Fry ===
 	// --- Step 1: Preparation Stage ---
 	{
-		ID:          301,
+		ID:          1901,
 		RecipeID:    19,
 		StepOrder:   1,
-		Title:       "Preparation Stage",
-		Description: "Prepare chicken, vegetables, sauce, and noodles.",
+		Title:       "Marinade Chicken",
+		Description: "Prepare and marinade chicken.",
 		Ingredients: []struct {
 			FoodItemID int64
 			Quantity   float32
@@ -2391,53 +2596,87 @@ var DummyRecipeSteps = []dummyRecipeStep{
 			IsOptional bool
 			Purpose    string
 		}{
-			{FoodItemID: 26, Quantity: 200, Unit: "g", Purpose: "protein"},                                // Chicken Thighs (using midpoint of 150-250g)
-			{FoodItemID: 55, Quantity: 1, Unit: "Tbsp", Purpose: "marinade umami"},                        // Soy Sauce
-			{FoodItemID: 31, Quantity: 1, Unit: "tsp", Purpose: "marinade aromatic"},                      // Garlic (Specified Minced/Powder - store handles default/form later)
-			{FoodItemID: 30, Quantity: 1, Unit: "tsp", Purpose: "marinade aromatic"},                      // Ginger (Specified Paste/Ground)
-			{FoodItemID: 117, Quantity: 0.5, Unit: "tsp", IsOptional: true, Purpose: "marinade spice"},    // Sichuan Pepper, ground
-			{FoodItemID: 18, Quantity: 0.5, Unit: "tsp", Purpose: "marinade flavour"},                     // Smoked Paprika
-			{FoodItemID: 64, Quantity: 0.25, Unit: "tsp", Purpose: "marinade heat"},                       // Cayenne Pepper (used pinch estimate)
-			{FoodItemID: 109, Quantity: 0.25, Unit: "tsp", Purpose: "marinade spice"},                     // Cumin, Ground
-			{FoodItemID: 124, Quantity: 0.25, Unit: "tsp", Purpose: "marinade spice"},                     // Coriander, Ground
-			{FoodItemID: 16, Quantity: 0.5, Unit: "tsp", Purpose: "marinade seasoning"},                   // Salt
-			{FoodItemID: 62, Quantity: 0.25, Unit: "tsp", Purpose: "marinade seasoning"},                  // Black Pepper
-			{FoodItemID: 74, Quantity: 1, Unit: "unit", Purpose: "binding"},                               // Egg
-			{FoodItemID: 119, Quantity: 3, Unit: "Tbsp", Purpose: "coating"},                              // Cornflour
-			{FoodItemID: 34, Quantity: 4, Unit: "Tbsp", Purpose: "frying"},                                // Canola Oil (using max of 3-4 Tbsp)
-			{FoodItemID: 90, Quantity: 150, Unit: "g", Purpose: "carb base"},                              // Egg Noodles (estimating 1.5 portions @ 100g)
-			{FoodItemID: 29, Quantity: 0.5, Unit: "unit", Purpose: "stir-fry aromatic"},                   // Onion
-			{FoodItemID: 31, Quantity: 2, Unit: "clove", Purpose: "stir-fry aromatic"},                    // Garlic
-			{FoodItemID: 50, Quantity: 1, Unit: "unit", Purpose: "stir-fry veg"},                          // Carrot (assuming 1 medium)
-			{FoodItemID: 125, Quantity: 40, Unit: "g", Purpose: "stir-fry veg"},                           // Green Beans (using handful estimate)
-			{FoodItemID: 77, Quantity: 50, Unit: "g", Purpose: "stir-fry veg"},                            // Mushrooms (using handful estimate)
-			{FoodItemID: 126, Quantity: 60, Unit: "g", Purpose: "stir-fry veg"},                           // Roasted Capsicum (using 1/4 cup estimate)
-			{FoodItemID: 81, Quantity: 40, Unit: "g", Purpose: "stir-fry veg"},                            // Spinach (using handful estimate)
-			{FoodItemID: 55, Quantity: 2, Unit: "Tbsp", Purpose: "stir-fry sauce"},                        // Soy Sauce
-			{FoodItemID: 57, Quantity: 1, Unit: "tsp", IsOptional: true, Purpose: "stir-fry sauce sweet"}, // Honey
-			{FoodItemID: 25, Quantity: 4, Unit: "Tbsp", Purpose: "stir-fry sauce liquid"},                 // Water (using max of 2-4)
-			{FoodItemID: 127, Quantity: 5, Unit: "g", IsOptional: true, Purpose: "garnish"},               // Parsley (estimating 1 Tbsp)
-			// Note: Salt/Pepper to taste omitted, handled in method
-			// Note: Sesame oil omitted, added in method step
+			{FoodItemID: 26, Quantity: 200, Unit: "g", Purpose: "protein"},                         // Chicken Thighs (using midpoint of 150-250g)
+			{FoodItemID: 55, Quantity: 15, Unit: "ml", Purpose: "marinade umami"},                  // Soy Sauce
+			{FoodItemID: 31, Quantity: 2, Unit: "cloves", Purpose: "marinade aromatic"},            // Garlic (Specified Minced/Powder - store handles default/form later)
+			{FoodItemID: 30, Quantity: 5, Unit: "ml", Purpose: "marinade aromatic"},                // Ginger (Specified Paste/Ground)
+			{FoodItemID: 117, Quantity: 2, Unit: "g", IsOptional: true, Purpose: "marinade spice"}, // Sichuan Pepper, ground
+			{FoodItemID: 18, Quantity: 2.5, Unit: "ml", Purpose: "marinade flavour"},               // Smoked Paprika
+			{FoodItemID: 64, Quantity: 1.25, Unit: "ml", Purpose: "marinade heat"},                 // Cayenne Pepper (used pinch estimate)
+			{FoodItemID: 109, Quantity: 1.25, Unit: "ml", Purpose: "marinade spice"},               // Cumin, Ground
+			{FoodItemID: 124, Quantity: 1.25, Unit: "ml", Purpose: "marinade spice"},               // Coriander, Ground
+			{FoodItemID: 16, Quantity: 2, Unit: "g", Purpose: "marinade seasoning"},                // Salt
+			{FoodItemID: 62, Quantity: 1.25, Unit: "ml", Purpose: "marinade seasoning"},            // Black Pepper
+			{FoodItemID: 74, Quantity: 1, Unit: "unit", Purpose: "binding"},                        // Egg
+			{FoodItemID: 119, Quantity: 45, Unit: "ml", Purpose: "coating"},                        // Cornflour
 		},
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Chicken Prep: Cut chicken thighs into bite-sized pieces. Place in a medium bowl."},
 			{StepNumber: 2, Instruction: "Marinade: Whisk together soy sauce (1 Tbsp), garlic (1 tsp minced/0.5 tsp powder), ginger (1 tsp paste/0.5 tsp ground), Sichuan pepper (if using), smoked paprika, cayenne/chilli, cumin, coriander, salt (0.5 tsp), and black pepper (0.25 tsp)."},
 			{StepNumber: 3, Instruction: "Marinate Chicken: Pour marinade over chicken, mix well."},
 			{StepNumber: 4, Instruction: "Coat Chicken: Mix egg into chicken. Sprinkle cornflour over, mix until coated. Refrigerate 15-20 minutes."},
-			{StepNumber: 5, Instruction: "Vegetable Prep: Slice onion, mince garlic (1-2 cloves), slice/julienne carrot, trim/halve green beans, slice mushrooms. Chop roasted capsicum. Wash spinach. Chop fresh herbs (if using)."},
-			{StepNumber: 6, Instruction: "Stir-fry Sauce: Mix soy sauce (2 Tbsp), honey/sugar (if using), and water/stock (2-4 Tbsp) in a small bowl."},
-			{StepNumber: 7, Instruction: "Noodle Prep: Cook egg noodles according to package directions until al dente. Drain immediately, rinse briefly with cold water. Toss with a tiny drizzle of oil if desired. Set aside."},
+		},
+		EquipmentIDs: []int64{54, 61, 62, 63, 64, 65}, // Med Bowl, Small Bowl, Colander, Board/Knives, Measure Spoons/Cups, Whisk/Fork
+	},
+	{
+		ID:          1902,
+		RecipeID:    19,
+		StepOrder:   1,
+		Title:       "Preparation Stage",
+		Description: "Prepare, vegetables, and sauce.",
+		Ingredients: []struct {
+			FoodItemID int64
+			Quantity   float32
+			Unit       string // Unit as specified IN THE RECIPE TEXT
+			IsOptional bool
+			Purpose    string
+		}{
+			{FoodItemID: 29, Quantity: 0.5, Unit: "unit", Purpose: "stir-fry aromatic"},                  // Onion
+			{FoodItemID: 31, Quantity: 2, Unit: "cloves", Purpose: "stir-fry aromatic"},                  // Garlic
+			{FoodItemID: 50, Quantity: 75, Unit: "g", Purpose: "stir-fry veg"},                           // Carrot (assuming 1 medium)
+			{FoodItemID: 125, Quantity: 40, Unit: "g", Purpose: "stir-fry veg"},                          // Green Beans (using handful estimate)
+			{FoodItemID: 77, Quantity: 50, Unit: "g", Purpose: "stir-fry veg"},                           // Mushrooms (using handful estimate)
+			{FoodItemID: 126, Quantity: 60, Unit: "g", Purpose: "stir-fry veg"},                          // Roasted Capsicum (using 1/4 cup estimate)
+			{FoodItemID: 81, Quantity: 40, Unit: "g", Purpose: "stir-fry veg"},                           // Spinach (using handful estimate)
+			{FoodItemID: 55, Quantity: 30, Unit: "ml", Purpose: "stir-fry sauce"},                        // Soy Sauce
+			{FoodItemID: 57, Quantity: 10, Unit: "g", IsOptional: true, Purpose: "stir-fry sauce sweet"}, // Honey
+			{FoodItemID: 25, Quantity: 60, Unit: "ml", Purpose: "stir-fry sauce liquid"},                 // Water (using max of 2-4)
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Vegetable Prep: Slice onion, mince garlic (1-2 cloves), slice/julienne carrot, trim/halve green beans, slice mushrooms. Chop roasted capsicum. Wash spinach. Chop fresh herbs (if using)."},
+			{StepNumber: 2, Instruction: "Stir-fry Sauce: Mix soy sauce (2 Tbsp), honey/sugar (if using), and water/stock (2-4 Tbsp) in a small bowl."},
+		},
+		EquipmentIDs: []int64{54, 61, 62, 63, 64, 65}, // Med Bowl, Small Bowl, Colander, Board/Knives, Measure Spoons/Cups, Whisk/Fork
+	},
+	{
+		ID:          1903,
+		RecipeID:    19,
+		StepOrder:   1,
+		Title:       "Cook noodles",
+		Description: "Prepare noodles.",
+		Ingredients: []struct {
+			FoodItemID int64
+			Quantity   float32
+			Unit       string // Unit as specified IN THE RECIPE TEXT
+			IsOptional bool
+			Purpose    string
+		}{
+			{FoodItemID: 90, Quantity: 150, Unit: "g", Purpose: "carb base"}, // Egg Noodles (estimating 1.5 portions @ 100g)
+			// Note: Salt/Pepper to taste omitted, handled in method
+			// Note: Sesame oil omitted, added in method step
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Noodle Prep: Cook egg noodles according to package directions until al dente. Drain immediately, rinse briefly with cold water. Toss with a tiny drizzle of oil if desired. Set aside."},
 		},
 		EquipmentIDs: []int64{54, 61, 62, 63, 64, 65}, // Med Bowl, Small Bowl, Colander, Board/Knives, Measure Spoons/Cups, Whisk/Fork
 	},
 	// --- Step 2: Cooking Stage ---
 	{
-		ID:          302,
+		ID:          1904,
 		RecipeID:    19,
 		StepOrder:   2,
-		Title:       "Cooking Stage (Wok)",
-		Description: "Fry chicken and stir-fry vegetables and noodles.",
+		Title:       "Fry Chicken",
+		Description: "Fry chicken.",
 		Ingredients: []struct { // Ingredients specifically *added* or manipulated in this stage
 			FoodItemID int64
 			Quantity   float32
@@ -2446,20 +2685,61 @@ var DummyRecipeSteps = []dummyRecipeStep{
 			Purpose    string
 		}{
 			// Oil for stir-fry is listed as needed in method step 4
-			{FoodItemID: 116, Quantity: 0.5, Unit: "tsp", IsOptional: true, Purpose: "finishing oil"}, // Sesame Oil
-			{FoodItemID: 16, Quantity: 0, Unit: "to taste", Purpose: "final seasoning"},               // Salt
-			{FoodItemID: 62, Quantity: 0, Unit: "to taste", Purpose: "final seasoning"},               // Black Pepper
+			{FoodItemID: 34, Quantity: 60, Unit: "ml", Purpose: "frying oil"}, // canola Oil
 		},
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Heat Wok & Oil: Place wok over high heat until very hot. Add 3-4 Tbsp canola/avocado oil and swirl. Heat oil until shimmering."},
 			{StepNumber: 2, Instruction: "Fry Chicken: Carefully add marinated chicken pieces in a single layer (work in batches if needed). Reduce heat slightly if needed. Fry, turning occasionally, for 3-5 minutes per side until golden, crispy, and cooked through (75°C)."},
 			{StepNumber: 3, Instruction: "Drain Chicken: Remove cooked chicken to a paper towel-lined plate. Keep warm."},
-			{StepNumber: 4, Instruction: "Stir-fry Veggies: Carefully pour out excess oil, leaving ~1 Tbsp. Return wok to high heat. Add onion, stir-fry ~30 seconds. Add minced garlic, carrots, green beans. Stir-fry constantly for 1-2 minutes."},
-			{StepNumber: 5, Instruction: "Add Soft Veg: Add mushrooms, stir-fry 1-1.5 minutes until softening."},
-			{StepNumber: 6, Instruction: "Combine & Sauce: Add roasted capsicum. Whisk stir-fry sauce, pour around wok edges. Toss quickly as sauce bubbles (~30 seconds)."},
-			{StepNumber: 7, Instruction: "Wilt Spinach & Add Noodles: Add baby spinach, toss until just wilting. Add drained egg noodles. Toss gently but quickly to combine."},
-			{StepNumber: 8, Instruction: "Finish: Turn off heat. Stir through optional sesame oil (0.5 tsp). Season with salt and pepper to taste."},
-			{StepNumber: 9, Instruction: "Serve: Transfer noodle stir-fry to bowls/plates. Top with crispy chicken. Garnish with fresh herbs if desired."},
+		},
+		EquipmentIDs: []int64{60, 66, 67}, // Wok, Tongs/Spatula, Plate
+	},
+	{
+		ID:          1905,
+		RecipeID:    19,
+		StepOrder:   2,
+		Title:       "Stir-fry Noodles",
+		Description: "Stir-fry vegetables and noodles.",
+		Ingredients: []struct { // Ingredients specifically *added* or manipulated in this stage
+			FoodItemID int64
+			Quantity   float32
+			Unit       string
+			IsOptional bool
+			Purpose    string
+		}{
+			// Oil for stir-fry is listed as needed in method step 4
+			{FoodItemID: 34, Quantity: 15, Unit: "ml", Purpose: "cooking medium"}, // canola Oil
+			{FoodItemID: 16, Quantity: 0, Unit: "g", Purpose: "final seasoning"},  // Salt
+			{FoodItemID: 62, Quantity: 0, Unit: "ml", Purpose: "final seasoning"}, // Black Pepper
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Heat Wok & Oil: Place wok over high heat until very hot. Add canola/avocado oil and swirl. Heat oil until shimmering."},
+			{StepNumber: 2, Instruction: "Stir-fry Veggies: Carefully pour out excess oil, leaving ~1 Tbsp. Return wok to high heat. Add onion, stir-fry ~30 seconds. Add minced garlic, carrots, green beans. Stir-fry constantly for 1-2 minutes."},
+			{StepNumber: 3, Instruction: "Add Soft Veg: Add mushrooms, stir-fry 1-1.5 minutes until softening."},
+			{StepNumber: 4, Instruction: "Combine & Sauce: Add roasted capsicum. Whisk stir-fry sauce, pour around wok edges. Toss quickly as sauce bubbles (~30 seconds)."},
+			{StepNumber: 5, Instruction: "Wilt Spinach & Add Noodles: Add baby spinach, toss until just wilting. Add drained egg noodles. Toss gently but quickly to combine."},
+		},
+		EquipmentIDs: []int64{60, 66, 67}, // Wok, Tongs/Spatula, Plate
+	},
+	{
+		ID:          1906,
+		RecipeID:    19,
+		StepOrder:   2,
+		Title:       "Assemby",
+		Description: "Assemble and serve.",
+		Ingredients: []struct { // Ingredients specifically *added* or manipulated in this stage
+			FoodItemID int64
+			Quantity   float32
+			Unit       string
+			IsOptional bool
+			Purpose    string
+		}{
+			// Oil for stir-fry is listed as needed in method step 4
+			{FoodItemID: 116, Quantity: 2.5, Unit: "ml", IsOptional: true, Purpose: "finishing oil"}, // Sesame Oil
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Finish: Turn off heat. Stir through optional sesame oil (0.5 tsp). Season with salt and pepper to taste."},
+			{StepNumber: 2, Instruction: "Serve: Transfer noodle stir-fry to bowls/plates. Top with crispy chicken. Garnish with fresh herbs if desired."},
 		},
 		EquipmentIDs: []int64{60, 66, 67}, // Wok, Tongs/Spatula, Plate
 	},

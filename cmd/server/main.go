@@ -250,7 +250,6 @@ func getUpdateServingsDetails(r *http.Request) (id int64, servings int, recipe *
 	return recipeID, newServings, baseRecipe, true
 }
 
-// TODO: I don't think this is working because we have change the FoodItem reference to FoodItemID without fixing what it does
 func calculateAdjustedIngredients(recipeStep *model.RecipeStep, scalingFactor float32) []model.RecipeIngredient {
 	// 1. Aggregate all ingredients from the base recipe's steps
 	baseIngredients := recipeStep.Ingredients
@@ -261,15 +260,27 @@ func calculateAdjustedIngredients(recipeStep *model.RecipeStep, scalingFactor fl
 		// Create a copy of the FoodItem to avoid modifying the original
 		foodItemCopy := ing.FoodItemID
 		adjustedIngredients[i] = model.RecipeIngredient{
-			FoodItemID: foodItemCopy,                 // Use the copy
-			Quantity:   ing.Quantity * scalingFactor, // Scale the quantity
-			Unit:       ing.Unit,
-			IsOptional: ing.IsOptional,
-			Purpose:    ing.Purpose,
+			FoodItemID:    foodItemCopy,                 // Use the copy
+			Quantity:      ing.Quantity * scalingFactor, // Scale the quantity
+			SpecifiedUnit: ing.SpecifiedUnit,
+			IsOptional:    ing.IsOptional,
+			Purpose:       ing.Purpose,
 		}
 	}
 	return adjustedIngredients
 }
+
+// func FormatWeight(q float64, unit string, system string) (float64, string)
+//
+// func FormatVolume(q float64, unit string, system string) (float64, string)
+//
+// func ConvertUsingCanonical(q float64, factorFrom float64, factorTo float64) (float64, error)
+//
+// func NormalizeUnit(input string) (string, error) //to handle upper/lowercase things, abbreviations, and pluralization
+//
+// func FormatFraction(q float64, denominator int) string // change 0.75 to 3/4
+//
+// func UnitToStringFormatter(q float64, unit string, itemName string) string // format for display
 
 func formatQuantity(q float32) string {
 	// Check if the number is effectively an integer (within a small tolerance)
