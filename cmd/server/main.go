@@ -18,11 +18,14 @@ import (
 
 var templateSets map[string]*template.Template
 
+var allFoodItemsCache map[int64]model.FoodItem = make(map[int64]model.FoodItem)
+
 func main() {
 	log.SetFormatter(&log.TextFormatter{})
 	log.SetLevel(log.InfoLevel)
 
-	// Initialize the map
+	// Initialize the maps
+	store.InitFoodItemCache(&allFoodItemsCache)
 	templateSets = make(map[string]*template.Template)
 
 	// --- PARSE TEMPLATES AT STARTUP (Separate Sets Pattern) ---
@@ -289,6 +292,41 @@ func formatQuantity(q float32) string {
 	return sFixed
 }
 
+func getFoodItem(id int64) model.FoodItem {
+	item, found := allFoodItemsCache[id]
+	if !found {
+		log.Warnf("FoodItem with ID %d not found in cache", id)
+		// Return an empty struct to avoid template errors, log the issue.
+		return model.FoodItem{}
+	}
+	return item
+}
+
+func getFormDetails(item model.FoodItem, formName string) model.FoodItemFormDetails {
+	// Handle potential nil map if FoodItem wasn't found or has no forms
+	if item.Forms == nil {
+		log.Warnf("FoodItem ID %d has nil Forms map when looking for form '%s'", item.ID, formName)
+		return model.FoodItemFormDetails{}
+	}
+	details, found := item.Forms[formName]
+	if !found {
+		// Attempt to use DefaultFormName if provided formName is not found
+		if item.DefaultFormName != "" && formName != item.DefaultFormName {
+			log.Warnf("Form '%s' not found for FoodItem ID %d. Trying default '%s'", formName, item.ID, item.DefaultFormName)
+			details, found = item.Forms[item.DefaultFormName]
+			if !found {
+				log.Errorf("Default form '%s' ALSO not found for FoodItem ID %d", item.DefaultFormName, item.ID)
+				return model.FoodItemFormDetails{} // Return empty if default also fails
+			}
+		} else {
+			// If the requested name WAS the default, or default is empty, and it wasn't found.
+			log.Errorf("Form '%s' not found for FoodItem ID %d and no default fallback available or default also missing.", formName, item.ID)
+			return model.FoodItemFormDetails{} // Return empty
+		}
+	}
+	return details
+}
+
 // Create a FuncMap to register the function
 var funcMap = template.FuncMap{
 	"formatQuantity": formatQuantity,
@@ -308,4 +346,6 @@ var funcMap = template.FuncMap{
 		// return string([]rune(s)[:length]) + "..."
 		return s[:length] + "..." // Simpler byte slice version
 	},
+	"getFoodItem":    getFoodItem,
+	"getFormDetails": getFormDetails,
 }

@@ -140,3 +140,11 @@ func GetRecipes() []model.Recipe {
 	}
 	return recipes
 }
+
+func InitFoodItemCache(allFoodItemsCache *map[int64]model.FoodItem) {
+	log.Info("Initializing FoodItem cache...")
+	for _, item := range data.DummyFoodItems {
+		(*allFoodItemsCache)[item.ID] = item
+	}
+	log.Infof("Cached %d FoodItems", len(*allFoodItemsCache))
+}

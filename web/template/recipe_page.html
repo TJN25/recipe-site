@@ -213,12 +213,18 @@
 
                                 <ul class="list-disc pl-5 text-sm space-y-1">
                                     {{ range $step.Ingredients }}
-                                        {{ if not .IsOptional }}
-                                            <li class="font-sans leading-relaxed">{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }}{{ if .Purpose }} <span class="text-xs italic text-slate-500">- {{ .Purpose }}</span>{{ end }}</li>
-                                        {{ else }}
-                                            <template x-if="showOptionals">
-                                                 <li class="italic text-slate-500 dark:text-slate-400">{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }} (optional){{ if .Purpose }} <span class="text-xs italic">- {{ .Purpose }}</span>{{ end }}</li>
-                                            </template>
+
+                                        {{ $ing := . }}
+                                        {{ $foodItem := getFoodItem $ing.FoodItemID }}
+                                        {{ $formDetails := getFormDetails $foodItem $ing.FormName }}
+                                        {{ if $foodItem.ID }}   
+                                            {{ if not $ing.IsOptional }}
+                                                <li class="font-sans leading-relaxed">{{ formatQuantity $ing.Quantity }} {{ $formDetails.Unit }} {{ $foodItem.Name }}{{ if .IsOptional }} (optional){{ end }}{{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+                                            {{ else }}
+                                                <template x-if="showOptionals">
+                                                     <li class="italic text-slate-500 dark:text-slate-400">{{ formatQuantity $ing.Quantity }} {{ $formDetails.Unit }} {{ $foodItem.Name }} (optional){{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+                                                </template>
+                                            {{ end }}
                                         {{ end }}
                                     {{ end }}
                                 </ul>

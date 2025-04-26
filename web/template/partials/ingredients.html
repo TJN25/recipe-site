@@ -10,13 +10,18 @@
             <h3 class="font-serif text-lg font-semibold mt-3 mb-1 text-slate-800 dark:text-slate-200">{{ .Title }}</h3>
         </template>
         {{ range .Ingredients }}
-            {{ if not .IsOptional }}
-                <li class="font-sans leading-relaxed">{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }}{{ if .IsOptional }} (optional){{ end }}{{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
-            {{ else }}
-                <template x-if="showOptionals">
-                     <li class="italic text-slate-500 dark:text-slate-400">{{ formatQuantity .Quantity }} {{ .Unit }} {{ .FoodItem.Name }} (optional){{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
-                </template>
-            {{ end }}
+            {{ $ing := . }}
+            {{ $foodItem := getFoodItem $ing.FoodItemID }}
+            {{ $formDetails := getFormDetails $foodItem $ing.FormName }}
+            {{ if $foodItem.ID }}   
+                {{ if not $ing.IsOptional }}
+                    <li class="font-sans leading-relaxed">{{ formatQuantity $ing.Quantity }} {{ $formDetails.Unit }} {{ $foodItem.Name }}{{ if .IsOptional }} (optional){{ end }}{{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+                {{ else }}
+                    <template x-if="showOptionals">
+                         <li class="italic text-slate-500 dark:text-slate-400">{{ formatQuantity $ing.Quantity }} {{ $formDetails.Unit }} {{ $foodItem.Name }} (optional){{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+                    </template>
+                {{ end }}
+        {{ end }}
         {{ end }}
         </div>
     {{ else }}
