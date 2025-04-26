@@ -89,13 +89,39 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 					continue // Skip this ingredient if not found
 				}
 
-				recipeStep.Ingredients = append(recipeStep.Ingredients, model.RecipeIngredient{
-					FoodItemID: foodItem.ID,
-					Quantity:   ingRef.Quantity,
-					Unit:       ingRef.Unit,
-					IsOptional: ingRef.IsOptional,
-					Purpose:    ingRef.Purpose,
-				})
+				if foodItem.Forms == nil {
+					log.Errorf("Store: FoodItem ID %d ('%s') has nil Forms map. Skipping ingredient.", foodItem.ID, foodItem.Name)
+					continue
+				}
+
+				if foodItem.DefaultFormName == "" {
+					log.Errorf("Store: FoodItem ID %d ('%s') has empty DefaultFormName. Skipping ingredient.", foodItem.ID, foodItem.Name)
+					continue
+				}
+
+				defaultFormDetails, formExists := foodItem.Forms[foodItem.DefaultFormName]
+				if !formExists {
+					log.Errorf("Store: DefaultFormName '%s' not found in Forms map for FoodItem ID %d ('%s'). Skipping ingredient.", foodItem.DefaultFormName, foodItem.ID, foodItem.Name)
+					continue
+				}
+
+				if ingRef.Unit != "" && ingRef.Unit != defaultFormDetails.Unit {
+					log.Warnf("Store: Dummy data unit ('%s') for FoodItemID %d ('%s') in RecipeStep %d "+
+						"does not match DefaultForm ('%s') unit ('%s'). Using default form unit '%s'. "+
+						"Verify Quantity (%f) in dummy data.",
+						ingRef.Unit, foodItem.ID, foodItem.Name, dummyStep.ID, foodItem.DefaultFormName,
+						defaultFormDetails.Unit, defaultFormDetails.Unit, ingRef.Quantity)
+				}
+
+				newIngredient := model.RecipeIngredient{
+					FoodItemID: foodItem.ID,              // Set the ID
+					FormName:   foodItem.DefaultFormName, // Set the default form name
+					Quantity:   ingRef.Quantity,          // Set the quantity from the dummy reference
+					IsOptional: ingRef.IsOptional,        // Set optional flag
+					Purpose:    ingRef.Purpose,           // Set purpose
+				}
+
+				recipeStep.Ingredients = append(recipeStep.Ingredients, newIngredient)
 			}
 
 			for _, equipID := range dummyStep.EquipmentIDs {
