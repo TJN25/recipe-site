@@ -134,6 +134,66 @@ var DummyFoodItems = []model.FoodItem{
 		PricePerCanonicalUnit: 0.015,
 		Nutrition:             placeholderNutrition,
 	},
+	{
+		ID:              124,
+		Name:            "Ground Coriander", // New
+		CanonicalUnit:   "g",
+		DefaultFormName: "Ground",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Ground": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.0}}, // Estimate ~2g/tsp
+		},
+		PricePerCanonicalUnit: 0.06, // Guess
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              125,
+		Name:            "Green Beans", // New
+		CanonicalUnit:   "g",
+		DefaultFormName: "Whole",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Whole": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"handful": 40.0}}, // Estimate ~40g/handful
+		},
+		PricePerCanonicalUnit: 0.01, // Guess
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              126,
+		Name:            "Roasted Capsicum Strips", // New (Assume jarred)
+		CanonicalUnit:   "g",
+		DefaultFormName: "Strips",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Strips": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 150.0}}, // Estimate ~150g/cup drained
+		},
+		PricePerCanonicalUnit: 0.03, // Guess
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              127,
+		Name:            "Fresh Parsley", // New
+		CanonicalUnit:   "g",
+		DefaultFormName: "Chopped",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Chopped": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp": 4.0}}, // Estimate ~4g/tbsp chopped
+			"Bunch":   {Unit: "g", ConversionToCanonical: 30.0},                                                  // Estimate ~30g/bunch
+		},
+		PricePerCanonicalUnit: 0.10, // Guess
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              128,
+		Name:            "Fresh Basil", // New
+		CanonicalUnit:   "g",
+		DefaultFormName: "Chopped",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Chopped": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp": 3.0}}, // Estimate ~3g/tbsp chopped
+			"Bunch":   {Unit: "g", ConversionToCanonical: 25.0},                                                  // Estimate ~25g/bunch
+		},
+		PricePerCanonicalUnit: 0.12, // Guess
+		Nutrition:             placeholderNutrition,
+	},
+	// --- Add conversions/forms to existing items if needed ---
+	// Example: Add Paste/Ground forms to Ginger (ID 30)
+	// Example: Add form to Onion (ID 29)
 
 	// --- New Items from Recipes ---
 	{ID: 21, Name: "Bread Flour", CanonicalUnit: "g", PricePerCanonicalUnit: 0.003},
@@ -144,8 +204,31 @@ var DummyFoodItems = []model.FoodItem{
 	{ID: 26, Name: "Chicken Thighs", CanonicalUnit: "g", PricePerCanonicalUnit: 0.012}, // Boneless, skinless
 	{ID: 27, Name: "Greek Yogurt", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},
 	{ID: 28, Name: "Heavy Cream", CanonicalUnit: "ml", PricePerCanonicalUnit: 0.03},
-	{ID: 29, Name: "Onion", CanonicalUnit: "g", PricePerCanonicalUnit: 0.002},  // Assumed brown/yellow onion
-	{ID: 30, Name: "Ginger", CanonicalUnit: "g", PricePerCanonicalUnit: 0.02},  // Fresh ginger root
+	{
+		ID:              29,
+		Name:            "Onion", // Assuming brown/yellow
+		CanonicalUnit:   "g",
+		DefaultFormName: "Whole",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Whole":  {Unit: "unit", ConversionToCanonical: 150.0}, // Estimate avg onion ~150g
+			"Sliced": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 115.0}},
+		},
+		PricePerCanonicalUnit: 0.002,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              30,
+		Name:            "Ginger",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Fresh Root", // Assuming fresh root is default unless specified
+		Forms: map[string]model.FoodItemFormDetails{
+			"Fresh Root": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp minced": 6.0, "inch": 15.0}},
+			"Paste":      {Unit: "tsp", ConversionToCanonical: 4.0}, // Estimate ~4g/tsp paste
+			"Ground":     {Unit: "tsp", ConversionToCanonical: 2.0}, // Estimate ~2g/tsp ground
+		},
+		PricePerCanonicalUnit: 0.02,
+		Nutrition:             placeholderNutrition,
+	},
 	{ID: 31, Name: "Garlic", CanonicalUnit: "g", PricePerCanonicalUnit: 0.03},  // Fresh garlic cloves/minced
 	{ID: 32, Name: "Cashews", CanonicalUnit: "g", PricePerCanonicalUnit: 0.05}, // Raw, unsalted
 	{ID: 33, Name: "Canned Tomatoes", CanonicalUnit: "g", PricePerCanonicalUnit: 0.004},
@@ -460,6 +543,14 @@ var DummyRecipes = []struct {
 		Servings:    3, // Makes approx 6-8 buns depending on size/filling
 		Notes:       "Marinate chicken for 15-20 mins. Fry chicken in batches. Steam buns just before serving. Assemble just before eating for best texture contrast. Enhancements: Salt cucumber slices briefly before use. Toast peanuts before crushing.",
 		ImagePath:   "img/bao-buns-chicken.png", // Assign an appropriate image path
+	},
+	{
+		ID:          19,
+		Title:       "Crispy Fried Chicken with Vegetable & Egg Noodle Stir-fry",
+		Description: "Crispy fried chicken pieces served over a flavorful stir-fry of vegetables and egg noodles.",
+		Servings:    2, // Based on 1-2 range
+		Notes:       "Wok Hei: Preheating the wok properly over high heat is crucial for achieving \"wok hei\" - the characteristic smoky flavour of good stir-fries.\nWok Frying: Be mindful when deep-frying/shallow-frying in a wok. The sloped sides mean oil depth varies. Keep pieces moving and adjust heat to prevent burning. Use a wok spatula or spider strainer for removal.\nStir-fry Motion: Use a scooping, tossing motion to move ingredients constantly, ensuring even cooking and preventing sticking. Add sauce around the perimeter to allow it to heat and reduce slightly before coating ingredients.\nSpeed: Wok cooking is fast. Have everything prepped and ready next to the stove before you start heating the wok.",
+		ImagePath:   "img/chicken-noodle-stirfry.png", // Placeholder path
 	},
 }
 
@@ -2283,6 +2374,94 @@ var DummyRecipeSteps = []dummyRecipeStep{
 			{StepNumber: 8, Instruction: "Repeat for remaining buns and serve immediately."},
 		},
 		EquipmentIDs: []int64{59}, // Spoon/Spreader
+	},
+	// --- ADD THESE TO THE DummyRecipeSteps slice ---
+	// === Recipe 3: Chicken Stir Fry ===
+	// --- Step 1: Preparation Stage ---
+	{
+		ID:          301,
+		RecipeID:    19,
+		StepOrder:   1,
+		Title:       "Preparation Stage",
+		Description: "Prepare chicken, vegetables, sauce, and noodles.",
+		Ingredients: []struct {
+			FoodItemID int64
+			Quantity   float32
+			Unit       string // Unit as specified IN THE RECIPE TEXT
+			IsOptional bool
+			Purpose    string
+		}{
+			{FoodItemID: 26, Quantity: 200, Unit: "g", Purpose: "protein"},                                // Chicken Thighs (using midpoint of 150-250g)
+			{FoodItemID: 55, Quantity: 1, Unit: "Tbsp", Purpose: "marinade umami"},                        // Soy Sauce
+			{FoodItemID: 31, Quantity: 1, Unit: "tsp", Purpose: "marinade aromatic"},                      // Garlic (Specified Minced/Powder - store handles default/form later)
+			{FoodItemID: 30, Quantity: 1, Unit: "tsp", Purpose: "marinade aromatic"},                      // Ginger (Specified Paste/Ground)
+			{FoodItemID: 117, Quantity: 0.5, Unit: "tsp", IsOptional: true, Purpose: "marinade spice"},    // Sichuan Pepper, ground
+			{FoodItemID: 18, Quantity: 0.5, Unit: "tsp", Purpose: "marinade flavour"},                     // Smoked Paprika
+			{FoodItemID: 64, Quantity: 0.25, Unit: "tsp", Purpose: "marinade heat"},                       // Cayenne Pepper (used pinch estimate)
+			{FoodItemID: 109, Quantity: 0.25, Unit: "tsp", Purpose: "marinade spice"},                     // Cumin, Ground
+			{FoodItemID: 124, Quantity: 0.25, Unit: "tsp", Purpose: "marinade spice"},                     // Coriander, Ground
+			{FoodItemID: 16, Quantity: 0.5, Unit: "tsp", Purpose: "marinade seasoning"},                   // Salt
+			{FoodItemID: 62, Quantity: 0.25, Unit: "tsp", Purpose: "marinade seasoning"},                  // Black Pepper
+			{FoodItemID: 74, Quantity: 1, Unit: "unit", Purpose: "binding"},                               // Egg
+			{FoodItemID: 119, Quantity: 3, Unit: "Tbsp", Purpose: "coating"},                              // Cornflour
+			{FoodItemID: 34, Quantity: 4, Unit: "Tbsp", Purpose: "frying"},                                // Canola Oil (using max of 3-4 Tbsp)
+			{FoodItemID: 90, Quantity: 150, Unit: "g", Purpose: "carb base"},                              // Egg Noodles (estimating 1.5 portions @ 100g)
+			{FoodItemID: 29, Quantity: 0.5, Unit: "unit", Purpose: "stir-fry aromatic"},                   // Onion
+			{FoodItemID: 31, Quantity: 2, Unit: "clove", Purpose: "stir-fry aromatic"},                    // Garlic
+			{FoodItemID: 50, Quantity: 1, Unit: "unit", Purpose: "stir-fry veg"},                          // Carrot (assuming 1 medium)
+			{FoodItemID: 125, Quantity: 40, Unit: "g", Purpose: "stir-fry veg"},                           // Green Beans (using handful estimate)
+			{FoodItemID: 77, Quantity: 50, Unit: "g", Purpose: "stir-fry veg"},                            // Mushrooms (using handful estimate)
+			{FoodItemID: 126, Quantity: 60, Unit: "g", Purpose: "stir-fry veg"},                           // Roasted Capsicum (using 1/4 cup estimate)
+			{FoodItemID: 81, Quantity: 40, Unit: "g", Purpose: "stir-fry veg"},                            // Spinach (using handful estimate)
+			{FoodItemID: 55, Quantity: 2, Unit: "Tbsp", Purpose: "stir-fry sauce"},                        // Soy Sauce
+			{FoodItemID: 57, Quantity: 1, Unit: "tsp", IsOptional: true, Purpose: "stir-fry sauce sweet"}, // Honey
+			{FoodItemID: 25, Quantity: 4, Unit: "Tbsp", Purpose: "stir-fry sauce liquid"},                 // Water (using max of 2-4)
+			{FoodItemID: 127, Quantity: 5, Unit: "g", IsOptional: true, Purpose: "garnish"},               // Parsley (estimating 1 Tbsp)
+			// Note: Salt/Pepper to taste omitted, handled in method
+			// Note: Sesame oil omitted, added in method step
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Chicken Prep: Cut chicken thighs into bite-sized pieces. Place in a medium bowl."},
+			{StepNumber: 2, Instruction: "Marinade: Whisk together soy sauce (1 Tbsp), garlic (1 tsp minced/0.5 tsp powder), ginger (1 tsp paste/0.5 tsp ground), Sichuan pepper (if using), smoked paprika, cayenne/chilli, cumin, coriander, salt (0.5 tsp), and black pepper (0.25 tsp)."},
+			{StepNumber: 3, Instruction: "Marinate Chicken: Pour marinade over chicken, mix well."},
+			{StepNumber: 4, Instruction: "Coat Chicken: Mix egg into chicken. Sprinkle cornflour over, mix until coated. Refrigerate 15-20 minutes."},
+			{StepNumber: 5, Instruction: "Vegetable Prep: Slice onion, mince garlic (1-2 cloves), slice/julienne carrot, trim/halve green beans, slice mushrooms. Chop roasted capsicum. Wash spinach. Chop fresh herbs (if using)."},
+			{StepNumber: 6, Instruction: "Stir-fry Sauce: Mix soy sauce (2 Tbsp), honey/sugar (if using), and water/stock (2-4 Tbsp) in a small bowl."},
+			{StepNumber: 7, Instruction: "Noodle Prep: Cook egg noodles according to package directions until al dente. Drain immediately, rinse briefly with cold water. Toss with a tiny drizzle of oil if desired. Set aside."},
+		},
+		EquipmentIDs: []int64{54, 61, 62, 63, 64, 65}, // Med Bowl, Small Bowl, Colander, Board/Knives, Measure Spoons/Cups, Whisk/Fork
+	},
+	// --- Step 2: Cooking Stage ---
+	{
+		ID:          302,
+		RecipeID:    19,
+		StepOrder:   2,
+		Title:       "Cooking Stage (Wok)",
+		Description: "Fry chicken and stir-fry vegetables and noodles.",
+		Ingredients: []struct { // Ingredients specifically *added* or manipulated in this stage
+			FoodItemID int64
+			Quantity   float32
+			Unit       string
+			IsOptional bool
+			Purpose    string
+		}{
+			// Oil for stir-fry is listed as needed in method step 4
+			{FoodItemID: 116, Quantity: 0.5, Unit: "tsp", IsOptional: true, Purpose: "finishing oil"}, // Sesame Oil
+			{FoodItemID: 16, Quantity: 0, Unit: "to taste", Purpose: "final seasoning"},               // Salt
+			{FoodItemID: 62, Quantity: 0, Unit: "to taste", Purpose: "final seasoning"},               // Black Pepper
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Heat Wok & Oil: Place wok over high heat until very hot. Add 3-4 Tbsp canola/avocado oil and swirl. Heat oil until shimmering."},
+			{StepNumber: 2, Instruction: "Fry Chicken: Carefully add marinated chicken pieces in a single layer (work in batches if needed). Reduce heat slightly if needed. Fry, turning occasionally, for 3-5 minutes per side until golden, crispy, and cooked through (75°C)."},
+			{StepNumber: 3, Instruction: "Drain Chicken: Remove cooked chicken to a paper towel-lined plate. Keep warm."},
+			{StepNumber: 4, Instruction: "Stir-fry Veggies: Carefully pour out excess oil, leaving ~1 Tbsp. Return wok to high heat. Add onion, stir-fry ~30 seconds. Add minced garlic, carrots, green beans. Stir-fry constantly for 1-2 minutes."},
+			{StepNumber: 5, Instruction: "Add Soft Veg: Add mushrooms, stir-fry 1-1.5 minutes until softening."},
+			{StepNumber: 6, Instruction: "Combine & Sauce: Add roasted capsicum. Whisk stir-fry sauce, pour around wok edges. Toss quickly as sauce bubbles (~30 seconds)."},
+			{StepNumber: 7, Instruction: "Wilt Spinach & Add Noodles: Add baby spinach, toss until just wilting. Add drained egg noodles. Toss gently but quickly to combine."},
+			{StepNumber: 8, Instruction: "Finish: Turn off heat. Stir through optional sesame oil (0.5 tsp). Season with salt and pepper to taste."},
+			{StepNumber: 9, Instruction: "Serve: Transfer noodle stir-fry to bowls/plates. Top with crispy chicken. Garnish with fresh herbs if desired."},
+		},
+		EquipmentIDs: []int64{60, 66, 67}, // Wok, Tongs/Spatula, Plate
 	},
 }
 
