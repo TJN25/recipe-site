@@ -327,6 +327,19 @@ func getFormDetails(item model.FoodItem, formName string) model.FoodItemFormDeta
 	return details
 }
 
+func unitSpace(unit string) string {
+	// List of units that should NOT have a preceding space
+	noSpaceUnits := map[string]bool{
+		"g":  true,
+		"ml": true,
+		// Add other symbols like °C, °F if needed
+	}
+	if _, found := noSpaceUnits[unit]; found || unit == "" {
+		return "" // No space for these units or empty unit
+	}
+	return " " // Add space for others (cup, tsp, clove, unit, etc.)
+}
+
 // Create a FuncMap to register the function
 var funcMap = template.FuncMap{
 	"formatQuantity": formatQuantity,
@@ -348,4 +361,5 @@ var funcMap = template.FuncMap{
 	},
 	"getFoodItem":    getFoodItem,
 	"getFormDetails": getFormDetails,
+	"unitSpace":      unitSpace,
 }

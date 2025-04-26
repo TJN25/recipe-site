@@ -25,7 +25,11 @@ var DummyFoodItems = []model.FoodItem{
 		DefaultFormName: "Block", // Assume sold/used as a block primarily
 		Forms: map[string]model.FoodItemFormDetails{
 			"Block": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup shredded": 113.0, "oz": 28.35}},
-			// Could add "Shredded" : { Unit: "g", ConversionToCanonical: 1.0, UnitConversions: {"cup": 113.0}} if needed
+			"Shredded": {
+				Unit:                  "cup shredded", // The unit for this specific form entry
+				ConversionToCanonical: 113.0,          // 1 'cup shredded' = 113 'g' (canonical unit)
+				// UnitConversions could potentially convert to other volumes if needed, e.g. {"litre": 0.236}
+			},
 		},
 		PricePerCanonicalUnit: 0.02,
 		Nutrition:             placeholderNutrition,
