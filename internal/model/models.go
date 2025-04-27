@@ -10,9 +10,8 @@ const (
 )
 
 type RecipeStep struct {
-	ID       int64 `json:"id"`        // Will be DB ID later
-	RecipeID int64 `json:"recipe_id"` // can be used in multiple recipes
-	// RecipeIDs   []int64            `json:"recipe_ids"` // can be used in multiple recipes
+	ID          int64              `json:"id"`         // Will be DB ID later
+	RecipeID    int64              `json:"recipe_id"`  // can be used in multiple recipes
 	StepOrder   int                `json:"step_order"` // We will just determine this by it's position in the array. Allows it to be moved around without needing to renumber
 	Title       string             `json:"title"`      // e.g., "Prepare Chicken", "Make Sauce"
 	Description string             `json:"description,omitempty"`
@@ -22,7 +21,7 @@ type RecipeStep struct {
 	Equipment   []Equipment        `json:"equipment"`    // Equipment *specific* to this step
 
 	// Dependencies []RecipeDependency `json:"dependencies,omitempty"`
-	// Servings    int                `json:"servings"`     // Define the scaling used in the section. We may need to ensure this is consistent across steps
+	Servings int `json:"servings"` // Define the scaling used in the section. We may need to ensure this is consistent across steps
 }
 
 type RecipeIngredient struct {
@@ -84,12 +83,13 @@ type Tag struct {
 }
 
 type Recipe struct {
-	ID          int64  `json:"id"` // Database primary key
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Servings    int    `json:"servings"`        // Base servings for the whole recipe
-	Notes       string `json:"notes,omitempty"` // Overall notes
-	ImagePath   string `json:"image_path,omitempty"`
+	ID            int64   `json:"id"` // Database primary key
+	RecipeStepIds []int64 `json:"recipe_step_ids"`
+	Title         string  `json:"title"`
+	Description   string  `json:"description"`
+	Servings      int     `json:"servings"`        // Base servings for the whole recipe
+	Notes         string  `json:"notes,omitempty"` // Overall notes
+	ImagePath     string  `json:"image_path,omitempty"`
 
 	// Relationships / Components
 	RecipeSteps []RecipeStep `json:"recipe_steps"` // The ordered list of stages/steps

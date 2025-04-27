@@ -10,6 +10,27 @@ import (
 	"github.com/TJN25/recipe-site/internal/model" // Import model package (adjust path if needed)
 )
 
+var AllFoodItemsCache map[int64]model.FoodItem
+var AllDummyStepsCache map[int64]data.DummyRecipeStep
+
+func InitializeCaches() {
+	AllFoodItemsCache = make(map[int64]model.FoodItem)
+	// Ensure data.DummyFoodItems uses the NEW model.FoodItem structure
+	for _, item := range data.DummyFoodItems {
+		AllFoodItemsCache[item.ID] = item
+	}
+	log.Infof("Cached %d FoodItems", len(AllFoodItemsCache))
+
+	// Init Dummy Steps
+	AllDummyStepsCache = make(map[int64]data.DummyRecipeStep)
+	// Ensure data.DummyRecipeSteps is the slice of raw dummy step data
+	for _, step := range data.DummyRecipeSteps {
+		// Add validation if needed: Check for duplicate step IDs?
+		AllDummyStepsCache[step.ID] = step
+	}
+	log.Infof("Cached %d DummyRecipeSteps", len(AllDummyStepsCache))
+}
+
 func findFoodItem(id int64) (model.FoodItem, bool) {
 	for _, item := range data.DummyFoodItems {
 		if item.ID == id {
@@ -41,12 +62,13 @@ var ErrNotFound = errors.New("resource not found")
 
 func GetRecipeByID(id int64) (*model.Recipe, error) {
 	var coreRecipeData *struct {
-		ID          int64
-		Title       string
-		Description string
-		Servings    int
-		Notes       string
-		ImagePath   string
+		ID            int64
+		RecipeStepIds []int64
+		Title         string
+		Description   string
+		Servings      int
+		Notes         string
+		ImagePath     string
 	}
 	for i := range data.DummyRecipes {
 		if data.DummyRecipes[i].ID == id {
@@ -59,18 +81,19 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 	}
 
 	recipe := &model.Recipe{
-		ID:          coreRecipeData.ID,
-		Title:       coreRecipeData.Title,
-		Description: coreRecipeData.Description,
-		Servings:    coreRecipeData.Servings,
-		Notes:       coreRecipeData.Notes,
-		ImagePath:   coreRecipeData.ImagePath,
-		RecipeSteps: []model.RecipeStep{}, // Initialize slices
-		Tags:        []model.Tag{},
+		ID:            coreRecipeData.ID,
+		RecipeStepIds: coreRecipeData.RecipeStepIds,
+		Title:         coreRecipeData.Title,
+		Description:   coreRecipeData.Description,
+		Servings:      coreRecipeData.Servings,
+		Notes:         coreRecipeData.Notes,
+		ImagePath:     coreRecipeData.ImagePath,
+		RecipeSteps:   []model.RecipeStep{}, // Initialize slices
+		Tags:          []model.Tag{},
 	}
 
 	for _, dummyStep := range data.DummyRecipeSteps {
-		if dummyStep.RecipeID == id {
+		if recipeContainsStep(dummyStep.ID, recipe.RecipeStepIds) {
 			recipeStep := model.RecipeStep{
 				ID:          dummyStep.ID,
 				StepOrder:   dummyStep.StepOrder,
@@ -154,12 +177,13 @@ func GetRecipes() []model.Recipe {
 	return recipes
 }
 
-func InitFoodItemCache(allFoodItemsCache *map[int64]model.FoodItem) {
-	log.Info("Initializing FoodItem cache...")
-	for _, item := range data.DummyFoodItems {
-		(*allFoodItemsCache)[item.ID] = item
+func recipeContainsStep(id int64, recipeStepIds []int64) bool {
+	for _, step := range recipeStepIds {
+		if step == id {
+			return true
+		}
 	}
-	log.Infof("Cached %d FoodItems", len(*allFoodItemsCache))
+	return false
 }
 
 // Use the following to find the correct form for the recipe, and ensure units are correct (along with quantity)

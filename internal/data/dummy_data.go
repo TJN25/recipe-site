@@ -594,172 +594,192 @@ var DummyTags = []model.Tag{
 }
 
 var DummyRecipes = []struct {
-	ID          int64
-	Title       string
-	Description string
-	Servings    int
-	Notes       string
-	ImagePath   string
+	ID            int64
+	RecipeStepIds []int64
+	Title         string
+	Description   string
+	Servings      int
+	Notes         string
+	ImagePath     string
 }{
 	// --- Existing Recipe (Updated Notes) ---
 	{
-		ID:          1,
-		Title:       "Chipotle Mexican Chicken Mac and Cheese",
-		Description: "A smoky, spicy twist on classic mac and cheese, combined with Mexican chicken. Can be made without chicken/spice for a standard version.",
-		Servings:    2,
-		Notes:       "Let rest 5 minutes before serving. Uses full fat milk for creaminess. Sauce should look slightly too saucy before baking; it will thicken. For standard Mac & Cheese, omit chipotle powder, paprika, Mexican chicken, and burrito sauce. For extra texture, add 3 tbsp frozen corn with chicken. A squeeze of lime or cilantro garnish adds freshness. Best eaten fresh, refrigerate up to 3 days. Reheat on stovetop with a splash of milk.",
-		ImagePath:   "img/mac-and-cheese.png", // Shared image for both versions
+		ID:            1,
+		RecipeStepIds: []int64{102, 103},
+		Title:         "Chipotle Mexican Chicken Mac and Cheese",
+		Description:   "A smoky, spicy twist on classic mac and cheese, combined with Mexican chicken. Can be made without chicken/spice for a standard version.",
+		Servings:      2,
+		Notes:         "Let rest 5 minutes before serving. Uses full fat milk for creaminess. Sauce should look slightly too saucy before baking; it will thicken. For standard Mac & Cheese, omit chipotle powder, paprika, Mexican chicken, and burrito sauce. For extra texture, add 3 tbsp frozen corn with chicken. A squeeze of lime or cilantro garnish adds freshness. Best eaten fresh, refrigerate up to 3 days. Reheat on stovetop with a splash of milk.",
+		ImagePath:     "img/mac-and-cheese.png", // Shared image for both versions
 	},
 
 	// --- New Recipes ---
 	{
-		ID:          2,
-		Title:       "Pizza Dough - Same Day Preparation",
-		Description: "Soft, chewy pizza dough with 75% hydration, ready in 4-5 hours. Makes two 12-14\" pizzas.",
-		Servings:    2, // Makes 2 pizza bases
-		Notes:       "Total dough weight ≈ 490g (2x 245g portions). Use stretch and fold technique. Cook on stovetop in cast iron then finish in hot oven. See detailed notes for overnight fermentation adjustments (reduce yeast, fewer folds, refrigerate). Handle overproofed dough gently. Allow cold dough to rest before stretching.",
-		ImagePath:   "img/pizza-dough.png",
+		ID:            2,
+		RecipeStepIds: []int64{101, 201, 202, 203, 204},
+		Title:         "Pizza Dough - Same Day Preparation",
+		Description:   "Soft, chewy pizza dough with 75% hydration, ready in 4-5 hours. Makes two 12-14\" pizzas.",
+		Servings:      2, // Makes 2 pizza bases
+		Notes:         "Total dough weight ≈ 490g (2x 245g portions). Use stretch and fold technique. Cook on stovetop in cast iron then finish in hot oven. See detailed notes for overnight fermentation adjustments (reduce yeast, fewer folds, refrigerate). Handle overproofed dough gently. Allow cold dough to rest before stretching.",
+		ImagePath:     "img/pizza-dough.png",
 	},
 	{
-		ID:          3,
-		Title:       "Butter Chicken (Murgh Makhani)",
-		Description: "Classic creamy Indian chicken dish with a rich tomato and cashew sauce.",
-		Servings:    3,
-		Notes:       "Marinate chicken up to 24 hours ahead. Cook onions slowly with baking soda for deep browning (may cook faster than stated). Heat level is mild-medium; adjust chili. Sauce keeps 1 week refrigerated; freeze sauce without cream for 3 months. For extra richness, add more butter at the end. Serve with Basmati rice (60g dry per person). User Notes (2025-02-22): Tasted great, good texture. Chicken was quite salty, be cautious adding salt to sauce. Used lime juice.",
-		ImagePath:   "img/butter-chicken.png",
+		ID:            3,
+		RecipeStepIds: []int64{301, 302, 303, 304, 305},
+		Title:         "Butter Chicken (Murgh Makhani)",
+		Description:   "Classic creamy Indian chicken dish with a rich tomato and cashew sauce.",
+		Servings:      3,
+		Notes:         "Marinate chicken up to 24 hours ahead. Cook onions slowly with baking soda for deep browning (may cook faster than stated). Heat level is mild-medium; adjust chili. Sauce keeps 1 week refrigerated; freeze sauce without cream for 3 months. For extra richness, add more butter at the end. Serve with Basmati rice (60g dry per person). User Notes (2025-02-22): Tasted great, good texture. Chicken was quite salty, be cautious adding salt to sauce. Used lime juice.",
+		ImagePath:     "img/butter-chicken.png",
 	},
 	{
-		ID:          4,
-		Title:       "Banh Mi with Duck",
-		Description: "Vietnamese-style baguette sandwich featuring crispy duck breast and quick pickled vegetables.",
-		Servings:    2,
-		Notes:       "Requires quick pickled daikon/carrot (see Recipe ID 14). Score duck skin well. Cook duck to 63°C for medium-rare. Toast baguettes before assembly. User Notes (2025-02-24): Tasted nice but needed more sauce (spicy, simple, creamy/thick suggested). Toast buns in oven. Duck was overcooked (>70°C), monitor closely.",
-		ImagePath:   "img/banh-mi.png",
+		ID:            4,
+		RecipeStepIds: []int64{401, 402, 403, 404},
+		Title:         "Banh Mi with Duck",
+		Description:   "Vietnamese-style baguette sandwich featuring crispy duck breast and quick pickled vegetables.",
+		Servings:      2,
+		Notes:         "Requires quick pickled daikon/carrot (see Recipe ID 14). Score duck skin well. Cook duck to 63°C for medium-rare. Toast baguettes before assembly. User Notes (2025-02-24): Tasted nice but needed more sauce (spicy, simple, creamy/thick suggested). Toast buns in oven. Duck was overcooked (>70°C), monitor closely.",
+		ImagePath:     "img/banh-mi.png",
 	},
 	{
-		ID:          5,
-		Title:       "Agria Potato Wedges",
-		Description: "Crispy baked potato wedges using starchy Agria potatoes.",
-		Servings:    2,
-		Notes:       "Leave skin on. Soak cut wedges in cold water then dry thoroughly for crispiness. For extra crispiness, parboil 5 mins before seasoning. Add parmesan in last 5 mins for flavor. Serve with dip (e.g., yogurt/paprika/garlic). User Notes: Added ½ tsp cayenne, used canola oil instead of avocado. Took ~25 mins in oven. Great taste and texture.",
-		ImagePath:   "img/potato-wedges.png",
+		ID:            5,
+		RecipeStepIds: []int64{501, 502},
+		Title:         "Agria Potato Wedges",
+		Description:   "Crispy baked potato wedges using starchy Agria potatoes.",
+		Servings:      2,
+		Notes:         "Leave skin on. Soak cut wedges in cold water then dry thoroughly for crispiness. For extra crispiness, parboil 5 mins before seasoning. Add parmesan in last 5 mins for flavor. Serve with dip (e.g., yogurt/paprika/garlic). User Notes: Added ½ tsp cayenne, used canola oil instead of avocado. Took ~25 mins in oven. Great taste and texture.",
+		ImagePath:     "img/potato-wedges.png",
 	},
 	{
-		ID:          6,
-		Title:       "Crispy Mexican Chicken Burrito",
-		Description: "A toasted burrito filled with Mexican chicken, cheese, corn, and fresh ingredients.",
-		Servings:    1,
-		Notes:       "Requires pre-cooked Mexican chicken (ID 20) and pickled onions (ID 14). Microwave tortilla briefly to make pliable. Layering order is important. Roll tightly. Cook seam-side down in sandwich press/toastie machine. Enhancements: add cilantro, lime juice, avocado, black beans, or rice.",
-		ImagePath:   "img/chicken-burrito.png",
+		ID:            6,
+		RecipeStepIds: []int64{601, 602, 603, 604},
+		Title:         "Crispy Mexican Chicken Burrito",
+		Description:   "A toasted burrito filled with Mexican chicken, cheese, corn, and fresh ingredients.",
+		Servings:      1,
+		Notes:         "Requires pre-cooked Mexican chicken (ID 20) and pickled onions (ID 14). Microwave tortilla briefly to make pliable. Layering order is important. Roll tightly. Cook seam-side down in sandwich press/toastie machine. Enhancements: add cilantro, lime juice, avocado, black beans, or rice.",
+		ImagePath:     "img/chicken-burrito.png",
 	},
 	{
-		ID:          7,
-		Title:       "English Muffins",
-		Description: "Small, yeasted muffins typically split, toasted, and buttered. Oven-baked method provided.",
-		Servings:    4, // Makes 3-4 muffins
-		Notes:       "Uses stretch and fold. Dough is sticky; use flour generously or oil hands/scraper. Ramekin used for cutting. Second rise on floured parchment. Oven bake method avoids stovetop griddling. Flour dusting substitutes for cornmeal/semolina but gives different texture. User Notes: Came out well. Good for making ahead and toasting.",
-		ImagePath:   "img/english-muffins.png",
+		ID:            7,
+		RecipeStepIds: []int64{701, 702, 703, 704, 705},
+		Title:         "English Muffins",
+		Description:   "Small, yeasted muffins typically split, toasted, and buttered. Oven-baked method provided.",
+		Servings:      4, // Makes 3-4 muffins
+		Notes:         "Uses stretch and fold. Dough is sticky; use flour generously or oil hands/scraper. Ramekin used for cutting. Second rise on floured parchment. Oven bake method avoids stovetop griddling. Flour dusting substitutes for cornmeal/semolina but gives different texture. User Notes: Came out well. Good for making ahead and toasting.",
+		ImagePath:     "img/english-muffins.png",
 	},
 	{
-		ID:          8,
-		Title:       "Fettuccine with Mushroom White Wine Sauce",
-		Description: "Pasta dish with a savory sauce made from mushrooms, mirepoix, white wine, and chicken stock.",
-		Servings:    2,
-		Notes:       "Prep all ingredients first (mise en place). Reserve pasta water to adjust sauce consistency. Serve immediately. User Notes (21-02-2025): Turned out well with fresh ingredients. Slightly salty with fresh parmesan topping. Used homemade wide-cut fettuccine. (05-03-2025): Substituted white wine vinegar + water for wine (used too much vinegar), everyday parmesan, store-bought fettuccine. Enjoyed but dial back vinegar, maybe add mustard powder. (06-03-2025): Added mustard powder, smoked paprika, soy sauce, pepper. No pasta water needed (salty). Used reduced stock (maybe too much). Suggests thinner pasta, slightly less butter, pair with salad (lettuce, spinach, tomato, red onion, spring onion, chives, maybe feta, lemon/pepper dressing).",
-		ImagePath:   "img/fettuccine-mushroom.png",
+		ID:            8,
+		RecipeStepIds: []int64{801, 802, 803, 804},
+		Title:         "Fettuccine with Mushroom White Wine Sauce",
+		Description:   "Pasta dish with a savory sauce made from mushrooms, mirepoix, white wine, and chicken stock.",
+		Servings:      2,
+		Notes:         "Prep all ingredients first (mise en place). Reserve pasta water to adjust sauce consistency. Serve immediately. User Notes (21-02-2025): Turned out well with fresh ingredients. Slightly salty with fresh parmesan topping. Used homemade wide-cut fettuccine. (05-03-2025): Substituted white wine vinegar + water for wine (used too much vinegar), everyday parmesan, store-bought fettuccine. Enjoyed but dial back vinegar, maybe add mustard powder. (06-03-2025): Added mustard powder, smoked paprika, soy sauce, pepper. No pasta water needed (salty). Used reduced stock (maybe too much). Suggests thinner pasta, slightly less butter, pair with salad (lettuce, spinach, tomato, red onion, spring onion, chives, maybe feta, lemon/pepper dressing).",
+		ImagePath:     "img/fettuccine-mushroom.png",
 	},
 	{
-		ID:          9,
-		Title:       "Fusion Taco Noodles with Red Sauce",
-		Description: "Egg noodles stir-fried with aromatics, egg, and a savory-tangy sauce featuring red taco sauce.",
-		Servings:    2,
-		Notes:       "Uses Red Taco Sauce (ID 16). Adjust sauce balance (sweetness/acidity) to taste. Cook aromatics carefully to avoid burning garlic. Break egg up quickly while wet. Add reserved noodle water if needed to adjust consistency. Serve immediately.",
-		ImagePath:   "img/taco-noodles.png",
+		ID:            9,
+		RecipeStepIds: []int64{901, 902, 903},
+		Title:         "Fusion Taco Noodles with Red Sauce",
+		Description:   "Egg noodles stir-fried with aromatics, egg, and a savory-tangy sauce featuring red taco sauce.",
+		Servings:      2,
+		Notes:         "Uses Red Taco Sauce (ID 16). Adjust sauce balance (sweetness/acidity) to taste. Cook aromatics carefully to avoid burning garlic. Break egg up quickly while wet. Add reserved noodle water if needed to adjust consistency. Serve immediately.",
+		ImagePath:     "img/taco-noodles.png",
 	},
 	{
-		ID:          10,
-		Title:       "Ginger-Peach Fire Sauce (Component)",
-		Description: "A spicy-sweet-zingy sauce with ginger warmth, inspired by Zambrero's.",
-		Servings:    10, // Makes ~1.5-2 cups
-		Notes:       "Use fresh ginger (recipe notes possibly too much). Adjust chilies to taste. Use canned peaches. Taste before adding sugar (canned peaches add sweetness). Blend until smooth, strain for best texture. Store refrigerated up to 1 week, freeze excess. Shake well before use.",
-		ImagePath:   "img/ginger-peach-sauce.png",
+		ID:            10,
+		RecipeStepIds: []int64{1001, 1002, 1003},
+		Title:         "Ginger-Peach Fire Sauce (Component)",
+		Description:   "A spicy-sweet-zingy sauce with ginger warmth, inspired by Zambrero's.",
+		Servings:      10, // Makes ~1.5-2 cups
+		Notes:         "Use fresh ginger (recipe notes possibly too much). Adjust chilies to taste. Use canned peaches. Taste before adding sugar (canned peaches add sweetness). Blend until smooth, strain for best texture. Store refrigerated up to 1 week, freeze excess. Shake well before use.",
+		ImagePath:     "img/ginger-peach-sauce.png",
 	},
 	{
-		ID:          11,
-		Title:       "KFC Style Coleslaw",
-		Description: "A copycat recipe for KFC's sweet and tangy coleslaw.",
-		Servings:    6,
-		Notes:       "Chop cabbage very finely (rice-sized). Requires refrigeration for minimum 1 hour (longer is better) for flavors to meld. Stir before serving.",
-		ImagePath:   "img/kfc-coleslaw.png",
+		ID:            11,
+		RecipeStepIds: []int64{1101, 1102},
+		Title:         "KFC Style Coleslaw",
+		Description:   "A copycat recipe for KFC's sweet and tangy coleslaw.",
+		Servings:      6,
+		Notes:         "Chop cabbage very finely (rice-sized). Requires refrigeration for minimum 1 hour (longer is better) for flavors to meld. Stir before serving.",
+		ImagePath:     "img/kfc-coleslaw.png",
 	},
 	// ID 12 is skipped as the standard Mac & Cheese was merged into ID 1.
 	{
-		ID:          12, // Renumbered from 13
-		Title:       "Mi Goreng-Inspired Satay Noodles",
-		Description: "Egg noodles with a spicy peanut satay sauce, inspired by Indonesian Mi Goreng flavors.",
-		Servings:    2,
-		Notes:       "Use smooth peanut butter. Adjust chilies/chili powder for heat. Keep sauce warm and well-mixed. Watch aromatics carefully. Break egg up quickly. Final sauce should be glossy. Best eaten fresh.",
-		ImagePath:   "img/satay-noodles.png",
+		ID:            12, // Renumbered from 13
+		RecipeStepIds: []int64{1201, 1202, 1203},
+		Title:         "Mi Goreng-Inspired Satay Noodles",
+		Description:   "Egg noodles with a spicy peanut satay sauce, inspired by Indonesian Mi Goreng flavors.",
+		Servings:      2,
+		Notes:         "Use smooth peanut butter. Adjust chilies/chili powder for heat. Keep sauce warm and well-mixed. Watch aromatics carefully. Break egg up quickly. Final sauce should be glossy. Best eaten fresh.",
+		ImagePath:     "img/satay-noodles.png",
 	},
 	{
-		ID:          13, // Renumbered from 14
-		Title:       "Pambazo (Mexican Chorizo-Potato Sandwich)",
-		Description: "A Mexican sandwich featuring chorizo-potato filling in chili-dipped, fried bread.",
-		Servings:    2,
-		Notes:       "Uses Kashmiri chilies as substitute for Guajillo. Requires Feta/Parmesan as substitute for Cotija, and Pickled Onions (ID 14). Toast chilies briefly. Par-boil potatoes for faster filling prep. Use sturdy rolls. User Notes (2025-02-23): Very wet meal. Suggests pre-frying buns slightly before dipping. Minimize wet ingredients (salsa, lettuce, onions). Tasted good combined but individual components lacked complexity. Minimize feta or crumble finely. Needs work on salt/acid/texture.",
-		ImagePath:   "img/pambazo.png",
+		ID:            13, // Renumbered from 14
+		RecipeStepIds: []int64{1301, 1302, 1303, 1304},
+		Title:         "Pambazo (Mexican Chorizo-Potato Sandwich)",
+		Description:   "A Mexican sandwich featuring chorizo-potato filling in chili-dipped, fried bread.",
+		Servings:      2,
+		Notes:         "Uses Kashmiri chilies as substitute for Guajillo. Requires Feta/Parmesan as substitute for Cotija, and Pickled Onions (ID 14). Toast chilies briefly. Par-boil potatoes for faster filling prep. Use sturdy rolls. User Notes (2025-02-23): Very wet meal. Suggests pre-frying buns slightly before dipping. Minimize wet ingredients (salsa, lettuce, onions). Tasted good combined but individual components lacked complexity. Minimize feta or crumble finely. Needs work on salt/acid/texture.",
+		ImagePath:     "img/pambazo.png",
 	},
 	{
-		ID:          14, // Renumbered from 15
-		Title:       "Quick Pickled Red Onions (Component)",
-		Description: "Simple and fast method for pickling red onions.",
-		Servings:    10, // Makes ~200ml jar
-		Notes:       "Slice onion thinly root-to-tip. Use hot brine. Ready in 2 hours, best after 24 hours. Stores up to 3 weeks refrigerated. Tap jar to release air bubbles.",
-		ImagePath:   "img/pickled-onions.png", // Re-use image
+		ID:            14, // Renumbered from 15
+		RecipeStepIds: []int64{1401},
+		Title:         "Quick Pickled Red Onions (Component)",
+		Description:   "Simple and fast method for pickling red onions.",
+		Servings:      10, // Makes ~200ml jar
+		Notes:         "Slice onion thinly root-to-tip. Use hot brine. Ready in 2 hours, best after 24 hours. Stores up to 3 weeks refrigerated. Tap jar to release air bubbles.",
+		ImagePath:     "img/pickled-onions.png", // Re-use image
 	},
 	{
-		ID:          15, // Renumbered from 16
-		Title:       "Quick Pizza Sauce (Component)",
-		Description: "A fast, blended pizza sauce using canned tomatoes and paste.",
-		Servings:    4, // Enough for ~2-4 pizzas
-		Notes:       "Drain tomatoes but reserve liquid. Blend until smooth. Should be thick; add reserved liquid only if needed to adjust consistency.",
-		ImagePath:   "img/pizza-sauce.png", // Re-use image
+		ID:            15, // Renumbered from 16
+		RecipeStepIds: []int64{1501},
+		Title:         "Quick Pizza Sauce (Component)",
+		Description:   "A fast, blended pizza sauce using canned tomatoes and paste.",
+		Servings:      4, // Enough for ~2-4 pizzas
+		Notes:         "Drain tomatoes but reserve liquid. Blend until smooth. Should be thick; add reserved liquid only if needed to adjust consistency.",
+		ImagePath:     "img/pizza-sauce.png", // Re-use image
 	},
 	{
-		ID:          16, // Renumbered from 17
-		Title:       "Red Taco Sauce (Component)",
-		Description: "A smoky and tangy red chili sauce for tacos and other Mexican dishes.",
-		Servings:    12, // Makes ~300-350ml
-		Notes:       "Uses Kashmiri and chipotle chilies. Roasts garlic and tomatoes for depth. Simmer to thicken. Strain for smoother sauce (optional). Keeps 1 week refrigerated, freezes well. User Notes (Multiple Dates): Tasted good, versatile. Didn't need second heating step. Adjusted sugar/vinegar. Salt adjustment (½ tsp) worked well. Can be quite hot.",
-		ImagePath:   "img/red-taco-sauce.png",
+		ID:            16, // Renumbered from 17
+		RecipeStepIds: []int64{1601, 1602, 1603, 1604},
+		Title:         "Red Taco Sauce (Component)",
+		Description:   "A smoky and tangy red chili sauce for tacos and other Mexican dishes.",
+		Servings:      12, // Makes ~300-350ml
+		Notes:         "Uses Kashmiri and chipotle chilies. Roasts garlic and tomatoes for depth. Simmer to thicken. Strain for smoother sauce (optional). Keeps 1 week refrigerated, freezes well. User Notes (Multiple Dates): Tasted good, versatile. Didn't need second heating step. Adjusted sugar/vinegar. Salt adjustment (½ tsp) worked well. Can be quite hot.",
+		ImagePath:     "img/red-taco-sauce.png",
 	},
 	{
-		ID:          17, // Renumbered from 18
-		Title:       "Subway-Style Baguette Adaptation",
-		Description: "Multiple attempts documented to replicate soft, thin-crusted Subway-style bread rolls.",
-		Servings:    2, // Makes 2 baguettes
-		Notes:       "Based on pizza dough recipe (ID 2) with adjustments (less salt, more oil/sugar). Multiple attempts focus on achieving soft crust via temperature, steam (water spray, water pan, covering with glass dish), and post-bake wrapping. Uses stretch & fold. Shaping into logs. Lower baking temps than pizza. User notes track progress through attempts, focusing on crust texture and crumb density. Latest attempts involve higher initial temp, aggressive steam, covering during bake, and immediate wrapping post-bake. Target internal temp 90-93°C.",
-		ImagePath:   "img/subway-baguette.png",
+		ID:            17, // Renumbered from 18
+		RecipeStepIds: []int64{1701, 1702, 1703, 1704, 1705},
+		Title:         "Subway-Style Baguette Adaptation",
+		Description:   "Multiple attempts documented to replicate soft, thin-crusted Subway-style bread rolls.",
+		Servings:      2, // Makes 2 baguettes
+		Notes:         "Based on pizza dough recipe (ID 2) with adjustments (less salt, more oil/sugar). Multiple attempts focus on achieving soft crust via temperature, steam (water spray, water pan, covering with glass dish), and post-bake wrapping. Uses stretch & fold. Shaping into logs. Lower baking temps than pizza. User notes track progress through attempts, focusing on crust texture and crumb density. Latest attempts involve higher initial temp, aggressive steam, covering during bake, and immediate wrapping post-bake. Target internal temp 90-93°C.",
+		ImagePath:     "img/subway-baguette.png",
 	},
 	{
-		ID:          18, // Assign the next available ID
-		Title:       "Spiced Chicken Bao Buns with Sriracha Mayo",
-		Description: "Crispy fried spiced chicken pieces served in soft bao buns with coleslaw, cucumber, peanuts, and a tangy sriracha mayo.",
-		Servings:    3, // Makes approx 6-8 buns depending on size/filling
-		Notes:       "Marinate chicken for 15-20 mins. Fry chicken in batches. Steam buns just before serving. Assemble just before eating for best texture contrast. Enhancements: Salt cucumber slices briefly before use. Toast peanuts before crushing.",
-		ImagePath:   "img/bao-buns-chicken.png", // Assign an appropriate image path
+		ID:            18, // Assign the next available ID
+		RecipeStepIds: []int64{1801, 1802, 1803, 1804},
+		Title:         "Spiced Chicken Bao Buns with Sriracha Mayo",
+		Description:   "Crispy fried spiced chicken pieces served in soft bao buns with coleslaw, cucumber, peanuts, and a tangy sriracha mayo.",
+		Servings:      3, // Makes approx 6-8 buns depending on size/filling
+		Notes:         "Marinate chicken for 15-20 mins. Fry chicken in batches. Steam buns just before serving. Assemble just before eating for best texture contrast. Enhancements: Salt cucumber slices briefly before use. Toast peanuts before crushing.",
+		ImagePath:     "img/bao-buns-chicken.png", // Assign an appropriate image path
 	},
 	{
-		ID:          19,
-		Title:       "Crispy Fried Chicken with Vegetable & Egg Noodle Stir-fry",
-		Description: "Crispy fried chicken pieces served over a flavorful stir-fry of vegetables and egg noodles.",
-		Servings:    2, // Based on 1-2 range
-		Notes:       "Wok Hei: Preheating the wok properly over high heat is crucial for achieving \"wok hei\" - the characteristic smoky flavour of good stir-fries.\nWok Frying: Be mindful when deep-frying/shallow-frying in a wok. The sloped sides mean oil depth varies. Keep pieces moving and adjust heat to prevent burning. Use a wok spatula or spider strainer for removal.\nStir-fry Motion: Use a scooping, tossing motion to move ingredients constantly, ensuring even cooking and preventing sticking. Add sauce around the perimeter to allow it to heat and reduce slightly before coating ingredients.\nSpeed: Wok cooking is fast. Have everything prepped and ready next to the stove before you start heating the wok.",
-		ImagePath:   "img/chicken-noodle-stirfry.png", // Placeholder path
+		ID:            19,
+		RecipeStepIds: []int64{1901, 1902, 1903, 1904, 1905, 1906},
+		Title:         "Crispy Fried Chicken with Vegetable & Egg Noodle Stir-fry",
+		Description:   "Crispy fried chicken pieces served over a flavorful stir-fry of vegetables and egg noodles.",
+		Servings:      2, // Based on 1-2 range
+		Notes:         "Wok Hei: Preheating the wok properly over high heat is crucial for achieving \"wok hei\" - the characteristic smoky flavour of good stir-fries.\nWok Frying: Be mindful when deep-frying/shallow-frying in a wok. The sloped sides mean oil depth varies. Keep pieces moving and adjust heat to prevent burning. Use a wok spatula or spider strainer for removal.\nStir-fry Motion: Use a scooping, tossing motion to move ingredients constantly, ensuring even cooking and preventing sticking. Add sauce around the perimeter to allow it to heat and reduce slightly before coating ingredients.\nSpeed: Wok cooking is fast. Have everything prepped and ready next to the stove before you start heating the wok.",
+		ImagePath:     "img/chicken-noodle-stirfry.png", // Placeholder path
 	},
 }
 
-type dummyRecipeStep struct {
+type DummyRecipeStep struct {
 	ID          int64
 	RecipeID    int64
 	StepOrder   int
@@ -777,7 +797,7 @@ type dummyRecipeStep struct {
 	EquipmentIDs []int64            // Equipment References
 }
 
-var DummyRecipeSteps = []dummyRecipeStep{
+var DummyRecipeSteps = []DummyRecipeStep{
 	// --- Recipe 1: Chipotle Mexican Chicken Mac and Cheese ---
 	// Step 1: Prep Pasta & Cheese (Merged Standard & Chipotle)
 	{

@@ -18,14 +18,11 @@ import (
 
 var templateSets map[string]*template.Template
 
-var allFoodItemsCache map[int64]model.FoodItem = make(map[int64]model.FoodItem)
-
 func main() {
 	log.SetFormatter(&log.TextFormatter{})
 	log.SetLevel(log.InfoLevel)
 
 	// Initialize the maps
-	store.InitFoodItemCache(&allFoodItemsCache)
 	templateSets = make(map[string]*template.Template)
 
 	// --- PARSE TEMPLATES AT STARTUP (Separate Sets Pattern) ---
@@ -304,7 +301,7 @@ func formatQuantity(q float32) string {
 }
 
 func getFoodItem(id int64) model.FoodItem {
-	item, found := allFoodItemsCache[id]
+	item, found := store.AllFoodItemsCache[id]
 	if !found {
 		log.Warnf("FoodItem with ID %d not found in cache", id)
 		// Return an empty struct to avoid template errors, log the issue.
