@@ -14,6 +14,7 @@ var AllFoodItemsCache map[int64]model.FoodItem
 var AllDummyStepsCache map[int64]data.DummyRecipeStep
 
 func InitializeCaches() {
+	log.Info("Initializing store caches...")
 	AllFoodItemsCache = make(map[int64]model.FoodItem)
 	// Ensure data.DummyFoodItems uses the NEW model.FoodItem structure
 	for _, item := range data.DummyFoodItems {
@@ -29,6 +30,21 @@ func InitializeCaches() {
 		AllDummyStepsCache[step.ID] = step
 	}
 	log.Infof("Cached %d DummyRecipeSteps", len(AllDummyStepsCache))
+	if log.GetLevel() >= log.DebugLevel {
+		count := 0
+		log.Debug("Sample DummyRecipeStep Cache Entries:")
+		for id, step := range AllDummyStepsCache {
+			log.Debugf("  - ID: %d, Title: '%s', RecipeID: %d", id, step.Title, step.RecipeID) // Added RecipeID for context
+			count++
+			if count >= 5 { // Limit logging to first 5 entries
+				log.Debug("  - ... (logging first 5 entries only)")
+				break
+			}
+		}
+		if count == 0 {
+			log.Debug("  - Cache is empty!")
+		}
+	}
 }
 
 func findFoodItem(id int64) (model.FoodItem, bool) {
@@ -70,14 +86,33 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 		Notes         string
 		ImagePath     string
 	}
+
+	foundCore := false
 	for i := range data.DummyRecipes {
 		if data.DummyRecipes[i].ID == id {
-			coreRecipeData = &data.DummyRecipes[i]
+			coreRecipeData = &struct {
+				ID            int64
+				RecipeStepIds []int64
+				Title         string
+				Description   string
+				Servings      int
+				Notes         string
+				ImagePath     string
+			}{
+				ID:            data.DummyRecipes[i].ID,
+				Title:         data.DummyRecipes[i].Title,
+				Description:   data.DummyRecipes[i].Description,
+				Servings:      data.DummyRecipes[i].Servings,
+				Notes:         data.DummyRecipes[i].Notes,
+				ImagePath:     data.DummyRecipes[i].ImagePath,
+				RecipeStepIds: data.DummyRecipes[i].RecipeStepIds,
+			}
+			foundCore = true
 			break
 		}
 	}
-	if coreRecipeData == nil {
-		return nil, fmt.Errorf("recipe with ID %d not found in DummyRecipes: %w", id, ErrNotFound)
+	if !foundCore || coreRecipeData == nil {
+		return nil, fmt.Errorf("recipe with ID %d not found or missing RecipeStepIds in DummyRecipes: %w", id, ErrNotFound)
 	}
 
 	recipe := &model.Recipe{
@@ -88,64 +123,69 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 		Servings:      coreRecipeData.Servings,
 		Notes:         coreRecipeData.Notes,
 		ImagePath:     coreRecipeData.ImagePath,
-		RecipeSteps:   []model.RecipeStep{}, // Initialize slices
+		RecipeSteps:   make([]model.RecipeStep, 0, len(coreRecipeData.RecipeStepIds)), // Initialize slices
 		Tags:          []model.Tag{},
 	}
 
-	for _, dummyStep := range data.DummyRecipeSteps {
-		if recipeContainsStep(dummyStep.ID, recipe.RecipeStepIds) {
-			recipeStep := model.RecipeStep{
-				ID:          dummyStep.ID,
-				StepOrder:   dummyStep.StepOrder,
-				Title:       dummyStep.Title,
-				Description: dummyStep.Description,
-				Notes:       dummyStep.Notes,
-				Ingredients: []model.RecipeIngredient{},
-				MethodSteps: dummyStep.MethodSteps,
-				Equipment:   []model.Equipment{},
-			}
-
-			for _, ingRef := range dummyStep.Ingredients {
-				// 1. Lookup FoodItem
-				foodItem, found := findFoodItem(ingRef.FoodItemID)
-				if !found {
-					log.Warnf("Store: FoodItem ID %d not found referenced in RecipeStep ID %d. Skipping ingredient.", ingRef.FoodItemID, dummyStep.ID)
-					continue
-				}
-
-				// 2. Basic Validation (Optional but good)
-				if foodItem.DefaultFormName == "" {
-					log.Warnf("Store: FoodItem ID %d ('%s') has empty DefaultFormName. Data might be incomplete.", foodItem.ID, foodItem.Name)
-					// We can still proceed, DefaultFormName is mostly for substitutions now
-				}
-
-				// 3. Create the RecipeIngredient - Directly recording source data
-				newIngredient := model.RecipeIngredient{
-					FoodItemID: foodItem.ID,
-					// Store the default form name for reference / potential initial display choice
-					FormName:      foodItem.DefaultFormName,
-					Quantity:      ingRef.Quantity, // Store quantity as given
-					SpecifiedUnit: ingRef.Unit,     // <<< STORE THE UNIT FROM THE SOURCE
-					IsOptional:    ingRef.IsOptional,
-					Purpose:       ingRef.Purpose,
-				}
-
-				// 4. Append
-				recipeStep.Ingredients = append(recipeStep.Ingredients, newIngredient)
-			}
-
-			for _, equipID := range dummyStep.EquipmentIDs {
-				equipment, found := findEquipment(equipID)
-				if !found {
-					log.Warnf("Warning: Equipment ID %d not found for RecipeStep ID %d\n", equipID, dummyStep.ID)
-					continue // Skip if not found
-				}
-				recipeStep.Equipment = append(recipeStep.Equipment, equipment)
-			}
-
-			// Add the fully assembled step to the recipe
-			recipe.RecipeSteps = append(recipe.RecipeSteps, recipeStep)
+	for _, stepID := range coreRecipeData.RecipeStepIds {
+		dummyStep, found := AllDummyStepsCache[stepID]
+		if !found {
+			log.Warnf("Store: RecipeStep ID %d referenced by Recipe ID %d not found in cache. Skipping step.", stepID, recipe.ID)
+			continue
 		}
+
+		recipeStep := model.RecipeStep{
+			ID:          dummyStep.ID,
+			StepOrder:   dummyStep.StepOrder,
+			Title:       dummyStep.Title,
+			Description: dummyStep.Description,
+			Notes:       dummyStep.Notes,
+			Ingredients: []model.RecipeIngredient{},
+			MethodSteps: dummyStep.MethodSteps,
+			Equipment:   []model.Equipment{},
+		}
+
+		for _, ingRef := range dummyStep.Ingredients {
+			// 1. Lookup FoodItem
+			foodItem, found := findFoodItem(ingRef.FoodItemID)
+			if !found {
+				log.Warnf("Store: FoodItem ID %d not found referenced in RecipeStep ID %d. Skipping ingredient.", ingRef.FoodItemID, dummyStep.ID)
+				continue
+			}
+
+			// 2. Basic Validation (Optional but good)
+			if foodItem.DefaultFormName == "" {
+				log.Warnf("Store: FoodItem ID %d ('%s') has empty DefaultFormName. Data might be incomplete.", foodItem.ID, foodItem.Name)
+				// We can still proceed, DefaultFormName is mostly for substitutions now
+			}
+
+			// 3. Create the RecipeIngredient - Directly recording source data
+			newIngredient := model.RecipeIngredient{
+				FoodItemID: foodItem.ID,
+				// Store the default form name for reference / potential initial display choice
+				FormName:      foodItem.DefaultFormName,
+				Quantity:      ingRef.Quantity, // Store quantity as given
+				SpecifiedUnit: ingRef.Unit,     // <<< STORE THE UNIT FROM THE SOURCE
+				IsOptional:    ingRef.IsOptional,
+				Purpose:       ingRef.Purpose,
+			}
+
+			// 4. Append
+			recipeStep.Ingredients = append(recipeStep.Ingredients, newIngredient)
+		}
+
+		for _, equipID := range dummyStep.EquipmentIDs {
+			equipment, found := findEquipment(equipID)
+			if !found {
+				log.Warnf("Warning: Equipment ID %d not found for RecipeStep ID %d\n", equipID, dummyStep.ID)
+				continue // Skip if not found
+			}
+			recipeStep.Equipment = append(recipeStep.Equipment, equipment)
+		}
+
+		// Add the fully assembled step to the recipe
+		recipe.RecipeSteps = append(recipe.RecipeSteps, recipeStep)
+
 	}
 	for _, link := range data.DummyRecipeTags {
 		if link.RecipeID == recipe.ID {
@@ -175,15 +215,6 @@ func GetRecipes() []model.Recipe {
 		})
 	}
 	return recipes
-}
-
-func recipeContainsStep(id int64, recipeStepIds []int64) bool {
-	for _, step := range recipeStepIds {
-		if step == id {
-			return true
-		}
-	}
-	return false
 }
 
 // Use the following to find the correct form for the recipe, and ensure units are correct (along with quantity)

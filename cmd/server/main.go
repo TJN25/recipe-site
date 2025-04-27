@@ -23,6 +23,7 @@ func main() {
 	log.SetLevel(log.InfoLevel)
 
 	// Initialize the maps
+	store.InitializeCaches()
 	templateSets = make(map[string]*template.Template)
 
 	// --- PARSE TEMPLATES AT STARTUP (Separate Sets Pattern) ---
