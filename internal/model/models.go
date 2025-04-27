@@ -21,7 +21,7 @@ type RecipeStep struct {
 	Equipment   []Equipment        `json:"equipment"`    // Equipment *specific* to this step
 
 	// Dependencies []RecipeDependency `json:"dependencies,omitempty"`
-	Servings int `json:"servings"` // Define the scaling used in the section. We may need to ensure this is consistent across steps
+	BaseServings int `json:"base_servings"` // Define the scaling used in the section. We may need to ensure this is consistent across steps
 }
 
 type RecipeIngredient struct {
@@ -50,6 +50,7 @@ type FoodItemFormDetails struct {
 	ConversionToCanonical float32            `json:"conversion_to_canonical"` // e.g. 5.0 if CanonicalUnit is 'g' and this form is 'clove'.
 	PricePerUnit          float32            `json:"price_per_unit,omitempty"`
 	UnitConversions       map[string]float32 `json:"unit_conversions,omitempty"` // e.g., For Flour (Form: Default, Unit: g), UnitConversions: {"cup": 120.0, "tbsp": 7.5}
+	MakeableRecipeStepIDs []int64            `json:"makeable_recipe_ids"`        // ID that points to the recipe steps needed to make the recipe
 }
 
 type Nutrition struct {
@@ -82,6 +83,22 @@ type Tag struct {
 	Type string `json:"type"` // e.g., "cuisine", "duration", "season", "dish_type", "technique", "mood"
 }
 
+type RecipeVariant struct {
+	// ID   int64  `json:"id"` // Optional: A unique ID for the variant itself
+	Key  string `json:"key"`  // Required: A unique machine-readable key (e.g., "chipotle_chicken", "vegetarian")
+	Name string `json:"name"` // Required: User-friendly display name (e.g., "Chipotle Chicken Version")
+
+	// Option B: Variant contains steps to ADD or MODIFY base steps (More Complex)
+	AddedSteps []RecipeStep `json:"added_steps,omitempty"` // Steps to add
+	// Need info on WHERE to add them (e.g., before/after which base StepID?)
+	// InsertionPoints map[string]int64 `json:"insertion_points,omitempty"` // e.g., {"add_after_step_id": 102}
+
+	// Could also include modified ingredients/quantities, but that gets very complex.
+
+	// Let's assume Option A initially for simplicity: The variant defines the *complete* step sequence when selected.
+	RecipeSteps []RecipeStep `json:"recipe_steps"`
+}
+
 type Recipe struct {
 	ID            int64   `json:"id"` // Database primary key
 	RecipeStepIds []int64 `json:"recipe_step_ids"`
@@ -92,8 +109,9 @@ type Recipe struct {
 	ImagePath     string  `json:"image_path,omitempty"`
 
 	// Relationships / Components
-	RecipeSteps []RecipeStep `json:"recipe_steps"` // The ordered list of stages/steps
-	Tags        []Tag        `json:"tags"`         // Overall tags for the recipe
+	RecipeSteps []RecipeStep    `json:"recipe_steps"` // The ordered list of stages/steps
+	Tags        []Tag           `json:"tags"`         // Overall tags for the recipe
+	Variants    []RecipeVariant `json:"variants,omitempty"`
 
 	// --- Optional: Add aggregated list for convenience? ---
 	// AllIngredients []RecipeIngredient `json:"-"` // Could be calculated, not stored directly
