@@ -135,15 +135,14 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 		}
 
 		recipeStep := model.RecipeStep{
-			ID:           dummyStep.ID,
-			StepOrder:    dummyStep.StepOrder,
-			Title:        dummyStep.Title,
-			Description:  dummyStep.Description,
-			Notes:        dummyStep.Notes,
-			Ingredients:  []model.RecipeIngredient{},
-			MethodSteps:  dummyStep.MethodSteps,
-			Equipment:    []model.Equipment{},
-			BaseServings: 2,
+			ID:          dummyStep.ID,
+			StepOrder:   dummyStep.StepOrder,
+			Title:       dummyStep.Title,
+			Description: dummyStep.Description,
+			Notes:       dummyStep.Notes,
+			Ingredients: []model.RecipeIngredient{},
+			MethodSteps: dummyStep.MethodSteps,
+			Equipment:   []model.Equipment{},
 		}
 
 		for _, ingRef := range dummyStep.Ingredients {
