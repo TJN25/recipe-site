@@ -49,14 +49,14 @@
              <!-- Example: Servings Form -->
             <div class="flex items-start gap-4 md:gap-6">
                 <div class="flex-1 md:w-1/2">
-                     <form method="post" hx-post="/update-servings" hx-target="#ingredients-list-container" hx-swap="outerHTML">
-                         <input type="hidden" name="recipe_id" value="{{ .Recipe.ID }}">
-                         <label for="servings-options-{{ .Recipe.ID }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Servings:</label>
-                         <div class="flex items-center">
-                             <input type="number" id="servings-options-{{ .Recipe.ID }}" name="servings" value="{{ .Recipe.Servings }}" min="1" required class="w-16 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-accent-700 text-sm">
-                             <button type="submit" class="px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">Update</button>
-                         </div>
-                     </form>
+                            <label for="servings-options-{{ .Recipe.ID }}" class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Servings:</label>
+                            <div class="flex items-center">
+                                <input type="number" id="servings-options-{{ .Recipe.ID }}" name="servings"
+                                       x-model.number="currentServings" 
+                                       min="1" required
+                                       class="w-16 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-accent-700 text-sm">
+                                <button type="button" class="px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">Update</button>
+                            </div>
                 </div>
 
                 <div class="flex-1 md:w-1/2 space-y-2">
@@ -97,9 +97,9 @@
 
     <!-- 1. Banner & Description (Collapsible) -->
     <div x-show="activeTab === 'full'">
-    <div class="recipe-summary-section"> {{/* Starts open */}}
+    <div class="recipe-summary-section"> 
         <h1  class="font-serif text-3xl font-bold cursor-pointer mb-4 text-accent-900 dark:text-accent-100">
-            {{ .Recipe.Title }} {{/* Title acts as the summary */}}
+            {{ .Recipe.Title }} 
         </h1>
         <div  class="recipe-banner mb-5 text-center">
             {{ if .Recipe.ImagePath }}
