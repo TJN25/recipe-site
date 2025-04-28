@@ -959,20 +959,22 @@ var DummyRecipes = []struct {
 	},
 }
 
+type dummyIngredientRef struct {
+	FoodItemID int64
+	Quantity   float32
+	Unit       string // Keep this for initial loading consistency check
+	IsOptional bool
+	Purpose    string
+}
+
 type DummyRecipeStep struct {
-	ID          int64
-	RecipeID    int64
-	StepOrder   int
-	Title       string
-	Description string
-	Notes       string
-	Ingredients []struct { // Ingredient References
-		FoodItemID int64
-		Quantity   float32
-		Unit       string
-		IsOptional bool
-		Purpose    string
-	}
+	ID           int64
+	RecipeID     int64
+	StepOrder    int
+	Title        string
+	Description  string
+	Notes        string
+	Ingredients  []dummyIngredientRef
 	MethodSteps  []model.MethodStep // Method sub-steps (can be full model struct)
 	EquipmentIDs []int64            // Equipment References
 }
@@ -986,13 +988,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Prepare Pasta & Cheese",
 		Description: "Cook pasta until slightly overcooked. Grate cheeses, reserving some for topping.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 10, Quantity: 150, Unit: "g", Purpose: "starch base"},          // Macaroni Pasta
 			{FoodItemID: 11, Quantity: 112, Unit: "g", Purpose: "melting base"},         // Everyday Cheese
 			{FoodItemID: 12, Quantity: 113, Unit: "g", Purpose: "flavor"},               // Tasty Cheddar
@@ -1013,13 +1009,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "Make Cheese Sauce",
 		Description: "Create a roux, add milk, then melt in cheese and seasonings.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 13, Quantity: 38, Unit: "g", Purpose: "richness, roux base"},           // Butter
 			{FoodItemID: 14, Quantity: 25, Unit: "g", Purpose: "thickener"},                     // Flour (~2.25 tbsp)
 			{FoodItemID: 18, Quantity: 4, Unit: "g", IsOptional: true, Purpose: "smoky depth"},  // Smoked Paprika (~3/4 tsp) - OPTIONAL for standard
@@ -1052,13 +1042,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   3,
 		Title:       "Combine, Top, and Grill",
 		Description: "Combine pasta with sauce (and optional chicken/burrito sauce), transfer to dish, top with cheese, and grill.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 20, Quantity: 150, Unit: "g", IsOptional: true, Purpose: "protein, flavor"}, // Mexican Chicken - OPTIONAL
 			{FoodItemID: 43, Quantity: 22, Unit: "ml", IsOptional: true, Purpose: "extra flavor"},    // Spicy Burrito Sauce (~1.5 tbsp) - OPTIONAL
 			{FoodItemID: 44, Quantity: 30, Unit: "g", IsOptional: true, Purpose: "texture"},          // Frozen Corn (~3 tbsp) - OPTIONAL Enhancement
@@ -1087,13 +1071,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Activate Yeast",
 		Description: "Bloom the yeast in warm water with sugar.",
 		Notes:       "Water temperature should be 40-43°C.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 25, Quantity: 210, Unit: "ml", Purpose: "hydration"},         // Water
 			{FoodItemID: 22, Quantity: 5, Unit: "g", Purpose: "leavening"},            // Active Dry Yeast (~3/4 tsp)
 			{FoodItemID: 23, Quantity: 5, Unit: "g", Purpose: "yeast food, browning"}, // Raw Sugar (~3/4 tsp)
@@ -1110,13 +1088,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "Make Dough",
 		Description: "Combine dry ingredients, add wet ingredients, mix to a shaggy dough, and rest.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 21, Quantity: 280, Unit: "g", Purpose: "structure"},                  // Bread Flour
 			{FoodItemID: 16, Quantity: 5, Unit: "g", Purpose: "flavor, fermentation control"}, // Salt (1 tsp)
 			{FoodItemID: 24, Quantity: 8, Unit: "ml", Purpose: "tenderness, flavor"},          // Olive Oil (~1.5 tsp, assuming density ~0.92g/ml)
@@ -1137,13 +1109,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Develop Dough & Final Proof",
 		Description: "Perform stretch and folds, divide, shape, and let rise.",
 		Notes:       "Total development time approx. 2 hours.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{}, // No new ingredients added in this step
+		Ingredients: []dummyIngredientRef{}, // No new ingredients added in this step
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Perform the first set of stretch and folds. Cover and rest for 30 minutes."},
 			{StepNumber: 2, Instruction: "Perform the second set of stretch and folds. Cover and rest for 30 minutes."},
@@ -1162,13 +1128,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Stretch and Cook Pizza",
 		Description: "Stretch dough, top, cook on stovetop in cast iron, finish in oven.",
 		Notes:       "Prepare toppings while dough completes final rise. Rest dough if it resists stretching.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Pizza toppings (sauce, cheese, etc.) are added here but not listed as they vary. Assume use of Recipe ID 15 (Quick Pizza Sauce) and cheese (ID 11/12).
 		},
 		MethodSteps: []model.MethodStep{
@@ -1196,13 +1156,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Marinate Chicken",
 		Description: "Combine marinade ingredients and coat chicken. Refrigerate.",
 		Notes:       "Can be done up to 24 hours ahead. Toast fenugreek first.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 36, Quantity: 1.5, Unit: "tsp", Purpose: "herb"},          // Fenugreek Leaves (for toasting)
 			{FoodItemID: 26, Quantity: 500, Unit: "g", Purpose: "protein"},         // Chicken Thighs, cut into 2.5cm pieces
 			{FoodItemID: 27, Quantity: 30, Unit: "ml", Purpose: "base marinade"},   // Greek Yogurt
@@ -1226,13 +1180,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Prepare Sauce Components",
 		Description: "Toast and grind spices, soak cashews, prep aromatics.",
 		Notes:       "Start 1 hour 15 minutes ahead.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 36, Quantity: 2.5, Unit: "tsp", Purpose: "spice blend"}, // Fenugreek Leaves
 			{FoodItemID: 38, Quantity: 1, Unit: "unit", Purpose: "spice blend"},  // Dried Chili
 			{FoodItemID: 39, Quantity: 1, Unit: "unit", Purpose: "spice blend"},  // Black Cardamom Pod (or 2 green)
@@ -1259,13 +1207,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Make Tomato Cashew Sauce",
 		Description: "Brown onions, cook aromatics and spices, add tomatoes and cashews, simmer.",
 		Notes:       "Start 1 hour ahead. Onions take 14-17 mins.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 34, Quantity: 30, Unit: "ml", Purpose: "cooking fat"}, // Canola Oil
 			// Prepared onion from Step 2
 			{FoodItemID: 35, Quantity: 0.125, Unit: "tsp", Purpose: "browning aid"}, // Baking Soda
@@ -1294,13 +1236,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Cook Chicken",
 		Description: "Broil marinated chicken until cooked through.",
 		Notes:       "Start 15 minutes ahead. Target internal temp 75°C.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Marinated chicken from Step 1
 		},
 		MethodSteps: []model.MethodStep{
@@ -1317,13 +1253,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Finish Sauce and Assemble",
 		Description: "Blend sauce, stir in cream and butter, fold in chicken.",
 		Notes:       "Start 5 minutes ahead.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Simmered sauce from Step 3
 			{FoodItemID: 28, Quantity: 60, Unit: "ml", Purpose: "creaminess"}, // Heavy Cream
 			{FoodItemID: 13, Quantity: 30, Unit: "g", Purpose: "richness"},    // Butter
@@ -1349,13 +1279,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Prepare and Pickle Onions",
 		Description: "Slice onion, heat brine, combine, and let cool.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 29, Quantity: 150, Unit: "g", Purpose: "main ingredient"}, // Red Onion (use correct ID if different from yellow)
 			{FoodItemID: 58, Quantity: 125, Unit: "ml", Purpose: "brine acid"},     // White Vinegar
 			{FoodItemID: 25, Quantity: 125, Unit: "ml", Purpose: "brine liquid"},   // Water
@@ -1380,13 +1304,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Quick Pickle Vegetables",
 		Description: "Prepare daikon and carrots and pickle them in a quick brine.",
 		Notes:       "This step references the method for Recipe ID 14 (Quick Pickled Red Onions), but uses daikon/carrot. Pickle minimum 30 mins.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 49, Quantity: 150, Unit: "g", Purpose: "pickle veg"}, // Daikon Radish (approx 1 medium)
 			{FoodItemID: 50, Quantity: 150, Unit: "g", Purpose: "pickle veg"}, // Carrot (approx 2 medium)
 			{FoodItemID: 58, Quantity: 240, Unit: "ml", Purpose: "brine"},     // White Vinegar (1 cup)
@@ -1409,13 +1327,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "Prepare Other Components",
 		Description: "Prepare duck, slice fresh ingredients, mix sauce.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 48, Quantity: 300, Unit: "g", Purpose: "protein"},                       // Duck Breast
 			{FoodItemID: 16, Quantity: 2, Unit: "g", Purpose: "seasoning"},                       // Salt
 			{FoodItemID: 62, Quantity: 1, Unit: "g", Purpose: "seasoning"},                       // Black Pepper
@@ -1444,13 +1356,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Cook Duck",
 		Description: "Render duck fat and cook duck breast in cast iron pan.",
 		Notes:       "Target internal temperature 63°C for medium-rare.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Seasoned duck breast from Step 2
 		},
 		MethodSteps: []model.MethodStep{
@@ -1468,13 +1374,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   4,
 		Title:       "Assemble Banh Mi",
 		Description: "Toast baguettes and layer all components.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 47, Quantity: 2, Unit: "unit", Purpose: "bread"}, // Baguettes
 			// Sauce from Step 2
 			// Sliced duck from Step 3
@@ -1506,13 +1406,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Prepare Potatoes",
 		Description: "Wash, cut, soak, and dry potato wedges.",
 		Notes:       "Soaking removes excess starch for crispiness. Dry thoroughly.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 59, Quantity: 400, Unit: "g", Purpose: "main"},      // Agria Potatoes (approx 2 medium)
 			{FoodItemID: 25, Quantity: 1000, Unit: "ml", Purpose: "soaking"}, // Cold Water
 		},
@@ -1532,13 +1426,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Season and Cook Wedges",
 		Description: "Toss wedges with oil and seasonings, then bake/air fry until crispy.",
 		Notes:       "User notes mention adding cayenne and using canola oil.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Dried potato wedges from Step 1
 			{FoodItemID: 60, Quantity: 30, Unit: "ml", Purpose: "coating"},                 // Avocado Oil (2 tbsp) (User substituted Canola Oil ID 34)
 			{FoodItemID: 18, Quantity: 5, Unit: "g", Purpose: "seasoning"},                 // Smoked Paprika (1 tsp)
@@ -1568,13 +1456,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Advance Preparation",
 		Description: "Cook corn and heat chicken if necessary.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 44, Quantity: 45, Unit: "g", Purpose: "filling"},        // Corn Kernels (1/4 cup)
 			{FoodItemID: 25, Quantity: 250, Unit: "ml", Purpose: "cooking corn"}, // Water
 			{FoodItemID: 20, Quantity: 50, Unit: "g", Purpose: "filling"},        // Mexican Chicken (ensure pre-cooked)
@@ -1591,13 +1473,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "Prepare Filling Ingredients",
 		Description: "Grate cheese, dice tomato, tear lettuce.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 11, Quantity: 50, Unit: "g", Purpose: "filling"},  // Everyday Cheese, grated
 			{FoodItemID: 69, Quantity: 60, Unit: "g", Purpose: "filling"},  // Tomato (2 slices), diced
 			{FoodItemID: 67, Quantity: 20, Unit: "g", Purpose: "filling"},  // Lettuce Leaf (1), torn
@@ -1619,13 +1495,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Assemble and Roll Burrito",
 		Description: "Warm tortilla, layer ingredients, and roll tightly.",
 		Notes:       "Layering order is important.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 66, Quantity: 1, Unit: "unit", Purpose: "wrap"}, // Large Flour Tortilla
 			// All prepared fillings from Steps 1 & 2
 		},
@@ -1651,13 +1521,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   4,
 		Title:       "Toast Burrito",
 		Description: "Cook the rolled burrito in a sandwich press until crispy.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Assembled burrito from Step 3
 		},
 		MethodSteps: []model.MethodStep{
@@ -1676,13 +1540,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Activate Yeast & Make Dough",
 		Description: "Activate yeast, mix ingredients, use stretch and fold.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 75, Quantity: 45, Unit: "ml", Purpose: "liquid, yeast activation"}, // Trim Milk (3 tbsp)
 			{FoodItemID: 25, Quantity: 30, Unit: "ml", Purpose: "liquid, yeast activation"}, // Water (2 tbsp)
 			{FoodItemID: 96, Quantity: 7.5, Unit: "g", Purpose: "yeast food"},               // Granulated Sugar (1.5 tsp)
@@ -1707,13 +1565,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "First Rise",
 		Description: "Let the dough rise until doubled.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{},
+		Ingredients: []dummyIngredientRef{},
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Cover the bowl tightly (e.g., with plastic wrap) and let the dough rise in a warm place until doubled in size, about 1 hour."},
 		},
@@ -1726,13 +1578,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Shape Muffins",
 		Description: "Gently pat out dough on floured surface and cut rounds.",
 		Notes:       "Dough is sticky; use generous flour or oiled hands/scraper. Can also portion and flatten balls.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 14, Quantity: 30, Unit: "g", Purpose: "dusting, shaping"}, // All-Purpose Flour for dusting
 		},
 		MethodSteps: []model.MethodStep{
@@ -1752,13 +1598,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Second Rise",
 		Description: "Let shaped muffins rise on floured parchment.",
 		Notes:       "Flour substitutes for cornmeal/semolina.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 14, Quantity: 20, Unit: "g", Purpose: "dusting"}, // All-Purpose Flour for dusting parchment
 		},
 		MethodSteps: []model.MethodStep{
@@ -1777,13 +1617,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Bake Muffins",
 		Description: "Bake in oven, flipping halfway.",
 		Notes:       "Target internal temp 90°C or hollow sound when tapped.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{},
+		Ingredients: []dummyIngredientRef{},
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Preheat oven to 180°C (350°F), using convection/fan bake if available."},
 			{StepNumber: 2, Instruction: "Place the baking tray with the risen muffins into the preheated oven."},
@@ -1804,13 +1638,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Mise en Place (Prep)",
 		Description: "Prepare all vegetables, garlic, cheese, and have liquids ready.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 77, Quantity: 100, Unit: "g", Purpose: "main veg"},                // Mushrooms, sliced
 			{FoodItemID: 29, Quantity: 75, Unit: "g", Purpose: "mirepoix"},                 // Onion (1/2), finely diced
 			{FoodItemID: 78, Quantity: 50, Unit: "g", Purpose: "mirepoix"},                 // Celery (1 stalk), finely diced
@@ -1846,13 +1674,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Cook Sauce Base",
 		Description: "Sauté mirepoix and mushrooms, add garlic and wine, reduce.",
 		Notes:       "User note: taste and salt at garlic stage.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Mirepoix, mushrooms, garlic from Step 1
 			// Butter (2 tbsp / ~30g), Olive oil, Wine/Vinegar+Water from Step 1
 			// Salt from Step 1
@@ -1873,13 +1695,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Simmer Sauce & Cook Pasta",
 		Description: "Add stock to sauce and simmer. Cook pasta.",
 		Notes:       "Reserve pasta water.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Sauce base from Step 2
 			// Chicken Stock, Fettuccine from Step 1
 			// Optional soy sauce, mustard powder, paprika from Step 1 (User note: add here or earlier)
@@ -1900,13 +1716,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Finish and Serve",
 		Description: "Combine pasta and sauce, add finishing ingredients.",
 		Notes:       "Adjust consistency with pasta water. Season to taste.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Cooked pasta and sauce from Step 3
 			// Reserved pasta water
 			// Grated Parmesan, remaining Butter (1-2 tbsp / ~15-20g), Pepper from Step 1
@@ -1928,13 +1738,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Prep Sauce and Aromatics",
 		Description: "Mix sauce components, prepare garlic, ginger, onion, spring onions.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 87, Quantity: 0.25, Unit: "unit", Purpose: "sauce base"},           // Chicken Stock Cube (1/4)
 			{FoodItemID: 25, Quantity: 30, Unit: "ml", Purpose: "sauce liquid"},             // Very Hot Water (2 tbsp)
 			{FoodItemID: 55, Quantity: 30, Unit: "ml", Purpose: "sauce base"},               // Soy Sauce (2 tbsp)
@@ -1960,13 +1764,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "Cook Noodles and Egg",
 		Description: "Cook noodles, reserve water. Cook aromatics and egg.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 90, Quantity: 150, Unit: "g", Purpose: "base"},             // Egg Noodles (1-2 servings)
 			{FoodItemID: 74, Quantity: 1, Unit: "unit", Purpose: "protein, binder"}, // Egg
 			{FoodItemID: 60, Quantity: 30, Unit: "ml", Purpose: "cooking fat"},      // Oil (Avocado or Canola, 2 tbsp)
@@ -1992,13 +1790,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   3,
 		Title:       "Combine and Finish",
 		Description: "Add noodles and sauce, toss, adjust seasoning, garnish.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Cooked noodles, cooked aromatics/egg from Step 2
 			// Prepared sauce, reserved noodle water from Step 1/2
 			// Spring onion greens from Step 1
@@ -2023,13 +1815,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Prepare Ingredients",
 		Description: "Drain peaches, grate ginger, mince garlic, dice chilies.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 92, Quantity: 80, Unit: "g", Purpose: "fruit base"},    // Canned Peach Halves (~1/3 cup / 2 halves), drained, diced
 			{FoodItemID: 30, Quantity: 25, Unit: "g", Purpose: "aromatic"},      // Fresh Ginger (3 tbsp), finely grated
 			{FoodItemID: 31, Quantity: 20, Unit: "g", Purpose: "aromatic"},      // Garlic (4 cloves), minced
@@ -2051,13 +1837,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "Cook Sauce Base",
 		Description: "Make roux, cook aromatics and peaches.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 60, Quantity: 30, Unit: "ml", Purpose: "roux fat"},      // Avocado Oil (2 tbsp)
 			{FoodItemID: 14, Quantity: 15, Unit: "g", Purpose: "roux thickener"}, // All-Purpose Flour (2 tbsp)
 			// Prepared ginger, garlic, chilies, peaches from Step 1
@@ -2078,13 +1858,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Simmer and Finish Sauce",
 		Description: "Add liquids and spices, simmer, blend, strain.",
 		Notes:       "Taste before adding sugar. Strain for smooth texture.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Cooked base from Step 2
 			// Chicken Stock from Step 1
 			{FoodItemID: 58, Quantity: 22.5, Unit: "ml", Purpose: "acid"},                  // White Vinegar (1.5 tbsp)
@@ -2113,13 +1887,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Prep Vegetables",
 		Description: "Finely chop cabbage, shred carrot, mince onion.",
 		Notes:       "Cabbage should be very fine, almost rice-sized.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 94, Quantity: 500, Unit: "g", Purpose: "base"},            // Cabbage (~1/2 head / 4 cups chopped)
 			{FoodItemID: 50, Quantity: 30, Unit: "g", Purpose: "color, sweetness"}, // Carrot (2 tbsp shredded)
 			{FoodItemID: 29, Quantity: 15, Unit: "g", Purpose: "flavor"},           // Onion (1 tbsp minced)
@@ -2139,13 +1907,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Make Dressing and Combine",
 		Description: "Whisk dressing ingredients, pour over vegetables, mix, and chill.",
 		Notes:       "Chill for at least 1 hour for flavors to meld.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 54, Quantity: 60, Unit: "g", Purpose: "dressing base"},         // Mayonnaise (1/4 cup)
 			{FoodItemID: 95, Quantity: 30, Unit: "ml", Purpose: "dressing tang"},        // Buttermilk (2 tbsp)
 			{FoodItemID: 15, Quantity: 30, Unit: "ml", Purpose: "dressing consistency"}, // Milk (Full Fat or Trim) (2 tbsp)
@@ -2173,13 +1935,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Prep Sauce and Aromatics",
 		Description: "Dissolve stock cube, whisk in peanut butter and liquids. Prepare aromatics.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 87, Quantity: 0.25, Unit: "unit", Purpose: "sauce base"},   // Chicken Stock Cube (1/4)
 			{FoodItemID: 25, Quantity: 30, Unit: "ml", Purpose: "sauce liquid"},     // Very Hot Water (2 tbsp)
 			{FoodItemID: 97, Quantity: 15, Unit: "g", Purpose: "main flavor"},       // Smooth Peanut Butter (1 tbsp)
@@ -2205,13 +1961,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Cook Noodles, Aromatics, Egg",
 		Description: "Cook noodles, reserve water. Stir-fry aromatics and egg.",
 		Notes:       "Watch aromatics carefully.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 90, Quantity: 150, Unit: "g", Purpose: "base"},             // Egg Noodles (1-2 servings)
 			{FoodItemID: 74, Quantity: 1, Unit: "unit", Purpose: "protein, binder"}, // Egg
 			{FoodItemID: 60, Quantity: 30, Unit: "ml", Purpose: "cooking fat"},      // Oil (2 tbsp)
@@ -2231,13 +1981,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   3,
 		Title:       "Combine and Finish",
 		Description: "Add noodles and sauce, toss, adjust seasoning, garnish.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Cooked noodles, aromatics/egg from Step 2
 			// Prepared sauce, reserved noodle water from Step 1/2
 			// Spring onion greens from Step 1
@@ -2262,13 +2006,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Make Guajillo (Kashmiri) Chile Sauce",
 		Description: "Toast, soak, and blend chilies with garlic and broth.",
 		Notes:       "Strain for smoother sauce.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 99, Quantity: 6, Unit: "unit", Purpose: "sauce base, color"},   // Kashmiri Chilies (4-6 dried)
 			{FoodItemID: 100, Quantity: 1, Unit: "unit", Purpose: "sauce flavor, heat"}, // Chipotle Pepper (1 dried)
 			{FoodItemID: 25, Quantity: 250, Unit: "ml", Purpose: "soaking"},             // Hot Water
@@ -2294,13 +2032,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Make Chorizo-Potato Filling",
 		Description: "Cook chorizo and diced potatoes until potatoes are tender.",
 		Notes:       "Par-boil potatoes for faster cooking if desired.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 101, Quantity: 230, Unit: "g", Purpose: "filling main"}, // Chorizo Sausage
 			{FoodItemID: 59, Quantity: 150, Unit: "g", Purpose: "filling bulk"},  // Agria Potato (1), diced small
 			{FoodItemID: 16, Quantity: 2, Unit: "g", Purpose: "seasoning"},       // Salt (to taste)
@@ -2321,13 +2053,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Prepare Bread",
 		Description: "Dip buns in chili sauce and sear in oil.",
 		Notes:       "User note: consider pre-frying buns slightly *before* dipping.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 102, Quantity: 4, Unit: "unit", Purpose: "sandwich base"}, // Brioche Buns
 			// Prepared chili sauce from Step 1
 			{FoodItemID: 34, Quantity: 15, Unit: "ml", Purpose: "searing"}, // Canola Oil (~1 tbsp)
@@ -2349,13 +2075,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Assemble Pambazo",
 		Description: "Layer filling and toppings onto seared buns.",
 		Notes:       "Minimize wet ingredients; crumble feta finely.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Seared buns from Step 3
 			// Chorizo-potato filling from Step 2
 			{FoodItemID: 84, Quantity: 40, Unit: "g", Purpose: "topping"},   // Feta Cheese, crumbled
@@ -2384,13 +2104,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Blend Sauce",
 		Description: "Drain tomatoes, combine ingredients, blend until smooth.",
 		Notes:       "Reserve tomato liquid to adjust consistency if needed.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 104, Quantity: 400, Unit: "g", Purpose: "base"},                   // Canned Diced Tomatoes, drained (reserve liquid)
 			{FoodItemID: 105, Quantity: 30, Unit: "g", Purpose: "thickener, flavor"},       // Tomato Paste (2 tbsp)
 			{FoodItemID: 31, Quantity: 5, Unit: "g", Purpose: "aromatic"},                  // Garlic (1 clove), minced
@@ -2416,13 +2130,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Prepare Chilies",
 		Description: "Soak dried chilies until soft.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 99, Quantity: 3, Unit: "unit", Purpose: "chili base"},        // Kashmiri Chilies (2-3), stems removed
 			{FoodItemID: 108, Quantity: 25, Unit: "g", Purpose: "chili base, flavor"}, // Chipotles in Adobo (1 pepper + 1 tbsp sauce)
 			{FoodItemID: 25, Quantity: 240, Unit: "ml", Purpose: "soaking"},           // Hot Water (1 cup)
@@ -2442,13 +2150,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Roast/Toast Aromatics",
 		Description: "Grill garlic and tomatoes, toast cumin.",
 		Notes:       "Watch carefully to prevent burning.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 31, Quantity: 20, Unit: "g", Purpose: "aromatic"}, // Garlic (4 cloves), unpeeled
 			{FoodItemID: 104, Quantity: 400, Unit: "g", Purpose: "base"},   // Canned Diced Tomatoes (1 can)
 			{FoodItemID: 109, Quantity: 5, Unit: "g", Purpose: "spice"},    // Cumin (1 tsp, assumed ground)
@@ -2467,13 +2169,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   3,
 		Title:       "Blend Sauce",
 		Description: "Combine all prepared ingredients and blend until smooth.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Soaked Kashmiri chilies, reserved soaking liquid from Step 1
 			// Chipotles in adobo from Step 1
 			// Roasted garlic (peeled), charred tomatoes, toasted cumin from Step 2
@@ -2496,13 +2192,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Cook and Finish Sauce",
 		Description: "Simmer sauce to thicken, season, optionally strain.",
 		Notes:       "User notes indicate skipping this simmer step can work.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Blended sauce from Step 3
 			// Reserved soaking liquid from Step 1
 			{FoodItemID: 57, Quantity: 5, Unit: "g", IsOptional: true, Purpose: "balance"}, // Honey (1 tsp, optional)
@@ -2528,13 +2218,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Activate Yeast & Make Dough (Subway Style)",
 		Description: "Modified pizza dough: less salt, more oil/sugar.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 25, Quantity: 210, Unit: "ml", Purpose: "hydration"},                   // Warm Water (40-46°C)
 			{FoodItemID: 22, Quantity: 5, Unit: "g", Purpose: "leavening"},                      // Active Dry Yeast (3/4 tsp)
 			{FoodItemID: 23, Quantity: 6, Unit: "g", Purpose: "softness, browning"},             // Raw Sugar (increased)
@@ -2559,13 +2243,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Develop Dough (Stretch & Fold)",
 		Description: "Perform 3-4 sets of stretch and folds.",
 		Notes:       "User timing suggests 20 min rests can work.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{},
+		Ingredients: []dummyIngredientRef{},
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Perform first stretch and fold. Cover and rest 30 minutes (or 20 mins)."},
 			{StepNumber: 2, Instruction: "Perform second stretch and fold. Cover and rest 30 minutes (or 20 mins)."},
@@ -2581,13 +2259,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Shape Baguettes",
 		Description: "Divide dough, shape into logs.",
 		Notes:       "Use minimal flour; consider oiled hands.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 14, Quantity: 10, Unit: "g", Purpose: "shaping"}, // AP Flour (minimal) or Oil for hands
 		},
 		MethodSteps: []model.MethodStep{
@@ -2607,13 +2279,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Final Proof",
 		Description: "Let shaped loaves rise until nearly doubled.",
 		Notes:       "User note: Extended proof (95 mins total from shaping) worked well.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{},
+		Ingredients: []dummyIngredientRef{},
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Cover the shaped loaves loosely with lightly oiled plastic wrap or a clean kitchen towel."},
 			{StepNumber: 2, Instruction: "Let rise in a warm place until nearly doubled in size (approx 45-60 minutes, or longer as per user notes - up to 95 mins)."},
@@ -2627,13 +2293,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Bake Baguettes (Attempt 3 / Open Spray Method)",
 		Description: "Score, spray aggressively, bake with temp reduction, spray during bake.",
 		Notes:       "This reflects Attempt 3/Spray method. Other attempts involve covering with glass dish or different temp profiles. Target internal temp 90-93C.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 25, Quantity: 50, Unit: "ml", Purpose: "steam/crust"}, // Water (for spraying)
 		},
 		MethodSteps: []model.MethodStep{
@@ -2658,13 +2318,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Prep Chicken & Marinade",
 		Description: "Slice chicken, crush chili, mix marinade ingredients and coat chicken.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 26, Quantity: 300, Unit: "g", Purpose: "protein"},        // Chicken Thigh
 			{FoodItemID: 52, Quantity: 1, Unit: "unit", Purpose: "heat"},          // Dried Bird's Eye Chili
 			{FoodItemID: 55, Quantity: 15, Unit: "ml", Purpose: "marinade base"},  // Soy Sauce (1 Tbsp)
@@ -2693,13 +2347,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "Prep Slaw, Mayo & Garnishes",
 		Description: "Prepare coleslaw mix, cucumber, peanuts, sriracha mayo, and spring onions.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 94, Quantity: 100, Unit: "g", Purpose: "slaw base"},       // Cabbage, shredded
 			{FoodItemID: 50, Quantity: 50, Unit: "g", Purpose: "slaw color"},       // Carrot, grated
 			{FoodItemID: 51, Quantity: 100, Unit: "g", Purpose: "freshness"},       // Cucumber (1/2), thinly sliced
@@ -2726,13 +2374,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   3,
 		Title:       "Fry Chicken & Steam Buns",
 		Description: "Fry marinated chicken until crispy. Steam bao buns.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Marinated Chicken from Step 1
 			{FoodItemID: 34, Quantity: 45, Unit: "ml", Purpose: "frying"},   // Canola Oil (3 Tbsp)
 			{FoodItemID: 122, Quantity: 8, Unit: "unit", Purpose: "vessel"}, // Bao Buns (adjust number as needed)
@@ -2753,13 +2395,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   4,
 		Title:       "Assemble Bao Buns",
 		Description: "Layer mayo, slaw, cucumber, chicken, and garnishes in steamed buns.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Steamed Bao Buns from Step 3
 			// Sriracha Mayo from Step 2
 			// Coleslaw mix from Step 2
@@ -2789,13 +2425,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Marinade Chicken",
 		Description: "Prepare and marinade chicken.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string // Unit as specified IN THE RECIPE TEXT
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 26, Quantity: 200, Unit: "g", Purpose: "protein"},                         // Chicken Thighs (using midpoint of 150-250g)
 			{FoodItemID: 55, Quantity: 15, Unit: "ml", Purpose: "marinade umami"},                  // Soy Sauce
 			{FoodItemID: 31, Quantity: 2, Unit: "cloves", Purpose: "marinade aromatic"},            // Garlic (Specified Minced/Powder - store handles default/form later)
@@ -2824,13 +2454,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Preparation Stage",
 		Description: "Prepare, vegetables, and sauce.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string // Unit as specified IN THE RECIPE TEXT
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 29, Quantity: 0.5, Unit: "unit", Purpose: "stir-fry aromatic"},                  // Onion
 			{FoodItemID: 31, Quantity: 2, Unit: "cloves", Purpose: "stir-fry aromatic"},                  // Garlic
 			{FoodItemID: 50, Quantity: 75, Unit: "g", Purpose: "stir-fry veg"},                           // Carrot (assuming 1 medium)
@@ -2854,13 +2478,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   1,
 		Title:       "Cook noodles",
 		Description: "Prepare noodles.",
-		Ingredients: []struct {
-			FoodItemID int64
-			Quantity   float32
-			Unit       string // Unit as specified IN THE RECIPE TEXT
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			{FoodItemID: 90, Quantity: 150, Unit: "g", Purpose: "carb base"}, // Egg Noodles (estimating 1.5 portions @ 100g)
 			// Note: Salt/Pepper to taste omitted, handled in method
 			// Note: Sesame oil omitted, added in method step
@@ -2877,13 +2495,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "Fry Chicken",
 		Description: "Fry chicken.",
-		Ingredients: []struct { // Ingredients specifically *added* or manipulated in this stage
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Oil for stir-fry is listed as needed in method step 4
 			{FoodItemID: 34, Quantity: 60, Unit: "ml", Purpose: "frying oil"}, // canola Oil
 		},
@@ -2900,13 +2512,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "Stir-fry Noodles",
 		Description: "Stir-fry vegetables and noodles.",
-		Ingredients: []struct { // Ingredients specifically *added* or manipulated in this stage
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Oil for stir-fry is listed as needed in method step 4
 			{FoodItemID: 34, Quantity: 15, Unit: "ml", Purpose: "cooking medium"}, // canola Oil
 			{FoodItemID: 16, Quantity: 0, Unit: "g", Purpose: "final seasoning"},  // Salt
@@ -2927,13 +2533,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		StepOrder:   2,
 		Title:       "Assemby",
 		Description: "Assemble and serve.",
-		Ingredients: []struct { // Ingredients specifically *added* or manipulated in this stage
-			FoodItemID int64
-			Quantity   float32
-			Unit       string
-			IsOptional bool
-			Purpose    string
-		}{
+		Ingredients: []dummyIngredientRef{
 			// Oil for stir-fry is listed as needed in method step 4
 			{FoodItemID: 116, Quantity: 2.5, Unit: "ml", IsOptional: true, Purpose: "finishing oil"}, // Sesame Oil
 		},
