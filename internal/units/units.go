@@ -424,6 +424,11 @@ func pluralize(quantity float64, unit string) string {
 		return unit // Return singular if quantity is effectively 1
 	}
 
+	// units like ml and g are not pluralized
+	if len(unit) < 3 {
+		return unit
+	}
+
 	// Handle specific irregulars or known non-pluralized units first if any
 	switch unit {
 	case "to taste", "pinch", "dash": // Don't pluralize descriptive
@@ -548,6 +553,9 @@ func formatFinalOutput(unroundedQty float64, displayUnit string, itemName string
 			unitStr = pluralize(unroundedQty, displayUnit)
 		}
 		return fmt.Sprintf("%s%s%s %s", qtyStr, unitSpace(unitStr), unitStr, itemName)
+	case "unit":
+		qtyStr := formatQuantityFloat(unroundedQty) // Basic format
+		return fmt.Sprintf("%s %s", qtyStr, itemName)
 	case "":
 		// Handle empty unit (error condition)
 		if unroundedQty != 0 {
@@ -606,9 +614,31 @@ func formatFinalOutput(unroundedQty float64, displayUnit string, itemName string
 		qtyStr = formatQuantityFloat(roundedQty)
 	}
 
-	// --- 4. Pluralize the display unit ---
-	// Use the final *rounded* quantity to determine pluralization
 	pluralUnit := pluralize(roundedQty, displayUnit)
+
+	unitDef, ok = UnitDefinitions[displayUnit]
+
+	if ok && unitDef.Type == TypeCount {
+		displayName := itemName
+		singularUnit := strings.TrimSuffix(pluralUnit, "s")
+
+		if singularUnit != "" && strings.Contains(strings.ToLower(displayName), strings.ToLower(singularUnit)) {
+			splitName := strings.Split(displayName, " ")
+			modifiedDisplayName := ""
+			count := 0
+			for _, word := range splitName {
+				if strings.Contains(strings.ToLower(word), strings.ToLower(singularUnit)) {
+					continue
+				}
+				if count > 0 {
+					modifiedDisplayName += " "
+				}
+				modifiedDisplayName += word
+				count += 1
+			}
+			return fmt.Sprintf("%s%s%s of %s", qtyStr, unitSpace(pluralUnit), pluralUnit, modifiedDisplayName)
+		}
+	}
 
 	// --- 5. Combine ---
 	return fmt.Sprintf("%s%s%s %s", qtyStr, unitSpace(pluralUnit), pluralUnit, itemName)

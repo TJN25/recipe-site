@@ -5,30 +5,210 @@ import (
 )
 
 var placeholderNutrition = model.Nutrition{}
+var placeHolderPrice = float32(1.0)
+
+var DummyFoodItemsNew = []model.FoodItem{
+	{
+		ID:              1,
+		Name:            "Chicken",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Chicken Breast",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Chicken Breast":  {Unit: "g", ConversionToCanonical: 1.0}, // Base unit is grams
+			"Chicken Thigh":   {Unit: "g", ConversionToCanonical: 1.0}, // Base unit is grams
+			"Mexican Chicken": {Unit: "g", ConversionToCanonical: 1.0}, // Base unit is grams
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              2,
+		Name:            "Garlic",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Garlic Clove",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Garlic Clove":  {Unit: "clove", ConversionToCanonical: 5.0},
+			"Garlic Paste":  {Unit: "ml", ConversionToCanonical: 1.0},
+			"Garlic Powder": {Unit: "ml", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              3,
+		Name:            "Ginger",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Fresh Ginger Root",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Fresh Ginger Root": {Unit: "g", ConversionToCanonical: 1.0}, // often recorded as cm ?
+			"Paste":             {Unit: "ml", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              4,
+		Name:            "Onion",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Brown Onion",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Brown Onion":  {Unit: "unit", ConversionToCanonical: 150.0},
+			"Red Onion":    {Unit: "unit", ConversionToCanonical: 150.0},
+			"Shallot":      {Unit: "unit", ConversionToCanonical: 150.0}, // placeholder
+			"Spring Onion": {Unit: "unit", ConversionToCanonical: 150.0}, // placeholder
+			"Leek Onion":   {Unit: "unit", ConversionToCanonical: 150.0}, // placeholder
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              5,
+		Name:            "Hard/Semi-Hard Cheese",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Cheddar Cheese",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Cheddar Cheese":    {Unit: "g", ConversionToCanonical: 1.0},
+			"Everday Cheese":    {Unit: "g", ConversionToCanonical: 1.0},
+			"Parmesan Cheese":   {Unit: "g", ConversionToCanonical: 1.0},
+			"Mozzarella Cheese": {Unit: "g", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              6,
+		Name:            "Tomato",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Fresh Tomato",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Fresh Tomato":           {Unit: "unit", ConversionToCanonical: 120.0},
+			"Canned Tomates (whole)": {Unit: "unit", ConversionToCanonical: 400.0},
+			"Canned Tomates (diced)": {Unit: "unit", ConversionToCanonical: 400.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              7,
+		Name:            "Sugar",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Raw Sugar",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Raw Sugar":    {Unit: "g", ConversionToCanonical: 1.0},
+			"Brown Sugar":  {Unit: "g", ConversionToCanonical: 1.0},
+			"Caster Sugar": {Unit: "g", ConversionToCanonical: 1.0},
+			"Icing Sugar":  {Unit: "g", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              8,
+		Name:            "Rice",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Basmati Rice",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Basmati Rice": {Unit: "g", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              9,
+		Name:            "Salt",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Kosher Salt",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Kosher Salt": {Unit: "g", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              10,
+		Name:            "Pepper",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Ground Black Pepper",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Ground Black Pepper": {Unit: "g", ConversionToCanonical: 1.0},
+			"Ground White Pepper": {Unit: "g", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              12,
+		Name:            "Cumin",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Ground Cumin",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Ground Cumin": {Unit: "g", ConversionToCanonical: 1.0},
+			"Cumin Seed":   {Unit: "g", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              13,
+		Name:            "Coriander Spice",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Ground Coriander",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Ground Coriander": {Unit: "g", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              14,
+		Name:            "Mustard",
+		CanonicalUnit:   "g",
+		DefaultFormName: "Mustard Powder",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Mustard Powder":   {Unit: "g", ConversionToCanonical: 1.0},
+			"American Mustard": {Unit: "ml", ConversionToCanonical: 1.0}, // placeholder
+			"Dijon Mustard":    {Unit: "ml", ConversionToCanonical: 1.0}, // placeholder
+			"Honey Mustard":    {Unit: "ml", ConversionToCanonical: 1.0}, // placeholder
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+	{
+		ID:              15,
+		Name:            "Milk",
+		CanonicalUnit:   "ml",
+		DefaultFormName: "Full Fat Milk",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Full Fat Milk": {Unit: "ml", ConversionToCanonical: 1.0},
+			"Trim Milk":     {Unit: "ml", ConversionToCanonical: 1.0},
+		},
+		PricePerCanonicalUnit: placeHolderPrice,
+		Nutrition:             placeholderNutrition,
+	},
+}
 
 var DummyFoodItems = []model.FoodItem{
 	{
 		ID:              10,
 		Name:            "Macaroni Pasta",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Default", // Assuming standard dry pasta form
+		DefaultFormName: "Macaroni Pasta", // Assuming standard dry pasta form
 		Forms: map[string]model.FoodItemFormDetails{
-			"Default": {Unit: "g", ConversionToCanonical: 1.0}, // Base unit is grams
+			"Macaroni Pasta": {Unit: "g", ConversionToCanonical: 1.0}, // Base unit is grams
 		},
 		PricePerCanonicalUnit: 0.005,
 		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:              11,
-		Name:            "Everyday Cheese",
+		Name:            "Firm Cheese",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Block", // Assume sold/used as a block primarily
+		DefaultFormName: "Everyday Cheese", // Assume sold/used as a block primarily
 		Forms: map[string]model.FoodItemFormDetails{
-			"Block": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup shredded": 113.0, "oz": 28.35}},
-			"Shredded": {
-				Unit:                  "cup shredded", // The unit for this specific form entry
-				ConversionToCanonical: 113.0,          // 1 'cup shredded' = 113 'g' (canonical unit)
-				// UnitConversions could potentially convert to other volumes if needed, e.g. {"litre": 0.236}
+			"Everyday Cheese": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup shredded": 113.0, "oz": 28.35}},
+			"Everyday Cheese (shredded)": {
+				Unit:                  "cup", // The unit for this specific form entry
+				ConversionToCanonical: 113.0, // 1 'cup shredded' = 113 'g' (canonical unit)
 			},
 		},
 		PricePerCanonicalUnit: 0.02,
@@ -38,9 +218,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              12,
 		Name:            "Cheddar Cheese",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Block",
+		DefaultFormName: "Chedder Cheese",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Block": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup shredded": 113.0, "oz": 28.35}},
+			"Chedder Cheese": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup shredded": 113.0, "oz": 28.35}},
 		},
 		PricePerCanonicalUnit: 0.025,
 		Nutrition:             placeholderNutrition,
@@ -49,9 +229,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              13,
 		Name:            "Butter",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Default", // Assuming standard butter block/stick form
+		DefaultFormName: "Butter", // Assuming standard butter block/stick form
 		Forms: map[string]model.FoodItemFormDetails{
-			"Default": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp": 14.2, "cup": 227.0}},
+			"Butter": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp": 14.2, "cup": 227.0}},
 		},
 		PricePerCanonicalUnit: 0.01,
 		Nutrition:             placeholderNutrition,
@@ -60,20 +240,20 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              14,
 		Name:            "All‑Purpose Flour",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Default", // Standard bagged flour
+		DefaultFormName: "All‑Purpose Flour", // Standard bagged flour
 		Forms: map[string]model.FoodItemFormDetails{
-			"Default": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 120.0, "tbsp": 7.5}},
+			"All-Purpose Flour": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 120.0, "tbsp": 7.5}},
 		},
 		PricePerCanonicalUnit: 0.002,
 		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:              15,
-		Name:            "Full Fat Milk",
+		Name:            "Milk",
 		CanonicalUnit:   "ml",
-		DefaultFormName: "Default", // Standard liquid form
+		DefaultFormName: "Milk", // Standard liquid form
 		Forms: map[string]model.FoodItemFormDetails{
-			"Default": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 240.0, "tbsp": 15.0, "litre": 1000.0}},
+			"Milk": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 240.0, "tbsp": 15.0, "litre": 1000.0}},
 		},
 		PricePerCanonicalUnit: 0.002,
 		Nutrition:             placeholderNutrition,
@@ -82,10 +262,10 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              16,
 		Name:            "Salt",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Kosher", // Specify the default type/form
+		DefaultFormName: "Kosher Salt", // Specify the default type/form
 		Forms: map[string]model.FoodItemFormDetails{
-			"Kosher": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 6.0}},
-			"Coarse": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 4.0}}, // Example if you add coarse salt later
+			"Kosher Salt": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 6.0}},
+			"Coarse Salt": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 4.0}}, // Example if you add coarse salt later
 		},
 		PricePerCanonicalUnit: 0.001,
 		Nutrition:             placeholderNutrition,
@@ -94,9 +274,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              17,
 		Name:            "Mustard Powder",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Powder",
+		DefaultFormName: "Mustard Powder",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Powder": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 3.0}}, // Estimate ~3g/tsp
+			"Mustard Powder": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 3.0}}, // Estimate ~3g/tsp
 		},
 		PricePerCanonicalUnit: 0.05,
 		Nutrition:             placeholderNutrition,
@@ -105,9 +285,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              18,
 		Name:            "Smoked Paprika",
 		CanonicalUnit:   "ml",
-		DefaultFormName: "Ground",
+		DefaultFormName: "Ground Smoked Paprika",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Ground": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+			"Ground Smoked Paprika": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
 		},
 		PricePerCanonicalUnit: 0.06,
 		Nutrition:             placeholderNutrition,
@@ -116,9 +296,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              19,
 		Name:            "Chipotle Powder",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Powder",
+		DefaultFormName: "Chipotle Powder",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Powder": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.5}}, // Estimate ~2.5g/tsp
+			"Chipotle Powder": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.5}}, // Estimate ~2.5g/tsp
 		},
 		PricePerCanonicalUnit: 0.08,
 		Nutrition:             placeholderNutrition,
@@ -127,9 +307,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              20,
 		Name:            "Mexican Chicken", // Assume pre-cooked/shredded
 		CanonicalUnit:   "g",
-		DefaultFormName: "Shredded",
+		DefaultFormName: "Mexican Chicken",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Shredded": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 140.0}}, // Estimate ~140g/cup cooked shredded
+			"Mexican Chicken": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 140.0}}, // Estimate ~140g/cup cooked shredded
 		},
 		PricePerCanonicalUnit: 0.015,
 		Nutrition:             placeholderNutrition,
@@ -138,9 +318,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              124,
 		Name:            "Ground Coriander", // New
 		CanonicalUnit:   "ml",
-		DefaultFormName: "Ground",
+		DefaultFormName: "Ground Coriander",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Ground": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.0}}, // Estimate ~2g/tsp
+			"Ground Coriander": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.0}}, // Estimate ~2g/tsp
 		},
 		PricePerCanonicalUnit: 0.06, // Guess
 		Nutrition:             placeholderNutrition,
@@ -149,9 +329,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              125,
 		Name:            "Green Beans", // New
 		CanonicalUnit:   "g",
-		DefaultFormName: "Whole",
+		DefaultFormName: "Green Beans",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Whole": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"handful": 40.0}}, // Estimate ~40g/handful
+			"Green Beans": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"handful": 40.0}}, // Estimate ~40g/handful
 		},
 		PricePerCanonicalUnit: 0.01, // Guess
 		Nutrition:             placeholderNutrition,
@@ -160,9 +340,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              126,
 		Name:            "Roasted Capsicum Strips", // New (Assume jarred)
 		CanonicalUnit:   "g",
-		DefaultFormName: "Strips",
+		DefaultFormName: "Roasted Capsicum Strips",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Strips": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 150.0}}, // Estimate ~150g/cup drained
+			"Roasted Capsicum Strips": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 150.0}}, // Estimate ~150g/cup drained
 		},
 		PricePerCanonicalUnit: 0.03, // Guess
 		Nutrition:             placeholderNutrition,
@@ -171,10 +351,10 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              127,
 		Name:            "Fresh Parsley", // New
 		CanonicalUnit:   "g",
-		DefaultFormName: "Chopped",
+		DefaultFormName: "Chopped Parsley",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Chopped": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp": 4.0}}, // Estimate ~4g/tbsp chopped
-			"Bunch":   {Unit: "g", ConversionToCanonical: 30.0},                                                  // Estimate ~30g/bunch
+			"Chopped Parsley": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp": 4.0}}, // Estimate ~4g/tbsp chopped
+			"Bunch":           {Unit: "g", ConversionToCanonical: 30.0},                                                  // Estimate ~30g/bunch
 		},
 		PricePerCanonicalUnit: 0.10, // Guess
 		Nutrition:             placeholderNutrition,
@@ -183,10 +363,10 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              128,
 		Name:            "Fresh Basil", // New
 		CanonicalUnit:   "g",
-		DefaultFormName: "Chopped",
+		DefaultFormName: "Chopped Basil",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Chopped": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp": 3.0}}, // Estimate ~3g/tbsp chopped
-			"Bunch":   {Unit: "g", ConversionToCanonical: 25.0},                                                  // Estimate ~25g/bunch
+			"Chopped Basil": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp": 3.0}}, // Estimate ~3g/tbsp chopped
+			"Bunch":         {Unit: "g", ConversionToCanonical: 25.0},                                                  // Estimate ~25g/bunch
 		},
 		PricePerCanonicalUnit: 0.12, // Guess
 		Nutrition:             placeholderNutrition,
@@ -205,9 +385,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              25,
 		Name:            "Water",
 		CanonicalUnit:   "ml",
-		DefaultFormName: "Default",
+		DefaultFormName: "Water",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Default": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
+			"Water": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tsp": 2.3}}, // Estimate ~2.3g/tsp
 		},
 		PricePerCanonicalUnit: 0.05,
 		Nutrition:             placeholderNutrition,
@@ -217,9 +397,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              26,
 		Name:            "Chicken Thigh", // Assume pre-cooked/shredded
 		CanonicalUnit:   "g",
-		DefaultFormName: "Default",
+		DefaultFormName: "Chicken Thigh",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Default": {Unit: "g", ConversionToCanonical: 1.0}, // Estimate ~140g/cup cooked shredded
+			"Chicken Thigh": {Unit: "g", ConversionToCanonical: 1.0}, // Estimate ~140g/cup cooked shredded
 		},
 		PricePerCanonicalUnit: 0.012,
 		Nutrition:             placeholderNutrition,
@@ -230,9 +410,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              29,
 		Name:            "Onion", // Assuming brown/yellow
 		CanonicalUnit:   "g",
-		DefaultFormName: "Whole",
+		DefaultFormName: "Onion",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Whole":  {Unit: "unit", ConversionToCanonical: 150.0}, // Estimate avg onion ~150g
+			"Onion":  {Unit: "unit", ConversionToCanonical: 150.0}, // Estimate avg onion ~150g
 			"Sliced": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 115.0}},
 		},
 		PricePerCanonicalUnit: 0.002,
@@ -242,11 +422,11 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              30,
 		Name:            "Ginger",
 		CanonicalUnit:   "g",
-		DefaultFormName: "Paste", // Assuming fresh root is default unless specified
+		DefaultFormName: "Ginger Paste", // Assuming fresh root is default unless specified
 		Forms: map[string]model.FoodItemFormDetails{
-			"Fresh Root": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp minced": 6.0, "inch": 15.0}},
-			"Paste":      {Unit: "ml", ConversionToCanonical: 4.0}, // Estimate ~4g/tsp paste
-			"Ground":     {Unit: "ml", ConversionToCanonical: 2.0}, // Estimate ~2g/tsp ground
+			"Fresh Root Ginger": {Unit: "g", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"tbsp minced": 6.0, "inch": 15.0}},
+			"Ginger Paste":      {Unit: "ml", ConversionToCanonical: 4.0}, // Estimate ~4g/tsp paste
+			"Ground Ginger":     {Unit: "ml", ConversionToCanonical: 2.0}, // Estimate ~2g/tsp ground
 		},
 		PricePerCanonicalUnit: 0.02,
 		Nutrition:             placeholderNutrition,
@@ -256,9 +436,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              31,
 		Name:            "Garlic", // Assume pre-cooked/shredded
 		CanonicalUnit:   "cloves",
-		DefaultFormName: "Cloves",
+		DefaultFormName: "Garlic Clove",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Cloves": {Unit: "cloves", ConversionToCanonical: 1.0}, // Estimate ~140g/cup cooked shredded
+			"Garlic Clove": {Unit: "cloves", ConversionToCanonical: 1.0}, // Estimate ~140g/cup cooked shredded
 		},
 		PricePerCanonicalUnit: 0.03,
 		Nutrition:             placeholderNutrition,
@@ -270,9 +450,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:              34,
 		Name:            "Canola Oil",
 		CanonicalUnit:   "ml",
-		DefaultFormName: "Default", // Standard liquid form
+		DefaultFormName: "Canola Oil", // Standard liquid form
 		Forms: map[string]model.FoodItemFormDetails{
-			"Default": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 240.0, "tbsp": 15.0, "litre": 1000.0}},
+			"Canola Oil": {Unit: "ml", ConversionToCanonical: 1.0, UnitConversions: map[string]float32{"cup": 240.0, "tbsp": 15.0, "litre": 1000.0}},
 		},
 		PricePerCanonicalUnit: 0.002,
 		Nutrition:             placeholderNutrition,
