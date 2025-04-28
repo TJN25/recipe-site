@@ -1,5 +1,16 @@
 package units
 
+import (
+	"fmt"
+	"html/template" // Needed for the return type of the main formatter
+	"math"
+	"strconv"
+	"strings"
+
+	"github.com/TJN25/recipe-site/internal/model"
+	log "github.com/sirupsen/logrus"
+)
+
 type UnitType string
 
 const (
@@ -194,5 +205,428 @@ var CountRules = FormattingRuleSet{
 	{Threshold: 0.0, DisplayUnit: "unit", FactorFromBase: 1.0 / 4.92892, RoundingRule: RoundingDetail{Type: "fraction", Precision: 4}},
 }
 
-// --- Helper to select the right ruleset ---
-// func SelectFormattingRules(unitType UnitType, system UnitSystem) FormattingRuleSet { ... }
+func FormatIngredientForDisplay(
+	ingredient model.RecipeIngredient,
+	stepBaseServings int,
+	targetServings int,
+	displaySystemKey string, // e.g., "use_original", "use_metric", "use_us_customary"
+) (template.HTML, error) {
+
+	var finalQuantity float64
+	var displayUnit string
+	var roundingRule RoundingDetail
+
+	normalizedUnit, _ := normalizeUnit(ingredient.SpecifiedUnit)
+	unitDef, ok := UnitDefinitions[normalizedUnit]
+	if ok && unitDef.Type == TypeDescriptive {
+		// Directly format descriptive units (e.g., "a pinch", "to taste")
+		roundingRule = RoundingDetail{Type: "decimal", Precision: 1}
+		formattedString := formatFinalOutput(float64(ingredient.Quantity), normalizedUnit, ingredient.FormName, roundingRule) // Pass 0 or actual quantity? Handle in formatter.
+		return template.HTML(formattedString), nil
+	}
+
+	scaledQuantity, err := scaleQuantity(ingredient.Quantity, stepBaseServings, targetServings)
+	if err != nil {
+		log.Errorf("Error scaling quantity for ingredient %d: %v", ingredient.FoodItemID, err)
+		scaledQuantity = ingredient.Quantity // Use original as fallback
+	}
+
+	// 3. Handle "use_original" display system
+	if displaySystemKey == "use_original" {
+		normUnit, ok := normalizeUnit(ingredient.SpecifiedUnit)
+		if !ok {
+			log.Warnf("Unknown original unit '%s' for ingredient %d", ingredient.SpecifiedUnit, ingredient.FoodItemID)
+			normUnit = ingredient.SpecifiedUnit
+		}
+
+		finalQuantity = float64(scaledQuantity)
+		displayUnit = normUnit
+		roundingRule = RoundingDetail{Type: "decimal", Precision: 1}
+
+	} else {
+
+		// 4a. Normalize the *original* unit & get its definition
+		normUnit, ok := normalizeUnit(ingredient.SpecifiedUnit)
+		if !ok {
+			return template.HTML(""), fmt.Errorf("unknown unit '%s' for ingredient %d", ingredient.SpecifiedUnit, ingredient.FoodItemID)
+		}
+		unitDef, ok := UnitDefinitions[normUnit]
+		if !ok {
+			return template.HTML(""), fmt.Errorf("no definition found for normalized unit '%s'", normUnit)
+		}
+
+		// Check if conversion is possible (must have a factor to base)
+		if unitDef.FactorToStdBase == 0 {
+			// Cannot convert Count/Descriptive, treat as "use_original"
+			log.Warnf("Unit '%s' (type %s) cannot be converted for display system '%s'. Using original.", normUnit, unitDef.Type, displaySystemKey)
+			finalQuantity = float64(scaledQuantity)
+			displayUnit = normUnit
+			roundingRule = RoundingDetail{Type: "decimal", Precision: 1} // Default basic rounding
+		} else {
+			// 4b. Convert scaled quantity to canonical base (g or ml)
+			canonicalValue := float64(scaledQuantity) * unitDef.FactorToStdBase
+			var baseUnitType UnitType = unitDef.Type // Should be weight or volume
+
+			// 4c. Determine Display Unit, Unrounded Quantity, and Rounding Rule using FormatWeight/Volume
+			var formatErr error
+			if baseUnitType == TypeWeight {
+				finalQuantity, displayUnit, roundingRule, formatErr = FormatWeight(canonicalValue, displaySystemKey)
+			} else if baseUnitType == TypeVolume {
+				finalQuantity, displayUnit, roundingRule, formatErr = FormatVolume(canonicalValue, displaySystemKey)
+			} else {
+				formatErr = fmt.Errorf("unexpected unit type '%s' for conversion", baseUnitType)
+			}
+
+			if formatErr != nil {
+				log.Errorf("Error formatting value for ingredient %d: %v", ingredient.FoodItemID, formatErr)
+				finalQuantity = float64(scaledQuantity)
+				displayUnit = normUnit
+				roundingRule = RoundingDetail{Type: "decimal", Precision: 1} // Default basic rounding
+			}
+		}
+	}
+
+	formattedString := formatFinalOutput(finalQuantity, displayUnit, ingredient.FormName, roundingRule)
+
+	return template.HTML(formattedString), nil
+}
+
+func scaleQuantity(baseQuantity float32, baseServings int, targetServings int) (float32, error) {
+	if baseServings <= 0 || targetServings <= 0 {
+		return baseQuantity, fmt.Errorf("invalid servings (base: %d, target: %d)", baseServings, targetServings)
+	}
+	if baseServings == targetServings {
+		return baseQuantity, nil
+	}
+	scaleFactor := float32(targetServings) / float32(baseServings)
+	return baseQuantity * scaleFactor, nil
+}
+
+func normalizeUnit(input string) (string, bool) {
+	norm, found := UnitNormalizationMap[strings.ToLower(strings.TrimSpace(input))]
+	return norm, found
+}
+
+func selectWeightFormattingRules(system string) (FormattingRuleSet, error) {
+	switch system {
+	case string(SystemMetric): // Use defined constants
+		return MetricWeightRules, nil
+	case string(SystemUS): // Use defined constants
+		return USWeightRules, nil
+	default:
+		return MetricWeightRules, nil
+	}
+}
+
+func FormatWeight(baseGrams float64, system string) (displayQty float64, displayUnit string, roundingRule RoundingDetail, err error) {
+	rules, err := selectWeightFormattingRules(system)
+	if err != nil {
+		return 0, "", RoundingDetail{}, err // Return error if system is invalid
+	}
+
+	// Ensure rules are ordered high threshold to low in consts.go
+	for _, rule := range rules {
+		// Use a small tolerance for float comparisons if necessary, though >= should be okay
+		if baseGrams >= rule.Threshold {
+			// Found the correct rule for this magnitude
+			if rule.FactorFromBase == 0 {
+				// Avoid division by zero issues if factor is zero (shouldn't happen for weight/volume)
+				return 0, "", rule.RoundingRule, fmt.Errorf("invalid zero FactorFromBase for rule threshold %.2f, unit %s", rule.Threshold, rule.DisplayUnit)
+			}
+			displayQty = baseGrams * rule.FactorFromBase // Convert grams TO display unit
+			displayUnit = rule.DisplayUnit
+			roundingRule = rule.RoundingRule
+			return displayQty, displayUnit, roundingRule, nil // Found match, return
+		}
+	}
+
+	err = fmt.Errorf("no suitable formatting rule found for weight %.2f g in system '%s'", baseGrams, system)
+	return 0, "", RoundingDetail{}, err
+}
+
+func selectVolumeFormattingRules(system string) (FormattingRuleSet, error) {
+	switch system {
+	case string(SystemMetric):
+		return MetricVolumeRules, nil
+	case string(SystemUS):
+		return USVolumeRules, nil
+	default:
+		return USVolumeRules, nil
+	}
+}
+
+// FormatVolume determines the best display unit, unrounded quantity, and rounding rule for a given volume.
+func FormatVolume(baseMl float64, system string) (displayQty float64, displayUnit string, roundingRule RoundingDetail, err error) {
+
+	rules, err := selectVolumeFormattingRules(system)
+	if err != nil {
+		return 0, "", RoundingDetail{}, err // Return error if system is invalid
+	}
+
+	// Ensure rules are ordered high threshold to low in consts.go
+	for _, rule := range rules {
+		// Use a small tolerance for float comparisons if necessary
+		if baseMl >= rule.Threshold {
+			// Found the correct rule for this magnitude
+			if rule.FactorFromBase == 0 {
+				// This might happen if converting TO ml/l itself
+				if rule.DisplayUnit == "ml" || rule.DisplayUnit == "l" {
+					// If DisplayUnit is ml or l, FactorFromBase might be derived differently or handled specially
+					// Let's assume FactorFromBase is correctly set (e.g., 1.0 for ml, 0.001 for l)
+					// This error check might be less critical here if data is set up correctly.
+				} else {
+					return 0, "", rule.RoundingRule, fmt.Errorf("invalid zero FactorFromBase for volume rule threshold %.2f, unit %s", rule.Threshold, rule.DisplayUnit)
+				}
+			}
+
+			// Calculate the quantity in the rule's DisplayUnit
+			// Example: baseMl = 500, rule is for "pt" (FactorFromBase = 1.0 / 473.176)
+			// displayQty = 500 * (1.0 / 473.176) = ~1.05 pints
+			displayQty = baseMl * rule.FactorFromBase
+
+			// Get the target display unit and the rounding rule
+			displayUnit = rule.DisplayUnit
+			roundingRule = rule.RoundingRule
+
+			// Return the results - WE FOUND THE MATCH, STOP ITERATING
+			return displayQty, displayUnit, roundingRule, nil
+		}
+	}
+
+	// Should not be reached if rules include threshold 0.0
+	err = fmt.Errorf("no suitable formatting rule found for volume %.2f ml in system '%s'", baseMl, system)
+	return 0, "", RoundingDetail{}, err
+}
+
+func unitSpace(unit string) string {
+	// Map of units that should NOT have a preceding space (case-sensitive - assuming normalized input)
+	noSpaceUnits := map[string]bool{
+		"g":  true,
+		"kg": true, // Added kg
+		"ml": true,
+		"l":  true, // Added l
+		"%":  true,
+		"°C": true,
+		"°F": true,
+	}
+	// Check normalized unit (already done before calling this ideally)
+	normalizedUnit := strings.ToLower(unit)
+	if _, found := noSpaceUnits[normalizedUnit]; found || normalizedUnit == "" {
+		return "" // No space needed
+	}
+	return " " // Add a space for others (tsp, tbsp, cup, oz, lb, clove, unit, etc.)
+}
+
+// pluralize handles basic pluralization for common units.
+func pluralize(quantity float64, unit string) string {
+	// Using a tolerance for floating point comparisons to 1
+	if math.Abs(quantity-1.0) < 0.001 {
+		return unit // Return singular if quantity is effectively 1
+	}
+
+	// Handle specific irregulars or known non-pluralized units first if any
+	switch unit {
+	case "to taste", "pinch", "dash": // Don't pluralize descriptive
+		return unit
+	}
+
+	// Basic pluralization rules (can be expanded)
+	// Check for units already ending in 's' - simplistic check
+	if strings.HasSuffix(unit, "s") {
+		return unit
+	}
+	// Simple rule: add 's' - covers most common cases like cup, tsp, tbsp, clove, etc.
+	// More complex rules for words ending in y, ch, sh, x, z could be added if needed.
+	return unit + "s"
+}
+
+func FormatFraction(value float64, denominator int) string {
+	if denominator <= 0 {
+		// Fallback to decimal if denominator is invalid
+		return strconv.FormatFloat(value, 'f', -1, 64)
+	}
+
+	// tolerance := 1.0 / float64(denominator*2) // Tolerance for rounding
+
+	wholePart := int(math.Floor(value))
+	fractionalPart := value - float64(wholePart)
+
+	// Round fractional part to nearest fraction based on denominator
+	numerator := int(math.Round(fractionalPart * float64(denominator)))
+
+	// Handle rounding up to the next whole number
+	if numerator == denominator {
+		wholePart++
+		numerator = 0
+	}
+
+	// Simplify fraction (find greatest common divisor)
+	gcd := func(a, b int) int {
+		for b != 0 {
+			a, b = b, a%b
+		}
+		return a
+	}
+
+	if numerator != 0 {
+		commonDivisor := gcd(numerator, denominator)
+		numerator /= commonDivisor
+		denominator /= commonDivisor
+	}
+
+	// Build the string
+	result := ""
+	if wholePart > 0 {
+		result += strconv.Itoa(wholePart)
+	}
+
+	if numerator > 0 {
+		if wholePart > 0 {
+			result += " " // Add space between whole and fraction
+		}
+		result += fmt.Sprintf("%d/%d", numerator, denominator)
+	}
+
+	if result == "" { // Handle case where value was 0 or rounded to 0
+		return "0"
+	}
+
+	return result
+}
+
+// Helper for applying rounding rules (used within formatFinalOutput)
+func applyRounding(qty float64, rule RoundingDetail) float64 {
+	if qty == 0 {
+		return 0
+	} // Avoid issues with rounding zero
+
+	switch rule.Type {
+	case "decimal":
+		precision := int(rule.Precision)
+		if precision < 0 {
+			precision = 0
+		}
+		factor := math.Pow10(precision)
+		return math.Round(qty*factor) / factor
+	case "fraction":
+		return qty // Let FormatFraction handle it
+	case "nearest_int":
+		return math.Round(qty)
+	case "nearest_multiple":
+		multiple := rule.Precision
+		if multiple <= 0 {
+			return qty
+		} // Avoid division by zero or no-op
+		return math.Round(qty/multiple) * multiple
+	default:
+		return math.Round(qty*10) / 10 // Round to 1dp as a fallback
+	}
+}
+
+func formatFinalOutput(unroundedQty float64, displayUnit string, itemName string, rule RoundingDetail) string {
+
+	// --- 1. Handle non-numeric / descriptive units first ---
+	switch displayUnit {
+	case "to taste":
+		// For "to taste", typically omit quantity entirely
+		return fmt.Sprintf("%s %s", displayUnit, itemName)
+	case "pinch", "dash":
+		// For pinch/dash, often use "a" or "1" unless specifically fractional
+		qtyStr := "a" // Default to "a"
+		if math.Abs(unroundedQty-1.0) > 0.001 && unroundedQty > 0 {
+			// If explicitly not 1 (e.g., 0.5 or 2), format it
+			// Use FormatFraction for things like 1/2 pinch? Precision 2 or 4.
+			qtyStr = FormatFraction(unroundedQty, 2) // Example: format to nearest 1/2
+		}
+		// Use singular form for "a"
+		unitStr := displayUnit
+		if qtyStr == "a" {
+			// No pluralization needed
+		} else {
+			// Need to parse qtyStr back to float for pluralize if it became "1/2" etc.
+			// Simplification: just use original unroundedQty for plural check here
+			unitStr = pluralize(unroundedQty, displayUnit)
+		}
+		return fmt.Sprintf("%s%s%s %s", qtyStr, unitSpace(unitStr), unitStr, itemName)
+	case "":
+		// Handle empty unit (error condition)
+		if unroundedQty != 0 {
+			qtyStr := formatQuantityFloat(unroundedQty) // Basic format
+			return fmt.Sprintf("%s %s ???", qtyStr, itemName)
+		}
+		return itemName // Just return name if quantity is also zero
+	}
+
+	// --- 2. Look up fundamental unit type ---
+	unitDef, ok := UnitDefinitions[displayUnit] // Assuming displayUnit is normalized
+	if !ok {
+		// Fallback if the unit determined by FormatWeight/Volume isn't in UnitDefinitions (shouldn't happen)
+		log.Warnf("formatFinalOutput: Unit '%s' not found in UnitDefinitions. Using basic formatting.", displayUnit)
+		qtyStr := formatQuantityFloat(unroundedQty) // Basic fallback
+		pluralUnit := pluralize(unroundedQty, displayUnit)
+		return fmt.Sprintf("%s%s%s %s", qtyStr, unitSpace(pluralUnit), pluralUnit, itemName)
+	}
+
+	// --- 3. Apply Rounding and Formatting based on Type ---
+	var qtyStr string
+	roundedQty := applyRounding(unroundedQty, rule) // Apply rounding determined by FormatWeight/Volume rule
+
+	switch unitDef.Type {
+	case TypeCount:
+		// Specific formatting for counts (e.g., 1/2 onion, 2 cloves)
+		// Often use fractions for halves/quarters. Use rule's precision if fraction, else basic format.
+		// Let's default count fractions to quarters if rule allows.
+		denominator := 4
+		if rule.Type == "fraction" && rule.Precision > 0 {
+			denominator = int(rule.Precision)
+		}
+		// Only use fraction formatting if the rounding type suggests it might be useful
+		// or if the unit itself implies it (like 'unit' for onion/carrot)
+		if rule.Type == "fraction" { // Or check specific units: unit, clove?
+			qtyStr = FormatFraction(roundedQty, denominator)
+		} else {
+			// Otherwise, format counts as integers or maybe 1 decimal place
+			qtyStr = formatQuantityFloat(roundedQty) // Default to decimal/int format
+		}
+
+	case TypeVolume:
+		// Check if the rule specifies fraction (typical for US units)
+		if rule.Type == "fraction" && rule.Precision > 0 {
+			qtyStr = FormatFraction(roundedQty, int(rule.Precision))
+		} else {
+			// Otherwise use standard decimal formatting (typical for metric)
+			qtyStr = formatQuantityFloat(roundedQty)
+		}
+
+	case TypeWeight:
+		// Weights usually use decimal formatting
+		qtyStr = formatQuantityFloat(roundedQty)
+
+	default: // Should not happen
+		qtyStr = formatQuantityFloat(roundedQty)
+	}
+
+	// --- 4. Pluralize the display unit ---
+	// Use the final *rounded* quantity to determine pluralization
+	pluralUnit := pluralize(roundedQty, displayUnit)
+
+	// --- 5. Combine ---
+	return fmt.Sprintf("%s%s%s %s", qtyStr, unitSpace(pluralUnit), pluralUnit, itemName)
+}
+
+// formatQuantityFloat - adapt your original formatQuantity for float64
+func formatQuantityFloat(q float64) string {
+	// Check if the number is effectively an integer
+	if math.Abs(q-math.Round(q)) < 0.001 {
+		return fmt.Sprintf("%.0f", q)
+	}
+	// Format to 2dp and trim
+	sFixed := fmt.Sprintf("%.2f", q)
+	if strings.HasSuffix(sFixed, ".00") {
+		return sFixed[:len(sFixed)-3]
+	}
+	if strings.HasSuffix(sFixed, "0") {
+		return sFixed[:len(sFixed)-1]
+	}
+	return sFixed
+}

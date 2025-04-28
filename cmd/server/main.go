@@ -13,6 +13,7 @@ import (
 
 	"github.com/TJN25/recipe-site/internal/model"
 	"github.com/TJN25/recipe-site/internal/store"
+	"github.com/TJN25/recipe-site/internal/units"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -268,18 +269,6 @@ func calculateAdjustedIngredients(recipeStep *model.RecipeStep, scalingFactor fl
 	return adjustedIngredients
 }
 
-// func FormatWeight(q float64, unit string, system string) (float64, string)
-//
-// func FormatVolume(q float64, unit string, system string) (float64, string)
-//
-// func ConvertUsingCanonical(q float64, factorFrom float64, factorTo float64) (float64, error)
-//
-// func NormalizeUnit(input string) (string, error) //to handle upper/lowercase things, abbreviations, and pluralization
-//
-// func FormatFraction(q float64, denominator int) string // change 0.75 to 3/4
-//
-// func UnitToStringFormatter(q float64, unit string, itemName string) string // format for display
-
 func formatQuantity(q float32) string {
 	// Check if the number is effectively an integer (within a small tolerance)
 	if math.Abs(float64(q)-math.Round(float64(q))) < 0.001 {
@@ -368,7 +357,8 @@ var funcMap = template.FuncMap{
 		// return string([]rune(s)[:length]) + "..."
 		return s[:length] + "..." // Simpler byte slice version
 	},
-	"getFoodItem":    getFoodItem,
-	"getFormDetails": getFormDetails,
-	"unitSpace":      unitSpace,
+	"getFoodItem":      getFoodItem,
+	"getFormDetails":   getFormDetails,
+	"unitSpace":        unitSpace,
+	"formatIngredient": units.FormatIngredientForDisplay,
 }

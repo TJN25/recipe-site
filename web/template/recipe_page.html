@@ -215,17 +215,13 @@
                                     {{ range $step.Ingredients }}
 
                                         {{ $ing := . }}
-                                        {{ $foodItem := getFoodItem $ing.FoodItemID }}
-                                        {{ $formDetails := getFormDetails $foodItem $ing.FormName }}
-                                        {{ if $foodItem.ID }}   
                                             {{ if not $ing.IsOptional }}
-                                                <li class="font-sans leading-relaxed">{{ formatQuantity $ing.Quantity }}{{ unitSpace $formDetails.Unit }}{{ $formDetails.Unit }} {{ $foodItem.Name }}{{ if .IsOptional }} (optional){{ end }}{{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+                                                <li class="font-sans leading-relaxed">{{ formatIngredient $ing $step.BaseServings 2 "use_original" | printf "%s" }}</li>
                                             {{ else }}
                                                 <template x-if="showOptionals">
-                                                     <li class="italic text-slate-500 dark:text-slate-400">{{ formatQuantity $ing.Quantity }}{{ unitSpace $formDetails.Unit }}{{ $formDetails.Unit }} {{ $foodItem.Name }} (optional){{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
+                                                     <li class="italic text-slate-500 dark:text-slate-400">{{ formatIngredient $ing $step.BaseServings 2 "use_original" | printf "%s" }}</li>
                                                 </template>
                                             {{ end }}
-                                        {{ end }}
                                     {{ end }}
                                 </ul>
                             </div>
