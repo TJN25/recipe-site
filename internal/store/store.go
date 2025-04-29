@@ -13,6 +13,7 @@ import (
 
 var AllFoodItemsCache map[int64]model.FoodItem
 var AllFoodItemNamesCache map[string]int64
+var normalizedFormNameLookup map[string]string
 var AllDummyStepsCache map[int64]data.DummyRecipeStep
 
 func InitializeCaches() {
@@ -28,6 +29,31 @@ func InitializeCaches() {
 	}
 	log.Infof("Cached %d FoodItems", len(AllFoodItemsCache))
 	log.Infof("Cached %d FoodItemsNames", len(AllFoodItemNamesCache))
+
+	normalizedFormNameLookup = make(map[string]string)
+	for foodItemID, foodItem := range AllFoodItemsCache {
+		if foodItem.Forms == nil {
+			log.Warnf("FoodItem ID %d ('%s') has nil Forms map during form cache init.", foodItemID, foodItem.Name)
+			continue // Skip items with no forms map
+		}
+		for originalFormKey := range foodItem.Forms {
+			normalizedKey := normalizeName(originalFormKey) // Normalize the key
+			if normalizedKey == "" {
+				log.Warnf("FoodItem ID %d ('%s') form key '%s' resulted in empty normalized key. Skipping.", foodItemID, foodItem.Name, originalFormKey)
+				continue
+			}
+
+			if existingOriginalKey, exists := normalizedFormNameLookup[normalizedKey]; exists {
+				log.Errorf("Normalized Form Name Collision: Normalized key '%s' produced by both '%s' and '%s' (FoodItem ID %d). Keeping first ('%s'). Check FoodItem definitions.",
+					normalizedKey, existingOriginalKey, originalFormKey, foodItemID, existingOriginalKey)
+				continue
+			} else {
+				normalizedFormNameLookup[normalizedKey] = originalFormKey
+				log.Debugf("Added to form name cache: Key='%s', Value='%s' (from FoodItem %d)", normalizedKey, originalFormKey, foodItemID)
+			}
+		}
+	}
+	log.Infof("Cached %d unique normalized form names", len(normalizedFormNameLookup))
 
 	// Init Dummy Steps
 	AllDummyStepsCache = make(map[int64]data.DummyRecipeStep)
@@ -173,7 +199,7 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 
 			targetFormName := ingRef.FormName // Start with the name from the reference
 			if targetFormName == "" {
-				log.Warnf("Store Init: No FormName specified for '%s' in Step %d and FoodItem %d ('%s').",
+				log.Tracef("Store Init: No FormName specified for '%s' in Step %d and FoodItem %d ('%s').",
 					ingRef.FoodItemName, dummyStep.ID, foodItem.ID, foodItem.Name)
 				// If no form was specified in the reference, use the FoodItem's default
 				targetFormName = foodItem.DefaultFormName
@@ -183,11 +209,17 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 						ingRef.FoodItemName, dummyStep.ID, foodItem.ID, foodItem.Name)
 					continue // Skip this ingredient
 				}
-				log.Errorf("Store Init: No FormName for '%s' in Step %d. Using default '%s'.", ingRef.FoodItemName, dummyStep.ID, targetFormName)
+				log.Tracef("Store Init: No FormName for '%s' in Step %d. Using default '%s'.", ingRef.FoodItemName, dummyStep.ID, targetFormName)
 			}
 
 			// Now, validate that the determined targetFormName exists in the Forms map
-			_, formExists := foodItem.Forms[targetFormName]
+			normalisedTargetFormName := normalizeName(targetFormName)
+			lookupFormName, ok := normalizedFormNameLookup[normalisedTargetFormName]
+			if !ok {
+				log.Errorf("Target FormName '%s' for '%s' in Step %d not found in FormNameLookup. Trying original name.", targetFormName, ingRef.FoodItemName, dummyStep.StepOrder)
+				lookupFormName = targetFormName
+			}
+			_, formExists := foodItem.Forms[lookupFormName]
 			if !formExists {
 				// The intended form (either specified or default) doesn't exist in the definition
 				log.Errorf("Store Init: Target FormName '%s' for '%s' in Step %d not found in FoodItem %d Forms map. Check data definitions. Skipping ingredient.",

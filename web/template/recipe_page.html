@@ -57,13 +57,13 @@
                                        x-model.number="currentServings"
                                        min="1"
                                        required
-                                       class="w-16 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-accent-700 text-sm">
-                                <button type="button"
                                         hx-post="/update-servings-trigger/{{.Recipe.ID}}"
-                                        hx-trigger="click" 
+                                        hx-trigger="change delay:300ms" 
                                         hx-include="[id='servings-options-{{ .Recipe.ID }}']"
                                         hx-vals='js:{ "id": {{ .Recipe.ID }} }'
                                         hx-swap="none"
+                                       class="w-16 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-accent-700 text-sm">
+                                <button type="button"
                                         class="px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm">
                                     Update
                                 </button>
@@ -113,6 +113,7 @@
         <h1  class="font-serif text-3xl font-bold cursor-pointer mb-4 text-accent-900 dark:text-accent-100">
             {{ .Recipe.Title }} 
         </h1>
+            <span x-text="currentServings === 1 ? 'Makes 1 serving' : 'Makes ' + currentServings + ' servings'"></span>
         <div  class="recipe-banner mb-5 text-center">
             {{ if .Recipe.ImagePath }}
                 <img src="/static/{{ .Recipe.ImagePath }}" alt="{{ .Recipe.Title }}" class="max-w-full h-auto max-h-[300px] rounded-md inline-block">
@@ -123,6 +124,7 @@
         <p class="recipe-description mt-3 font-sans leading-relaxed">
             <em>{{ .Recipe.Description }}</em>
         </p>
+
     </div>
 
     <hr class="my-6 border-slate-200 dark:border-slate-700">
@@ -155,15 +157,17 @@
             </h1>
                 <div id="method-steps-display ">
                     <ol class="list-decimal pl-5 mt-0 font-sans leading-relaxed"> 
-                        {{ range .Recipe.RecipeSteps }}
+                        {{ range $index, $step := .Recipe.RecipeSteps }}
                     <!--<div class="p-6 rounded-2xl transition-colors duration-150 ease-in-out hover:bg-accent-50 dark:hover:bg-accent-700">-->
                     <div class="rounded-2xl pl-7 pr-6 transition-colors duration-150 ease-in-out"
-                         :class="{ 'bg-accent-50 dark:bg-accent-700': hoveredStepId == {{ .ID }} }"
-                        @click="hoveredStepId = (hoveredStepId == {{ .ID }}) ? null : {{ .ID }}">
+                         :class="{ 'bg-accent-50 dark:bg-accent-700': hoveredStepId == {{ $step.ID }} }"
+                        @click="
+                            hoveredStepId = (hoveredStepId == {{ $step.ID }}) ? null : {{ $step.ID }}
+                            zenModeIndex = {{ $index }};">
                                 <template x-if="showMethods">
-                                    <h3 class="text-lg font-serif font-semibold mt-3 mb-1">{{ .Title }}</h3>
+                                    <h3 class="text-lg font-serif font-semibold mt-3 mb-1">{{ $step.Title }}</h3>
                                 </template>
-                                {{ range .MethodSteps }}
+                                {{ range $step.MethodSteps }}
                                     <li class="mb-2 font-sans leading-relaxed">{{ .Instruction }}</li>
                                 {{ else }}
                                     <li class="list-none italic text-sm text-slate-500">No method steps available for this recipe.</li>

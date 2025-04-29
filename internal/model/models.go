@@ -31,25 +31,27 @@ type RecipeIngredient struct {
 	Quantity      float32 `json:"quantity"`
 	SpecifiedUnit string  `json:"unit"`
 
-	IsOptional bool   `json:"is_optional"`       // Is this ingredient optional for the recipe?
-	Purpose    string `json:"purpose,omitempty"` // Why this ingredient is used (e.g., "thickener", "acidity")
+	IsOptional  bool   `json:"is_optional"`       // Is this ingredient optional for the recipe?
+	Purpose     string `json:"purpose,omitempty"` // Why this ingredient is used (e.g., "thickener", "acidity")
+	Preparation string `json:"preparation,omitempty"`
 }
 
 type FoodItem struct {
-	ID                    int64                          `json:"id"`
-	Name                  string                         `json:"name"`           // The primary/generic name (e.g., "Garlic", "Cheddar Cheese", "All-Purpose Flour")
-	CanonicalUnit         string                         `json:"canonical_unit"` // The standard unit for internal calculations & nutrition (e.g., "g")
-	Forms                 map[string]FoodItemFormDetails `json:"forms"`          // Holding details of each form e.g. Clove and the values for Clove.
-	DefaultFormName       string                         `json:"default_form_name"`
-	PricePerCanonicalUnit float32                        `json:"price_per_canonical_unit"` // Price for one CanonicalUnit
-	Nutrition             Nutrition                      `json:"nutrition"`                // Embedded nutrition info per BaseUnit
+	ID                 int64                          `json:"id"`
+	Name               string                         `json:"name"`           // The primary/generic name (e.g., "Garlic", "Cheddar Cheese", "All-Purpose Flour")
+	FormComparisonUnit string                         `json:"canonical_unit"` // The standard unit for internal calculations & nutrition (e.g., "g")
+	Forms              map[string]FoodItemFormDetails `json:"forms"`          // Holding details of each form e.g. Clove and the values for Clove.
+	DefaultFormName    string                         `json:"default_form_name"`
 }
 
 type FoodItemFormDetails struct {
 	FormName              string             `json:"form_name"`               // redundant based on maps, but keeping it in case we need to use it
 	Unit                  string             `json:"unit"`                    // e.g. clove, tsp, g, cup
-	ConversionToCanonical float32            `json:"conversion_to_canonical"` // e.g. 5.0 if CanonicalUnit is 'g' and this form is 'clove'.
+	ConversionScaleFactor float32            `json:"conversion_scale_factor"` // e.g. 5.0 if CanonicalUnit is 'g' and this form is 'clove'.
+	ToGrams               float32            `json:"to_grams"`
+	ToMl                  float32            `json:"to_ml"`
 	PricePerUnit          float32            `json:"price_per_unit,omitempty"`
+	NutritionPerUnit      float32            `json:"nutrition_per_unit,omitempty"`
 	UnitConversions       map[string]float32 `json:"unit_conversions,omitempty"` // e.g., For Flour (Form: Default, Unit: g), UnitConversions: {"cup": 120.0, "tbsp": 7.5}
 	MakeableRecipeStepIDs []int64            `json:"makeable_recipe_ids"`        // ID that points to the recipe steps needed to make the recipe
 }
