@@ -155,8 +155,9 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"Recipe":      recipe, // Pass the fully assembled recipe from the store
-		"CurrentYear": time.Now().Year(),
+		"Recipe":          recipe, // Pass the fully assembled recipe from the store
+		"CurrentServings": 2,
+		"CurrentYear":     time.Now().Year(),
 	}
 
 	// Retrieve the pre-parsed set for "recipe"
@@ -224,11 +225,58 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/render-full-ingredients/")
 	idStr = strings.TrimSuffix(idStr, "/")
+	recipeID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("RenderFullIngredients: Invalid recipe ID in path '%s': %v", idStr, err)
+		http.Error(w, "Invalid Recipe ID", http.StatusBadRequest)
+		return
+	}
+
 	servingsStr := r.URL.Query().Get("servings")
+	targetServings, err := strconv.Atoi(servingsStr)
+	if err != nil || targetServings <= 0 {
+		tempRecipe, tempErr := store.GetRecipeByID(recipeID)
+		if tempErr != nil {
+			log.Errorf("RenderFullIngredients: Error getting recipe %d for default servings: %v", recipeID, tempErr)
+			http.Error(w, "Recipe not found", http.StatusNotFound)
+			return
+		}
+		targetServings = tempRecipe.Servings
+		log.Warnf("RenderFullIngredients: Invalid/missing servings param '%s' for recipe %d. Using default %d.", servingsStr, recipeID, targetServings)
+	}
 
-	log.Infof("handleRenderFullIngredients: Triggered for RecipeID path param '%s' with servings param '%s'", idStr, servingsStr)
+	recipe, err := store.GetRecipeByID(recipeID)
+	if err != nil {
+		log.Errorf("RenderFullIngredients: Error getting recipe %d from store: %v", recipeID, err)
+		if errors.Is(err, store.ErrNotFound) {
+			http.NotFound(w, r)
+		} else {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+		return
+	}
 
-	w.WriteHeader(http.StatusOK)
+	templateData := map[string]interface{}{
+		"Recipe":          recipe,
+		"CurrentServings": targetServings,
+		// "DisplaySystemPreference": "use_original", // Add later if needed
+	}
+
+	tmplSet, found := templateSets["ingredient-list"]
+	if !found {
+		log.Error("Template set 'ingredient-list' not found")
+		http.Error(w, "Internal Server Error: Template missing", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmplSet.ExecuteTemplate(w, "ingredient-list", templateData)
+	if err != nil {
+		log.Errorf("Error executing ingredient-list template for recipe %d: %v", recipeID, err)
+		return
+	}
+
+	log.Infof("RenderFullIngredients: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d.", recipeID, targetServings)
 }
 
 func getUpdateServingsDetails(r *http.Request) (id int64, servings int, recipe *model.Recipe, ok bool) {

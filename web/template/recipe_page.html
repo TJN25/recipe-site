@@ -141,7 +141,7 @@
                      hx-vals='js:{"servings": event.detail.newServings}'
                      hx-target="this"
                      hx-swap="innerHTML">
-                    {{ template "ingredient-list" .Recipe.RecipeSteps }}
+                    {{ template "ingredient-list" . }}
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 {{/* File: web/template/partials/ingredients.html */}}
 {{ define "ingredient-list" }}
 <ul id="ingredients-list-items" class="list-disc pl-5 mt-0 font-sans leading-relaxed">
-    {{ range . }}
+    {{ range .Recipe.RecipeSteps }}
         {{ $step := . }}
 
         <div class="mb-3 pl-7 pr-6 rounded-2xl transition-colors duration-150 ease-in-out"
@@ -14,10 +14,10 @@
 
                 {{ $ing := . }}
                     {{ if not $ing.IsOptional }}
-                        <li class="font-sans leading-relaxed">{{ formatIngredient $ing $step.BaseServings 2 "use_other" | printf "%s" }}</li>
+                        <li class="font-sans leading-relaxed">{{ formatIngredient $ing $step.BaseServings $.CurrentServings "use_other" | printf "%s" }}</li>
                     {{ else }}
                         <template x-if="showOptionals">
-                             <li class="italic text-slate-500 dark:text-slate-400">{{ formatIngredient $ing $step.BaseServings 2 "use_original" | printf "%s" }}</li>
+                             <li class="italic text-slate-500 dark:text-slate-400">{{ formatIngredient $ing $step.BaseServings $.CurrentServings "use_original" | printf "%s" }}</li>
                         </template>
                     {{ end }}
         {{ end }}
