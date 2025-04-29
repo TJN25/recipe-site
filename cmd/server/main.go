@@ -51,6 +51,7 @@ func main() {
 		filepath.Join(templateDir, "recipe_page.html"),
 		// We can omit ingredients.html for this minimal test if recipe_page doesn't {{template}} it
 		filepath.Join(templateDir, "partials", "ingredients.html"),
+		filepath.Join(templateDir, "partials", "zen_mode_content.html"),
 	}
 	log.Printf("Parsing set 'recipe': %v", recipePageFiles)
 	recipeSet := template.Must(template.New(filepath.Base(baseFile)). // Rooted at base.html
@@ -76,11 +77,28 @@ func main() {
 	templateSets["ingredient-list"] = ingredientSet
 	log.Printf("Stored template set: ingredient-list")
 
+	zenPartialFiles := []string{
+		filepath.Join(templateDir, "partials", "zen_mode_content.html"),
+	}
+	log.Printf("Parsing set 'zen-mode-content': %v", zenPartialFiles)
+
+	// *** CHANGE NAME IN New() HERE ***
+	// Use a different root name for the set, e.g., "ingredients-root" or just the filename base
+	zenSet := template.Must(template.New(filepath.Base(zenPartialFiles[0])). // Use "ingredients.html" as root name
+											Funcs(funcMap).
+											ParseFiles(zenPartialFiles...))
+	// **********************************
+
+	// Keep storing under the logical key "ingredient-list"
+	templateSets["zen-mode-content"] = zenSet
+	log.Printf("Stored template set: zen-mode-content")
+
 	// --- Setup Routes ---
 	http.HandleFunc("/", handleIndexPage)
 	http.HandleFunc("/recipe/", handleShowRecipe)
 	http.HandleFunc("/update-servings-trigger/{id}", handleUpdateServings)
 	http.HandleFunc("/render-full-ingredients/", handleRenderFullIngredients)
+	http.HandleFunc("/render-zen-mode-content/", handleRenderZenContent)
 
 	// --- Serve Static Files ---
 	fs := http.FileServer(http.Dir("./web/static/"))
@@ -277,6 +295,63 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Infof("RenderFullIngredients: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d.", recipeID, targetServings)
+}
+
+func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/render-zen-mode-content/")
+	idStr = strings.TrimSuffix(idStr, "/")
+	recipeID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("RenderZenContent: Invalid recipe ID in path '%s': %v", idStr, err)
+		http.Error(w, "Invalid Recipe ID", http.StatusBadRequest)
+		return
+	}
+
+	servingsStr := r.URL.Query().Get("servings")
+	targetServings, err := strconv.Atoi(servingsStr)
+	if err != nil || targetServings <= 0 {
+		tempRecipe, tempErr := store.GetRecipeByID(recipeID)
+		if tempErr != nil {
+			log.Errorf("RenderZenContent: Error getting recipe %d for default servings: %v", recipeID, tempErr)
+			http.Error(w, "Recipe not found", http.StatusNotFound)
+			return
+		}
+		targetServings = tempRecipe.Servings
+		log.Warnf("RenderZenContent: Invalid/missing servings param '%s' for recipe %d. Using default %d.", servingsStr, recipeID, targetServings)
+	}
+
+	recipe, err := store.GetRecipeByID(recipeID)
+	if err != nil {
+		log.Errorf("RenderZenContent: Error getting recipe %d from store: %v", recipeID, err)
+		if errors.Is(err, store.ErrNotFound) {
+			http.NotFound(w, r)
+		} else {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	templateData := map[string]interface{}{
+		"Recipe":          recipe,
+		"CurrentServings": targetServings,
+		// "DisplaySystemPreference": "use_original", // Add later if needed
+	}
+
+	tmplSet, found := templateSets["zen-mode-content"]
+	if !found {
+		log.Error("Template set 'zen-mode-content' not found")
+		http.Error(w, "Internal Server Error: Template missing", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmplSet.ExecuteTemplate(w, "zen-mode-content", templateData)
+	if err != nil {
+		log.Errorf("Error executing zen-mode-content template for recipe %d: %v", recipeID, err)
+		return
+	}
+
+	log.Infof("RenderZenContent: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d.", recipeID, targetServings)
 }
 
 func getUpdateServingsDetails(r *http.Request) (id int64, servings int, recipe *model.Recipe, ok bool) {
