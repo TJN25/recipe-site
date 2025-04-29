@@ -14,12 +14,10 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Chicken Breast",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Chicken Breast":  {Unit: "g", ConversionToCanonical: 1.0}, // Base unit is grams
-			"Chicken Thigh":   {Unit: "g", ConversionToCanonical: 1.0}, // Base unit is grams
-			"Mexican Chicken": {Unit: "g", ConversionToCanonical: 1.0}, // Base unit is grams
+			"Chicken Breast":  {Unit: "g", ConversionScaleFactor: 1.0}, // Base unit is grams
+			"Chicken Thigh":   {Unit: "g", ConversionScaleFactor: 1.0}, // Base unit is grams
+			"Mexican Chicken": {Unit: "g", ConversionScaleFactor: 1.0}, // Base unit is grams
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 2,
@@ -27,12 +25,10 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Garlic Clove",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Garlic Clove":  {Unit: "clove", ConversionToCanonical: 5.0},
-			"Garlic Paste":  {Unit: "ml", ConversionToCanonical: 1.0},
-			"Garlic Powder": {Unit: "ml", ConversionToCanonical: 1.0},
+			"Garlic Clove":  {Unit: "clove", ConversionScaleFactor: 5.0},
+			"Garlic Paste":  {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Garlic Powder": {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 3,
@@ -40,11 +36,9 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Fresh Ginger Root",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Fresh Ginger Root": {Unit: "g", ConversionToCanonical: 1.0}, // often recorded as cm ?
-			"Ginger Paste":      {Unit: "ml", ConversionToCanonical: 1.0},
+			"Fresh Ginger Root": {Unit: "g", ConversionScaleFactor: 1.0}, // often recorded as cm ?
+			"Ginger Paste":      {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 4,
@@ -52,14 +46,12 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Brown Onion",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Brown Onion":  {Unit: "unit", ConversionToCanonical: 150.0, UnitConversions: map[string]float32{"ml": 250.0, "g": 150.0}},
-			"Red Onion":    {Unit: "unit", ConversionToCanonical: 150.0},
-			"Shallot":      {Unit: "unit", ConversionToCanonical: 150.0}, // placeholder
-			"Spring Onion": {Unit: "unit", ConversionToCanonical: 150.0}, // placeholder
-			"Leek Onion":   {Unit: "unit", ConversionToCanonical: 150.0}, // placeholder
+			"Brown Onion":  {Unit: "unit", ConversionScaleFactor: 150.0, UnitConversions: map[string]float32{"ml": 250.0, "g": 150.0}},
+			"Red Onion":    {Unit: "unit", ConversionScaleFactor: 150.0},
+			"Shallot":      {Unit: "unit", ConversionScaleFactor: 150.0}, // placeholder
+			"Spring Onion": {Unit: "unit", ConversionScaleFactor: 150.0}, // placeholder
+			"Leek Onion":   {Unit: "unit", ConversionScaleFactor: 150.0}, // placeholder
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 5,
@@ -67,13 +59,11 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Cheddar Cheese",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Cheddar Cheese":    {Unit: "g", ConversionToCanonical: 1.0},
-			"Everday Cheese":    {Unit: "g", ConversionToCanonical: 1.0},
-			"Parmesan Cheese":   {Unit: "g", ConversionToCanonical: 1.0},
-			"Mozzarella Cheese": {Unit: "g", ConversionToCanonical: 1.0},
+			"Cheddar Cheese":    {Unit: "g", ConversionScaleFactor: 1.0},
+			"Everday Cheese":    {Unit: "g", ConversionScaleFactor: 1.0},
+			"Parmesan Cheese":   {Unit: "g", ConversionScaleFactor: 1.0},
+			"Mozzarella Cheese": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 6,
@@ -81,12 +71,10 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Fresh Tomato",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Fresh Tomato":           {Unit: "unit", ConversionToCanonical: 120.0},
-			"Canned Tomates (whole)": {Unit: "unit", ConversionToCanonical: 400.0},
-			"Canned Tomates (diced)": {Unit: "unit", ConversionToCanonical: 400.0},
+			"Fresh Tomato":           {Unit: "unit", ConversionScaleFactor: 120.0},
+			"Canned Tomates (whole)": {Unit: "unit", ConversionScaleFactor: 400.0},
+			"Canned Tomates (diced)": {Unit: "unit", ConversionScaleFactor: 400.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 7,
@@ -94,13 +82,11 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Raw Sugar",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Raw Sugar":    {Unit: "g", ConversionToCanonical: 1.0},
-			"Brown Sugar":  {Unit: "g", ConversionToCanonical: 1.0},
-			"Caster Sugar": {Unit: "g", ConversionToCanonical: 1.0},
-			"Icing Sugar":  {Unit: "g", ConversionToCanonical: 1.0},
+			"Raw Sugar":    {Unit: "g", ConversionScaleFactor: 1.0},
+			"Brown Sugar":  {Unit: "g", ConversionScaleFactor: 1.0},
+			"Caster Sugar": {Unit: "g", ConversionScaleFactor: 1.0},
+			"Icing Sugar":  {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 8,
@@ -108,10 +94,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Basmati Rice",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Basmati Rice": {Unit: "g", ConversionToCanonical: 1.0},
+			"Basmati Rice": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 9,
@@ -119,10 +103,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Kosher Salt",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Kosher Salt": {Unit: "g", ConversionToCanonical: 1.0},
+			"Kosher Salt": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 10,
@@ -130,11 +112,9 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Ground Black Pepper",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Ground Black Pepper": {Unit: "g", ConversionToCanonical: 1.0},
-			"Ground White Pepper": {Unit: "g", ConversionToCanonical: 1.0},
+			"Ground Black Pepper": {Unit: "g", ConversionScaleFactor: 1.0},
+			"Ground White Pepper": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 11,
@@ -142,13 +122,11 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Fettuccine",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Fettuccine": {Unit: "g", ConversionToCanonical: 1.0},
-			"Macaroni":   {Unit: "g", ConversionToCanonical: 1.0},
-			"Spaghetti":  {Unit: "g", ConversionToCanonical: 1.0},
-			"Lasagna":    {Unit: "g", ConversionToCanonical: 1.0},
+			"Fettuccine": {Unit: "g", ConversionScaleFactor: 1.0},
+			"Macaroni":   {Unit: "g", ConversionScaleFactor: 1.0},
+			"Spaghetti":  {Unit: "g", ConversionScaleFactor: 1.0},
+			"Lasagna":    {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 12,
@@ -156,11 +134,9 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Ground Cumin",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Ground Cumin": {Unit: "g", ConversionToCanonical: 1.0},
-			"Cumin Seed":   {Unit: "g", ConversionToCanonical: 1.0},
+			"Ground Cumin": {Unit: "g", ConversionScaleFactor: 1.0},
+			"Cumin Seed":   {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 13,
@@ -168,10 +144,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Ground Coriander",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Ground Coriander": {Unit: "g", ConversionToCanonical: 1.0},
+			"Ground Coriander": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 14,
@@ -179,13 +153,11 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Mustard Powder",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Mustard Powder":   {Unit: "ml", ConversionToCanonical: 1.0},
-			"American Mustard": {Unit: "ml", ConversionToCanonical: 1.0}, // placeholder
-			"Dijon Mustard":    {Unit: "ml", ConversionToCanonical: 1.0}, // placeholder
-			"Honey Mustard":    {Unit: "ml", ConversionToCanonical: 1.0}, // placeholder
+			"Mustard Powder":   {Unit: "ml", ConversionScaleFactor: 1.0},
+			"American Mustard": {Unit: "ml", ConversionScaleFactor: 1.0}, // placeholder
+			"Dijon Mustard":    {Unit: "ml", ConversionScaleFactor: 1.0}, // placeholder
+			"Honey Mustard":    {Unit: "ml", ConversionScaleFactor: 1.0}, // placeholder
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 15,
@@ -193,11 +165,9 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Full Fat Milk",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Full Fat Milk": {Unit: "ml", ConversionToCanonical: 1.0},
-			"Trim Milk":     {Unit: "ml", ConversionToCanonical: 1.0},
+			"Full Fat Milk": {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Trim Milk":     {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 16,
@@ -205,10 +175,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Smoked Paprika",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Smoked Paprika": {Unit: "ml", ConversionToCanonical: 1.0},
+			"Smoked Paprika": {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 17,
@@ -216,12 +184,10 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Flour",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Flour":             {Unit: "g", ConversionToCanonical: 1.0},
-			"All Purpose Flour": {Unit: "g", ConversionToCanonical: 1.0},
-			"Bread Flour":       {Unit: "g", ConversionToCanonical: 1.0},
+			"Flour":             {Unit: "g", ConversionScaleFactor: 1.0},
+			"All Purpose Flour": {Unit: "g", ConversionScaleFactor: 1.0},
+			"Bread Flour":       {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 18,
@@ -229,10 +195,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Butter",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Butter": {Unit: "g", ConversionToCanonical: 1.0},
+			"Butter": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 19,
@@ -240,12 +204,10 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "unit",
 		DefaultFormName:    "Chili",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Chili":          {Unit: "unit", ConversionToCanonical: 1.0},
-			"Bird-Eye Chili": {Unit: "unit", ConversionToCanonical: 1.0},
-			"Kashmiri Chili": {Unit: "unit", ConversionToCanonical: 1.0},
+			"Chili":          {Unit: "unit", ConversionScaleFactor: 1.0},
+			"Bird-Eye Chili": {Unit: "unit", ConversionScaleFactor: 1.0},
+			"Kashmiri Chili": {Unit: "unit", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 20,
@@ -253,10 +215,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Soy Sauce",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Soy Sauce": {Unit: "ml", ConversionToCanonical: 1.0},
+			"Soy Sauce": {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 21,
@@ -264,14 +224,12 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Canola Oil",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Canola Oil":  {Unit: "ml", ConversionToCanonical: 1.0},
-			"Sesame Oil":  {Unit: "ml", ConversionToCanonical: 1.0},
-			"Avocado Oil": {Unit: "ml", ConversionToCanonical: 1.0},
-			"Olive Oil":   {Unit: "ml", ConversionToCanonical: 1.0},
-			"Chili Oil":   {Unit: "ml", ConversionToCanonical: 1.0},
+			"Canola Oil":  {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Sesame Oil":  {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Avocado Oil": {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Olive Oil":   {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Chili Oil":   {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 22,
@@ -279,10 +237,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Sichuan Pepper",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Sichuan Pepper": {Unit: "ml", ConversionToCanonical: 1.0},
+			"Sichuan Pepper": {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 23,
@@ -290,10 +246,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Allspice",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Allspice": {Unit: "ml", ConversionToCanonical: 1.0},
+			"Allspice": {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 24,
@@ -301,10 +255,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "unit",
 		DefaultFormName:    "Egg",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Egg": {Unit: "unit", ConversionToCanonical: 1.0},
+			"Egg": {Unit: "unit", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 25,
@@ -312,10 +264,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Cornflour",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Cornflour": {Unit: "g", ConversionToCanonical: 1.0},
+			"Cornflour": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 26,
@@ -323,12 +273,10 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Cabbage",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Cabbage":       {Unit: "g", ConversionToCanonical: 1.0},
-			"Red Cabbage":   {Unit: "g", ConversionToCanonical: 1.0},
-			"White Cabbage": {Unit: "g", ConversionToCanonical: 1.0},
+			"Cabbage":       {Unit: "g", ConversionScaleFactor: 1.0},
+			"Red Cabbage":   {Unit: "g", ConversionScaleFactor: 1.0},
+			"White Cabbage": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 27,
@@ -336,10 +284,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "unit",
 		DefaultFormName:    "Carrot",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Carrot": {Unit: "unit", ConversionToCanonical: 1.0},
+			"Carrot": {Unit: "unit", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 28,
@@ -347,10 +293,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "unit",
 		DefaultFormName:    "Cucumber",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Cucumber": {Unit: "unit", ConversionToCanonical: 1.0},
+			"Cucumber": {Unit: "unit", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 29,
@@ -358,10 +302,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Roasted Peanut",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Roasted Peanut": {Unit: "g", ConversionToCanonical: 1.0},
+			"Roasted Peanut": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 30,
@@ -369,11 +311,9 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Mayonnaise",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Mayonnaise":        {Unit: "ml", ConversionToCanonical: 1.0},
-			"Kewpie Mayonnaise": {Unit: "ml", ConversionToCanonical: 1.0},
+			"Mayonnaise":        {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Kewpie Mayonnaise": {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 31,
@@ -381,10 +321,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Sriracha Sauce",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Sriracha Sauce": {Unit: "ml", ConversionToCanonical: 1.0},
+			"Sriracha Sauce": {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 32,
@@ -392,10 +330,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Honey",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Honey": {Unit: "ml", ConversionToCanonical: 1.0},
+			"Honey": {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 33,
@@ -403,11 +339,9 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Lemon Juice",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Lemon Juice": {Unit: "ml", ConversionToCanonical: 1.0},
-			"Lemon":       {Unit: "unit", ConversionToCanonical: 1.0},
+			"Lemon Juice": {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Lemon":       {Unit: "unit", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 34,
@@ -415,11 +349,9 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "unit",
 		DefaultFormName:    "Bun",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Bao Bun":     {Unit: "unit", ConversionToCanonical: 1.0},
-			"Brioche Bun": {Unit: "unit", ConversionToCanonical: 1.0},
+			"Bao Bun":     {Unit: "unit", ConversionScaleFactor: 1.0},
+			"Brioche Bun": {Unit: "unit", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 35,
@@ -427,10 +359,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Green Bean",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Green Bean": {Unit: "g", ConversionToCanonical: 1.0},
+			"Green Bean": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 36,
@@ -438,12 +368,10 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Mushroom",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Mushroom":            {Unit: "g", ConversionToCanonical: 1.0},
-			"Button Mushroom":     {Unit: "g", ConversionToCanonical: 1.0},
-			"Portabello Mushroom": {Unit: "g", ConversionToCanonical: 1.0},
+			"Mushroom":            {Unit: "g", ConversionScaleFactor: 1.0},
+			"Button Mushroom":     {Unit: "g", ConversionScaleFactor: 1.0},
+			"Portabello Mushroom": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 37,
@@ -451,14 +379,12 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "unit",
 		DefaultFormName:    "Capsicum",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Capsicum":         {Unit: "unit", ConversionToCanonical: 1.0},
-			"Red Capsicum":     {Unit: "unit", ConversionToCanonical: 1.0},
-			"Yellow Capsicum":  {Unit: "unit", ConversionToCanonical: 1.0},
-			"Green Capsicum":   {Unit: "unit", ConversionToCanonical: 1.0},
-			"Roasted Capsicum": {Unit: "unit", ConversionToCanonical: 1.0},
+			"Capsicum":         {Unit: "unit", ConversionScaleFactor: 1.0},
+			"Red Capsicum":     {Unit: "unit", ConversionScaleFactor: 1.0},
+			"Yellow Capsicum":  {Unit: "unit", ConversionScaleFactor: 1.0},
+			"Green Capsicum":   {Unit: "unit", ConversionScaleFactor: 1.0},
+			"Roasted Capsicum": {Unit: "unit", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 38,
@@ -466,10 +392,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Baby Spinach",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Baby Spinach": {Unit: "g", ConversionToCanonical: 1.0},
+			"Baby Spinach": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 39,
@@ -477,10 +401,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Water",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Water": {Unit: "ml", ConversionToCanonical: 1.0},
+			"Water": {Unit: "ml", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 	{
 		ID:                 40,
@@ -488,10 +410,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "unit",
 		DefaultFormName:    "Noodle",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Egg Noodle": {Unit: "unit", ConversionToCanonical: 1.0},
+			"Egg Noodle": {Unit: "unit", ConversionScaleFactor: 1.0},
 		},
-		PricePerCanonicalUnit: placeHolderPrice,
-		Nutrition:             placeholderNutrition,
 	},
 }
 
