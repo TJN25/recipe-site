@@ -2,6 +2,7 @@
 {{ define "ingredient-list" }}
 <ul id="ingredients-list-items" class="list-disc pl-5 mt-0 font-sans leading-relaxed">
     {{ range . }}
+        {{ $step := . }}
 
         <div class="mb-3 pl-7 pr-6 rounded-2xl transition-colors duration-150 ease-in-out"
                  :class="{ 'bg-accent-50 dark:bg-accent-700': hoveredStepId == {{ .ID }} }"
@@ -10,18 +11,15 @@
             <h3 class="font-serif text-lg font-semibold mt-3 mb-1 text-slate-800 dark:text-slate-200">{{ .Title }}</h3>
         </template>
         {{ range .Ingredients }}
-            {{ $ing := . }}
-            {{ $foodItem := getFoodItem $ing.FoodItemID }}
-            {{ $formDetails := getFormDetails $foodItem $ing.FormName }}
-            {{ if $foodItem.ID }}   
-                {{ if not $ing.IsOptional }}
-                    <li class="font-sans leading-relaxed">{{ formatQuantity $ing.Quantity }}{{ unitSpace $formDetails.Unit }}{{ $formDetails.Unit }} {{ $foodItem.Name }}{{ if .IsOptional }} (optional){{ end }}{{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
-                {{ else }}
-                    <template x-if="showOptionals">
-                         <li class="italic text-slate-500 dark:text-slate-400">{{ formatQuantity $ing.Quantity }}{{ unitSpace $formDetails.Unit }}{{ $formDetails.Unit }} {{ $foodItem.Name }} (optional){{ if .Purpose }} - {{ .Purpose }}{{ end }}</li>
-                    </template>
-                {{ end }}
-        {{ end }}
+
+                {{ $ing := . }}
+                    {{ if not $ing.IsOptional }}
+                        <li class="font-sans leading-relaxed">{{ formatIngredient $ing $step.BaseServings 2 "use_other" | printf "%s" }}</li>
+                    {{ else }}
+                        <template x-if="showOptionals">
+                             <li class="italic text-slate-500 dark:text-slate-400">{{ formatIngredient $ing $step.BaseServings 2 "use_original" | printf "%s" }}</li>
+                        </template>
+                    {{ end }}
         {{ end }}
         </div>
     {{ else }}

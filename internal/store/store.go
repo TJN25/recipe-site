@@ -3,6 +3,7 @@ package store
 import (
 	"errors" // For returning errors
 	"fmt"    // For potential error messages
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -11,16 +12,22 @@ import (
 )
 
 var AllFoodItemsCache map[int64]model.FoodItem
+var AllFoodItemNamesCache map[string]int64
 var AllDummyStepsCache map[int64]data.DummyRecipeStep
 
 func InitializeCaches() {
 	log.Info("Initializing store caches...")
 	AllFoodItemsCache = make(map[int64]model.FoodItem)
+	AllFoodItemNamesCache = make(map[string]int64)
 	// Ensure data.DummyFoodItems uses the NEW model.FoodItem structure
 	for _, item := range data.DummyFoodItems {
 		AllFoodItemsCache[item.ID] = item
+		normalizedKey := normalizeName(item.Name)
+		AllFoodItemNamesCache[normalizedKey] = item.ID
+		log.Debugf("Added to name cache: Key='%s', ID=%d", normalizedKey, item.ID)
 	}
 	log.Infof("Cached %d FoodItems", len(AllFoodItemsCache))
+	log.Infof("Cached %d FoodItemsNames", len(AllFoodItemNamesCache))
 
 	// Init Dummy Steps
 	AllDummyStepsCache = make(map[int64]data.DummyRecipeStep)
@@ -47,12 +54,16 @@ func InitializeCaches() {
 	}
 }
 
-func findFoodItem(id int64) (model.FoodItem, bool) {
+func findFoodItem(name string) (model.FoodItem, bool) {
+	log.Debugf("findFoodItem: %s", name)
+	normalizedSearchName := normalizeName(name)
+	log.Debugf("findFoodItem: normalized %s", normalizedSearchName)
 	for _, item := range data.DummyFoodItems {
-		if item.ID == id {
+		if normalizeName(item.Name) == normalizedSearchName {
 			return item, true
 		}
 	}
+	log.Warnf("findFoodItem: did not find '%s'", normalizedSearchName)
 	return model.FoodItem{}, false
 }
 
@@ -148,9 +159,9 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 
 		for _, ingRef := range dummyStep.Ingredients {
 			// 1. Lookup FoodItem
-			foodItem, found := findFoodItem(ingRef.FoodItemID)
+			foodItem, found := findFoodItem(ingRef.FoodItemName)
 			if !found {
-				log.Warnf("Store: FoodItem ID %d not found referenced in RecipeStep ID %d. Skipping ingredient.", ingRef.FoodItemID, dummyStep.ID)
+				log.Warnf("Store: FoodItem Name %s not found referenced in RecipeStep ID %d. Skipping ingredient.", ingRef.FoodItemName, dummyStep.ID)
 				continue
 			}
 
@@ -160,11 +171,34 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 				// We can still proceed, DefaultFormName is mostly for substitutions now
 			}
 
+			targetFormName := ingRef.FormName // Start with the name from the reference
+			if targetFormName == "" {
+				log.Warnf("Store Init: No FormName specified for '%s' in Step %d and FoodItem %d ('%s').",
+					ingRef.FoodItemName, dummyStep.ID, foodItem.ID, foodItem.Name)
+				// If no form was specified in the reference, use the FoodItem's default
+				targetFormName = foodItem.DefaultFormName
+				if targetFormName == "" {
+					// If the FoodItem itself ALSO lacks a default, we have a problem
+					log.Errorf("Store Init: No FormName specified for '%s' in Step %d and FoodItem %d ('%s') also has no DefaultFormName. Skipping.",
+						ingRef.FoodItemName, dummyStep.ID, foodItem.ID, foodItem.Name)
+					continue // Skip this ingredient
+				}
+				log.Errorf("Store Init: No FormName for '%s' in Step %d. Using default '%s'.", ingRef.FoodItemName, dummyStep.ID, targetFormName)
+			}
+
+			// Now, validate that the determined targetFormName exists in the Forms map
+			_, formExists := foodItem.Forms[targetFormName]
+			if !formExists {
+				// The intended form (either specified or default) doesn't exist in the definition
+				log.Errorf("Store Init: Target FormName '%s' for '%s' in Step %d not found in FoodItem %d Forms map. Check data definitions. Skipping ingredient.",
+					targetFormName, ingRef.FoodItemName, dummyStep.ID, foodItem.ID)
+				continue // Skip this ingredient - cannot proceed without valid form details
+			}
 			// 3. Create the RecipeIngredient - Directly recording source data
 			newIngredient := model.RecipeIngredient{
-				FoodItemID: foodItem.ID,
-				// Store the default form name for reference / potential initial display choice
-				FormName:      foodItem.DefaultFormName,
+				FoodItemID:    foodItem.ID,
+				FoodItemName:  ingRef.FoodItemName,
+				FormName:      targetFormName,
 				Quantity:      ingRef.Quantity, // Store quantity as given
 				SpecifiedUnit: ingRef.Unit,     // <<< STORE THE UNIT FROM THE SOURCE
 				IsOptional:    ingRef.IsOptional,
@@ -175,14 +209,14 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 			recipeStep.Ingredients = append(recipeStep.Ingredients, newIngredient)
 		}
 
-		for _, equipID := range dummyStep.EquipmentIDs {
-			equipment, found := findEquipment(equipID)
-			if !found {
-				log.Warnf("Warning: Equipment ID %d not found for RecipeStep ID %d\n", equipID, dummyStep.ID)
-				continue // Skip if not found
-			}
-			recipeStep.Equipment = append(recipeStep.Equipment, equipment)
-		}
+		// for _, equipID := range dummyStep.EquipmentIDs {
+		// 	equipment, found := findEquipment(equipID)
+		// 	if !found {
+		// 		log.Warnf("Warning: Equipment ID %d not found for RecipeStep ID %d\n", equipID, dummyStep.ID)
+		// 		continue // Skip if not found
+		// 	}
+		// 	recipeStep.Equipment = append(recipeStep.Equipment, equipment)
+		// }
 
 		// Add the fully assembled step to the recipe
 		recipe.RecipeSteps = append(recipe.RecipeSteps, recipeStep)
@@ -216,6 +250,32 @@ func GetRecipes() []model.Recipe {
 		})
 	}
 	return recipes
+}
+
+func normalizeName(name string) string {
+	// 1. Trim leading/trailing whitespace
+	processedName := strings.TrimSpace(name)
+	// 2. Convert to lowercase
+	processedName = strings.ToLower(processedName)
+	// 3. Remove hyphens
+	processedName = strings.ReplaceAll(processedName, "-", "")
+	processedName = strings.ReplaceAll(processedName, " ", "")
+	// 4. Remove trailing 's' (basic plural handling)
+	// Be careful: this might incorrectly change "pasta" to "pata", "tapas" to "tapa" etc.
+	// Consider only removing 's' if preceded by certain letters, or use a more robust stemmer later.
+	// For now, basic removal:
+	if len(processedName) > 1 && strings.HasSuffix(processedName, "s") {
+		// Only remove if it's not just "s"
+		// Might want to add exceptions for words like "pasta", "tapas", "molasses" if they occur
+		exceptions := map[string]bool{"pasta": true, "tapas": true, "molasses": true}
+		if !exceptions[processedName] {
+			processedName = processedName[:len(processedName)-1]
+		}
+	}
+	// 5. Optional: Condense multiple spaces?
+	// processedName = regexp.MustCompile(`\s+`).ReplaceAllString(processedName, " ")
+
+	return processedName
 }
 
 // Use the following to find the correct form for the recipe, and ensure units are correct (along with quantity)

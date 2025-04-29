@@ -79,7 +79,8 @@ func main() {
 	// --- Setup Routes ---
 	http.HandleFunc("/", handleIndexPage)
 	http.HandleFunc("/recipe/", handleShowRecipe)
-	http.HandleFunc("/update-servings", handleUpdateServings)
+	http.HandleFunc("/update-servings-trigger/{id}", handleUpdateServings)
+	http.HandleFunc("/render-full-ingredients/", handleRenderFullIngredients)
 
 	// --- Serve Static Files ---
 	fs := http.FileServer(http.Dir("./web/static/"))
@@ -178,45 +179,56 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
-	log.Info("HandleUpdateServings: Received request")
+	log.Info("HandleUpdateServingsTrigger: Received request") // Update log message
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusInternalServerError) // Corrected Status Code
-		return
-	}
-	_, newServings, baseRecipe, ok := getUpdateServingsDetails(r)
-	if !ok {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed) // Use correct status code
 		return
 	}
 
-	scalingFactor := float32(newServings) / float32(baseRecipe.Servings)
-
-	modifiedRecipe := *baseRecipe
-	for idx, recipe_step := range baseRecipe.RecipeSteps {
-		modifiedRecipe.RecipeSteps[idx].Ingredients = calculateAdjustedIngredients(&recipe_step, scalingFactor)
-		log.Infof("HandleUpdateServings: Calculated adjustedIngredients (len %d): %+v", len(modifiedRecipe.RecipeSteps[idx].Ingredients), modifiedRecipe.RecipeSteps[idx].Ingredients)
-	}
-
-	tmplSet, found := templateSets["ingredient-list"]
-	if !found {
-		log.Error("Template set 'ingredient-list' not found")
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	// --- Parse the POST form data ---
+	err := r.ParseForm()
+	if err != nil {
+		log.Errorf("HandleUpdateServingsTrigger: Error parsing form: %v", err)
+		http.Error(w, "Bad Request: Cannot parse form", http.StatusBadRequest)
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	// --- Read 'id' from the parsed form data ---
+	recipeIDStr := r.FormValue("id") // Read the 'id' field sent by hx-vals
+	log.Debugf("HandleUpdateServingsTrigger: Raw form 'id' value = '%s'", recipeIDStr)
 
-	targetID := "ingredients-list-container"
-	fmt.Fprintf(w, `<div id="%s">`, targetID)
-
-	// Execute the defined name "ingredient-list"
-	err := tmplSet.ExecuteTemplate(w, "ingredient-list", modifiedRecipe.RecipeSteps)
-	if err != nil { /* ... */
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
+	if err != nil {
+		// Updated error messages for clarity
+		log.Errorf("HandleUpdateServingsTrigger: Error parsing recipeID from form value '%s': %v", recipeIDStr, err)
+		log.Errorf("Request details: %+v", r) // Log request details for more context if needed
+		http.Error(w, "Bad Request: Invalid id parameter", http.StatusBadRequest)
+		return
 	}
-	fmt.Fprintln(w, `</div>`)
+	log.Infof("HandleUpdateServingsTrigger: Parsed RecipeID: %d", recipeID)
 
-	log.Infof("Served updated ingredients list for '%s' (%d servings)", baseRecipe.Title, newServings)
+	// --- GET SERVINGS (Add this part) ---
+	servingsStr := r.FormValue("servings") // Get servings (assuming name="servings" in hx-include/hx-vals)
+	newServings, err := strconv.Atoi(servingsStr)
+	if err != nil || newServings <= 0 {
+		log.Warnf("HandleUpdateServingsTrigger: Invalid or missing 'servings' form value: '%s'. Using default/previous might be needed.", servingsStr)
+		newServings = 2 // Or fetch default
+	}
+	log.Infof("HandleUpdateServingsTrigger: Target Servings: %d", newServings)
 
+	// --- Respond with HX-Trigger ---
+	w.Header().Set("HX-Trigger", fmt.Sprintf(`{"servingsUpdated": {"newServings": %d}}`, newServings))
+	w.WriteHeader(http.StatusOK)
+}
+
+func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/render-full-ingredients/")
+	idStr = strings.TrimSuffix(idStr, "/")
+	servingsStr := r.URL.Query().Get("servings")
+
+	log.Infof("handleRenderFullIngredients: Triggered for RecipeID path param '%s' with servings param '%s'", idStr, servingsStr)
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func getUpdateServingsDetails(r *http.Request) (id int64, servings int, recipe *model.Recipe, ok bool) {

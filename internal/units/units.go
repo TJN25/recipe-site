@@ -211,49 +211,75 @@ func FormatIngredientForDisplay(
 	targetServings int,
 	displaySystemKey string, // e.g., "use_original", "use_metric", "use_us_customary"
 ) (template.HTML, error) {
+	log.Debugf("-> FormatIngredient Entry: ItemID=%d, Form='%s', Qty=%.2f, Unit='%s', BaseServ=%d, TargetServ=%d, System='%s'",
+		ingredient.FoodItemID, ingredient.FormName, ingredient.Quantity, ingredient.SpecifiedUnit, stepBaseServings, targetServings, displaySystemKey)
 
 	var finalQuantity float64
 	var displayUnit string
 	var roundingRule RoundingDetail
 
+	log.Debugf("   SpecifiedUnit to normalize: '%s'", ingredient.SpecifiedUnit)
 	normalizedUnit, _ := normalizeUnit(ingredient.SpecifiedUnit)
+	log.Debugf("   Normalized unit result: '%s'", normalizedUnit)
 	unitDef, ok := UnitDefinitions[normalizedUnit]
+	log.Debugf("   Looked up UnitDefinition for '%s'. Found: %t. Type: %s", normalizedUnit, ok, unitDef.Type)
 	if ok && unitDef.Type == TypeDescriptive {
-		// Directly format descriptive units (e.g., "a pinch", "to taste")
+		log.Debugf("   Handling as Descriptive Unit.")
 		roundingRule = RoundingDetail{Type: "decimal", Precision: 1}
+		log.Debugf("   Calling formatFinalOutput (Descriptive): Qty=%.2f, Unit='%s', Name='%s', Rule={%s, %.1f}",
+			float64(ingredient.Quantity), normalizedUnit, ingredient.FormName, roundingRule.Type, roundingRule.Precision)
 		formattedString := formatFinalOutput(float64(ingredient.Quantity), normalizedUnit, ingredient.FormName, roundingRule) // Pass 0 or actual quantity? Handle in formatter.
+		log.Debugf("<- FormatIngredient Exit (Descriptive): Result='%s'", formattedString)
 		return template.HTML(formattedString), nil
 	}
 
+	log.Debugf("   Scaling quantity: BaseQty=%.2f, BaseServ=%d, TargetServ=%d", ingredient.Quantity, stepBaseServings, targetServings)
 	scaledQuantity, err := scaleQuantity(ingredient.Quantity, stepBaseServings, targetServings)
 	if err != nil {
 		log.Errorf("Error scaling quantity for ingredient %d: %v", ingredient.FoodItemID, err)
 		scaledQuantity = ingredient.Quantity // Use original as fallback
 	}
+	log.Debugf("   Scaled quantity result: %.4f", scaledQuantity)
 
 	// 3. Handle "use_original" display system
 	if displaySystemKey == "use_original" {
+		log.Debugf("   Handling 'use_original' system.")
+		log.Debugf("   SpecifiedUnit for 'use_original': '%s'", ingredient.SpecifiedUnit)
 		normUnit, ok := normalizeUnit(ingredient.SpecifiedUnit)
 		if !ok {
 			log.Warnf("Unknown original unit '%s' for ingredient %d", ingredient.SpecifiedUnit, ingredient.FoodItemID)
 			normUnit = ingredient.SpecifiedUnit
 		}
+		log.Debugf("   Normalized unit for 'use_original': '%s'", normUnit)
 
 		finalQuantity = float64(scaledQuantity)
 		displayUnit = normUnit
 		roundingRule = RoundingDetail{Type: "decimal", Precision: 1}
+		log.Debugf("   'use_original' - finalQuantity=%.4f, displayUnit='%s', roundingRule={%s, %.1f}",
+			finalQuantity, displayUnit, roundingRule.Type, roundingRule.Precision)
 
 	} else {
+		log.Debugf("   Handling '%s' system.", displaySystemKey)
 
 		// 4a. Normalize the *original* unit & get its definition
+		log.Debugf("   SpecifiedUnit for conversion: '%s'", ingredient.SpecifiedUnit)
 		normUnit, ok := normalizeUnit(ingredient.SpecifiedUnit)
 		if !ok {
+			errMsg := fmt.Sprintf("unknown unit '%s' for ingredient %d", ingredient.SpecifiedUnit, ingredient.FoodItemID)
+			log.Errorf("   %s", errMsg)
+			log.Debugf("<- FormatIngredient Exit (Error)")
 			return template.HTML(""), fmt.Errorf("unknown unit '%s' for ingredient %d", ingredient.SpecifiedUnit, ingredient.FoodItemID)
 		}
+		log.Debugf("   Normalized unit for conversion: '%s'", normUnit)
+
 		unitDef, ok := UnitDefinitions[normUnit]
 		if !ok {
+			errMsg := fmt.Sprintf("no definition found for normalized unit '%s'", normUnit)
+			log.Errorf("   %s", errMsg)
+			log.Debugf("<- FormatIngredient Exit (Error)")
 			return template.HTML(""), fmt.Errorf("no definition found for normalized unit '%s'", normUnit)
 		}
+		log.Debugf("   Unit definition found: Type='%s', FactorToStdBase=%.4f", unitDef.Type, unitDef.FactorToStdBase)
 
 		// Check if conversion is possible (must have a factor to base)
 		if unitDef.FactorToStdBase == 0 {
@@ -262,31 +288,45 @@ func FormatIngredientForDisplay(
 			finalQuantity = float64(scaledQuantity)
 			displayUnit = normUnit
 			roundingRule = RoundingDetail{Type: "decimal", Precision: 1} // Default basic rounding
+			log.Debugf("   Non-convertible fallback - finalQuantity=%.4f, displayUnit='%s', roundingRule={%s, %.1f}",
+				finalQuantity, displayUnit, roundingRule.Type, roundingRule.Precision)
 		} else {
 			// 4b. Convert scaled quantity to canonical base (g or ml)
 			canonicalValue := float64(scaledQuantity) * unitDef.FactorToStdBase
 			var baseUnitType UnitType = unitDef.Type // Should be weight or volume
+			log.Debugf("   Calculated canonical value: %.4f (%s)", canonicalValue, baseUnitType)
 
 			// 4c. Determine Display Unit, Unrounded Quantity, and Rounding Rule using FormatWeight/Volume
 			var formatErr error
 			if baseUnitType == TypeWeight {
+				log.Debugf("   Calling FormatWeight: baseGrams=%.4f, system='%s'", canonicalValue, displaySystemKey)
 				finalQuantity, displayUnit, roundingRule, formatErr = FormatWeight(canonicalValue, displaySystemKey)
 			} else if baseUnitType == TypeVolume {
+				log.Debugf("   Calling FormatVolume: baseMl=%.4f, system='%s'", canonicalValue, displaySystemKey)
 				finalQuantity, displayUnit, roundingRule, formatErr = FormatVolume(canonicalValue, displaySystemKey)
 			} else {
 				formatErr = fmt.Errorf("unexpected unit type '%s' for conversion", baseUnitType)
 			}
+			log.Debugf("   FormatWeight/Volume result: finalQuantity=%.4f, displayUnit='%s', roundingRule={%s, %.1f}, err=%v",
+				finalQuantity, displayUnit, roundingRule.Type, roundingRule.Precision, formatErr)
 
 			if formatErr != nil {
 				log.Errorf("Error formatting value for ingredient %d: %v", ingredient.FoodItemID, formatErr)
 				finalQuantity = float64(scaledQuantity)
 				displayUnit = normUnit
 				roundingRule = RoundingDetail{Type: "decimal", Precision: 1} // Default basic rounding
+				log.Debugf("   Fallback after format error - finalQuantity=%.4f, displayUnit='%s', roundingRule={%s, %.1f}",
+					finalQuantity, displayUnit, roundingRule.Type, roundingRule.Precision)
 			}
 		}
 	}
+	log.Debugf("   Calling formatFinalOutput: Qty=%.4f, Unit='%s', Name='%s', Rule={%s, %.1f}",
+		finalQuantity, displayUnit, ingredient.FormName, roundingRule.Type, roundingRule.Precision)
 
 	formattedString := formatFinalOutput(finalQuantity, displayUnit, ingredient.FormName, roundingRule)
+	log.Debugf("   formatFinalOutput result: '%s'", formattedString)
+
+	log.Debugf("<- FormatIngredient Exit (Success)")
 
 	return template.HTML(formattedString), nil
 }
@@ -537,7 +577,7 @@ func formatFinalOutput(unroundedQty float64, displayUnit string, itemName string
 		return fmt.Sprintf("%s %s", displayUnit, itemName)
 	case "pinch", "dash":
 		// For pinch/dash, often use "a" or "1" unless specifically fractional
-		qtyStr := "a" // Default to "a"
+		qtyStr := "A" // Default to "a"
 		if math.Abs(unroundedQty-1.0) > 0.001 && unroundedQty > 0 {
 			// If explicitly not 1 (e.g., 0.5 or 2), format it
 			// Use FormatFraction for things like 1/2 pinch? Precision 2 or 4.
@@ -545,7 +585,7 @@ func formatFinalOutput(unroundedQty float64, displayUnit string, itemName string
 		}
 		// Use singular form for "a"
 		unitStr := displayUnit
-		if qtyStr == "a" {
+		if qtyStr == "A" {
 			// No pluralization needed
 		} else {
 			// Need to parse qtyStr back to float for pluralize if it became "1/2" etc.
@@ -636,7 +676,7 @@ func formatFinalOutput(unroundedQty float64, displayUnit string, itemName string
 				modifiedDisplayName += word
 				count += 1
 			}
-			return fmt.Sprintf("%s%s%s of %s", qtyStr, unitSpace(pluralUnit), pluralUnit, modifiedDisplayName)
+			return fmt.Sprintf("A %s of %s", pluralUnit, modifiedDisplayName)
 		}
 	}
 

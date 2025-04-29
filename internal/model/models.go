@@ -25,7 +25,8 @@ type RecipeStep struct {
 }
 
 type RecipeIngredient struct {
-	FoodItemID    int64   `json:"food_item_id"` // Link to the FoodItem concept (e.g., Garlic ID, Cheddar Cheese ID)
+	FoodItemID    int64   `json:"food_item_id"`   // Link to the FoodItem concept (e.g., Garlic ID, Cheddar Cheese ID)
+	FoodItemName  string  `json:"food_item_name"` // Link to the FoodItem concept (e.g., Garlic ID, Cheddar Cheese ID)
 	FormName      string  `json:"form_name"`
 	Quantity      float32 `json:"quantity"`
 	SpecifiedUnit string  `json:"unit"`
