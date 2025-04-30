@@ -173,9 +173,10 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"Recipe":          recipe, // Pass the fully assembled recipe from the store
-		"CurrentServings": 2,
-		"CurrentYear":     time.Now().Year(),
+		"Recipe":                  recipe, // Pass the fully assembled recipe from the store
+		"CurrentServings":         2,
+		"DisplaySystemPreference": "use_metric_default",
+		"CurrentYear":             time.Now().Year(),
 	}
 
 	// Retrieve the pre-parsed set for "recipe"
@@ -233,10 +234,14 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 		log.Warnf("HandleUpdateServingsTrigger: Invalid or missing 'servings' form value: '%s'. Using default/previous might be needed.", servingsStr)
 		newServings = 2 // Or fetch default
 	}
+
+	unitSystem := r.FormValue("unit-system")
+	log.Infof("HandleUpdateServingsTrigger: Parsed unitSystem: %s", unitSystem)
+
 	log.Infof("HandleUpdateServingsTrigger: Target Servings: %d", newServings)
 
 	// --- Respond with HX-Trigger ---
-	w.Header().Set("HX-Trigger", fmt.Sprintf(`{"servingsUpdated": {"newServings": %d}}`, newServings))
+	w.Header().Set("HX-Trigger", fmt.Sprintf(`{"servingsUpdated": {"newServings": %d, "newSystem": "%s"}}`, newServings, unitSystem))
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -251,6 +256,8 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 	}
 
 	servingsStr := r.URL.Query().Get("servings")
+	unitSystem := r.URL.Query().Get("displaySystem")
+	log.Infof("handleRenderFull: Parsed unitSystem: %s", unitSystem)
 	targetServings, err := strconv.Atoi(servingsStr)
 	if err != nil || targetServings <= 0 {
 		tempRecipe, tempErr := store.GetRecipeByID(recipeID)
@@ -275,9 +282,9 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templateData := map[string]interface{}{
-		"Recipe":          recipe,
-		"CurrentServings": targetServings,
-		// "DisplaySystemPreference": "use_original", // Add later if needed
+		"Recipe":                  recipe,
+		"CurrentServings":         targetServings,
+		"DisplaySystemPreference": unitSystem,
 	}
 
 	tmplSet, found := templateSets["ingredient-list"]
@@ -287,6 +294,8 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Infof("handleRenderZenContent: TemplateData map: %+v", templateData)
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = tmplSet.ExecuteTemplate(w, "ingredient-list", templateData)
 	if err != nil {
@@ -294,7 +303,7 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Infof("RenderFullIngredients: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d.", recipeID, targetServings)
+	log.Infof("RenderFullIngredients: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d, and Unit System %s.", recipeID, targetServings, unitSystem)
 }
 
 func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
@@ -308,6 +317,8 @@ func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	servingsStr := r.URL.Query().Get("servings")
+	unitSystem := r.URL.Query().Get("displaySystem")
+	log.Infof("handleRenderZen: Parsed unitSystem: %s", unitSystem)
 	targetServings, err := strconv.Atoi(servingsStr)
 	if err != nil || targetServings <= 0 {
 		tempRecipe, tempErr := store.GetRecipeByID(recipeID)
@@ -332,9 +343,9 @@ func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templateData := map[string]interface{}{
-		"Recipe":          recipe,
-		"CurrentServings": targetServings,
-		// "DisplaySystemPreference": "use_original", // Add later if needed
+		"Recipe":                  recipe,
+		"CurrentServings":         targetServings,
+		"DisplaySystemPreference": unitSystem,
 	}
 
 	tmplSet, found := templateSets["zen-mode-content"]

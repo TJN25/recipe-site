@@ -46,6 +46,25 @@
 
         <div class="space-y-3">
             <p class="text-sm italic text-slate-500">(Options like Servings, Filters, etc. will go here)</p>
+
+            <div class="flex items-center justify-between">
+                 <label for="unit-system-select" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Unit System:</label>
+                 <select id="unit-system-select"
+                    name="unit-system"
+                         x-model="displaySystemPreference"
+                        hx-post="/update-servings-trigger/{{.Recipe.ID}}"
+                        hx-trigger="change delay:300ms" 
+                        hx-include="[id='servings-options-{{ .Recipe.ID }}'], [id='unit-system-select']"
+                        hx-vals='js:{ "id": {{ .Recipe.ID }} }'
+                        hx-swap="none"
+                         class="w-1/2 md:w-auto border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-700 text-sm focus:ring-accent-500 focus:border-accent-500">
+                    <option value="use_metric_default">Metric (with US volume)</option>
+                    <option value="use_original">Recipe Units</option>
+                    <option value="use_scales_metric">Scales (metric)</option>
+                 </select>
+            </div>
+
+
              <!-- Example: Servings Form -->
             <div class="flex items-start gap-4 md:gap-6">
                 <div class="flex-1 md:w-1/2">
@@ -59,7 +78,7 @@
                                        required
                                         hx-post="/update-servings-trigger/{{.Recipe.ID}}"
                                         hx-trigger="change delay:300ms" 
-                                        hx-include="[id='servings-options-{{ .Recipe.ID }}']"
+                                        hx-include="[id='servings-options-{{ .Recipe.ID }}'], [id='unit-system-select']"
                                         hx-vals='js:{ "id": {{ .Recipe.ID }} }'
                                         hx-swap="none"
                                        class="w-16 mr-2 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-accent-700 text-sm">
@@ -140,7 +159,7 @@
                 <div id="ingredients-list-container"
                     hx-trigger="servingsUpdated from:window"
                      hx-get="/render-full-ingredients/{{ .Recipe.ID }}"
-                     hx-vals='js:{"servings": event.detail.newServings}'
+                    hx-vals='js:{"servings": event.detail.newServings, "displaySystem": event.detail.newSystem }'
                      hx-target="this"
                      hx-swap="innerHTML">
                     {{ template "ingredient-list" . }}
@@ -197,7 +216,7 @@
         <div id="zen-content-wrapper"
             hx-trigger="servingsUpdated from:window"
             hx-get="/render-zen-mode-content/{{ .Recipe.ID }}"
-            hx-vals='js:{"servings": event.detail.newServings}'
+            hx-vals='js:{"servings": event.detail.newServings, "displaySystem": event.detail.newSystem }'
             hx-target="this"
             hx-swap="innerHTML">
                     {{ template "zen-mode-content" . }}

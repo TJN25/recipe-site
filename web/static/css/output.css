@@ -808,6 +808,10 @@ video {
   width: 1.5rem;
 }
 
+.w-1\/2 {
+  width: 50%;
+}
+
 .min-w-0 {
   min-width: 0px;
 }
@@ -1615,6 +1619,11 @@ video {
   color: rgb(41 120 56 / var(--tw-text-opacity, 1));
 }
 
+.focus\:border-accent-500:focus {
+  --tw-border-opacity: 1;
+  border-color: rgb(62 181 84 / var(--tw-border-opacity, 1));
+}
+
 .focus\:outline-none:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
@@ -1686,6 +1695,10 @@ video {
 
   .md\:w-8 {
     width: 2rem;
+  }
+
+  .md\:w-auto {
+    width: auto;
   }
 
   .md\:flex-row {

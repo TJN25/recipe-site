@@ -14,9 +14,9 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Chicken Breast",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Chicken Breast":  {Unit: "g", ConversionScaleFactor: 1.0}, // Base unit is grams
-			"Chicken Thigh":   {Unit: "g", ConversionScaleFactor: 1.0}, // Base unit is grams
-			"Mexican Chicken": {Unit: "g", ConversionScaleFactor: 1.0}, // Base unit is grams
+			"Chicken Breast":  {Unit: "g", ConversionScaleFactor: 1.0},
+			"Chicken Thigh":   {Unit: "g", ConversionScaleFactor: 1.0},
+			"Mexican Chicken": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
 	},
 	{
@@ -46,11 +46,11 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Brown Onion",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Brown Onion":  {Unit: "unit", ConversionScaleFactor: 150.0, UnitConversions: map[string]float32{"ml": 250.0, "g": 150.0}},
-			"Red Onion":    {Unit: "unit", ConversionScaleFactor: 150.0},
-			"Shallot":      {Unit: "unit", ConversionScaleFactor: 150.0}, // placeholder
-			"Spring Onion": {Unit: "unit", ConversionScaleFactor: 150.0}, // placeholder
-			"Leek Onion":   {Unit: "unit", ConversionScaleFactor: 150.0}, // placeholder
+			"Brown Onion":  {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 150.0},
+			"Red Onion":    {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 150.0},
+			"Shallot":      {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 150.0}, // placeholder
+			"Spring Onion": {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 150.0}, // placeholder
+			"Leek Onion":   {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 150.0}, // placeholder
 		},
 	},
 	{
@@ -59,8 +59,9 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Cheddar Cheese",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Cheddar Cheese":    {Unit: "g", ConversionScaleFactor: 1.0},
-			"Everday Cheese":    {Unit: "g", ConversionScaleFactor: 1.0},
+			"Cheddar Cheese":    {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.8},
+			"Everday Cheese":    {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.8},
+			"Cheese Slice":      {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 10},
 			"Parmesan Cheese":   {Unit: "g", ConversionScaleFactor: 1.0},
 			"Mozzarella Cheese": {Unit: "g", ConversionScaleFactor: 1.0},
 		},
@@ -103,7 +104,7 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Kosher Salt",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Kosher Salt": {Unit: "g", ConversionScaleFactor: 1.0},
+			"Kosher Salt": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 0.83},
 		},
 	},
 	{
@@ -112,8 +113,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Ground Black Pepper",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Ground Black Pepper": {Unit: "g", ConversionScaleFactor: 1.0},
-			"Ground White Pepper": {Unit: "g", ConversionScaleFactor: 1.0},
+			"Ground Black Pepper": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 2.0},
+			"Ground White Pepper": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 2.0},
 		},
 	},
 	{
@@ -123,7 +124,7 @@ var DummyFoodItems = []model.FoodItem{
 		DefaultFormName:    "Fettuccine",
 		Forms: map[string]model.FoodItemFormDetails{
 			"Fettuccine": {Unit: "g", ConversionScaleFactor: 1.0},
-			"Macaroni":   {Unit: "g", ConversionScaleFactor: 1.0},
+			"Macaroni":   {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.1},
 			"Spaghetti":  {Unit: "g", ConversionScaleFactor: 1.0},
 			"Lasagna":    {Unit: "g", ConversionScaleFactor: 1.0},
 		},
@@ -150,13 +151,13 @@ var DummyFoodItems = []model.FoodItem{
 	{
 		ID:                 14,
 		Name:               "Mustard",
-		FormComparisonUnit: "g",
+		FormComparisonUnit: "ml",
 		DefaultFormName:    "Mustard Powder",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Mustard Powder":   {Unit: "ml", ConversionScaleFactor: 1.0},
-			"American Mustard": {Unit: "ml", ConversionScaleFactor: 1.0}, // placeholder
-			"Dijon Mustard":    {Unit: "ml", ConversionScaleFactor: 1.0}, // placeholder
-			"Honey Mustard":    {Unit: "ml", ConversionScaleFactor: 1.0}, // placeholder
+			"Mustard Powder":   {Unit: "ml", ConversionScaleFactor: 1.0, ToGrams: 0.6, ToMl: 1.0},
+			"American Mustard": {Unit: "ml", ConversionScaleFactor: 5.0, ToGrams: 1.05, ToMl: 1.0},
+			"Dijon Mustard":    {Unit: "ml", ConversionScaleFactor: 5.0, ToGrams: 1.05, ToMl: 1.0},
+			"Honey Mustard":    {Unit: "ml", ConversionScaleFactor: 5.0, ToGrams: 1.05, ToMl: 1.0},
 		},
 	},
 	{
@@ -165,8 +166,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Full Fat Milk",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Full Fat Milk": {Unit: "ml", ConversionScaleFactor: 1.0},
-			"Trim Milk":     {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Full Fat Milk": {Unit: "ml", ConversionScaleFactor: 1.0, ToGrams: 1.03, ToMl: 1.0},
+			"Trim Milk":     {Unit: "ml", ConversionScaleFactor: 1.0, ToGrams: 1.03, ToMl: 1.0},
 		},
 	},
 	{
@@ -175,18 +176,17 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Smoked Paprika",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Smoked Paprika": {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Smoked Paprika": {Unit: "ml", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 2.0},
 		},
 	},
 	{
 		ID:                 17,
 		Name:               "Flour",
 		FormComparisonUnit: "g",
-		DefaultFormName:    "Flour",
+		DefaultFormName:    "All Purpose Flour",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Flour":             {Unit: "g", ConversionScaleFactor: 1.0},
-			"All Purpose Flour": {Unit: "g", ConversionScaleFactor: 1.0},
-			"Bread Flour":       {Unit: "g", ConversionScaleFactor: 1.0},
+			"All Purpose Flour": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.8},
+			"Bread Flour":       {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.8},
 		},
 	},
 	{
@@ -195,7 +195,7 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Butter",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Butter": {Unit: "g", ConversionScaleFactor: 1.0},
+			"Butter": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.04},
 		},
 	},
 	{
@@ -281,19 +281,19 @@ var DummyFoodItems = []model.FoodItem{
 	{
 		ID:                 27,
 		Name:               "Carrot",
-		FormComparisonUnit: "unit",
+		FormComparisonUnit: "g",
 		DefaultFormName:    "Carrot",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Carrot": {Unit: "unit", ConversionScaleFactor: 1.0},
+			"Carrot": {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 50},
 		},
 	},
 	{
 		ID:                 28,
 		Name:               "Cucumber",
-		FormComparisonUnit: "unit",
+		FormComparisonUnit: "g",
 		DefaultFormName:    "Cucumber",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Cucumber": {Unit: "unit", ConversionScaleFactor: 1.0},
+			"Cucumber": {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 100},
 		},
 	},
 	{
@@ -311,8 +311,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Mayonnaise",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Mayonnaise":        {Unit: "ml", ConversionScaleFactor: 1.0},
-			"Kewpie Mayonnaise": {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Mayonnaise":        {Unit: "ml", ConversionScaleFactor: 1.0, ToGrams: 1.0},
+			"Kewpie Mayonnaise": {Unit: "ml", ConversionScaleFactor: 1.0, ToGrams: 1.0},
 		},
 	},
 	{
@@ -413,6 +413,42 @@ var DummyFoodItems = []model.FoodItem{
 			"Egg Noodle": {Unit: "unit", ConversionScaleFactor: 1.0},
 		},
 	},
+	{
+		ID:                 41,
+		Name:               "Mince",
+		FormComparisonUnit: "g",
+		DefaultFormName:    "Mince",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Mince": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0},
+		},
+	},
+	{
+		ID:                 42,
+		Name:               "Pickles",
+		FormComparisonUnit: "g",
+		DefaultFormName:    "Pickles",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Pickles": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0},
+		},
+	},
+	{
+		ID:                 43,
+		Name:               "Tomato Sauce",
+		FormComparisonUnit: "ml",
+		DefaultFormName:    "Tomato Sauce",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Tomato Sauce": {Unit: "ml", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.0},
+		},
+	},
+	{
+		ID:                 44,
+		Name:               "Lettuce",
+		FormComparisonUnit: "g",
+		DefaultFormName:    "Lettuce leaf",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Lettuce leaf": {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 20.0},
+		},
+	},
 }
 
 var DummyEquipment = []model.Equipment{}
@@ -453,6 +489,15 @@ var DummyRecipes = []struct {
 		Description:   "Crispy fried chicken pieces served over a flavorful stir-fry of vegetables and egg noodles.",
 		Servings:      2,
 		Notes:         "Wok Hei: Preheating the wok properly over high heat is crucial for achieving \"wok hei\" - the characteristic smoky flavour of good stir-fries.\nWok Frying: Be mindful when deep-frying/shallow-frying in a wok. The sloped sides mean oil depth varies. Keep pieces moving and adjust heat to prevent burning. Use a wok spatula or spider strainer for removal.\nStir-fry Motion: Use a scooping, tossing motion to move ingredients constantly, ensuring even cooking and preventing sticking. Add sauce around the perimeter to allow it to heat and reduce slightly before coating ingredients.\nSpeed: Wok cooking is fast. Have everything prepped and ready next to the stove before you start heating the wok.",
+		ImagePath:     "img/chicken-noodle-stirfry.png", // Placeholder path
+	},
+	{
+		ID:            4,
+		RecipeStepIds: []int64{2001, 2002, 2003, 2004},
+		Title:         "Cheesebuger with Smash Patty",
+		Description:   "Great tasting homemade cheeseburger",
+		Servings:      2,
+		Notes:         "To help melt the cheese, add a splash of water to the skillet and a metal bowl (or lid) on top of the patties which will let them . ",
 		ImagePath:     "img/chicken-noodle-stirfry.png", // Placeholder path
 	},
 }
@@ -584,16 +629,16 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Prep Slaw, Mayo & Garnishes",
 		Description: "Prepare coleslaw mix, cucumber, peanuts, sriracha mayo, and spring onions.",
 		Ingredients: []dummyIngredientRef{
-			{FoodItemName: "Cabbage", Quantity: 100, Unit: "g", Purpose: "slaw base"},                                  // Cabbage, shredded
-			{FoodItemName: "Carrot", Quantity: 50, Unit: "g", Purpose: "slaw color"},                                   // Carrot, grated
-			{FoodItemName: "Cucumber", Quantity: 100, Unit: "g", Purpose: "freshness"},                                 // Cucumber (1/2), thinly sliced
-			{FoodItemName: "Peanut", FormName: "Roasted Peanut", Quantity: 25, Unit: "g", Purpose: "garnish texture"},  // Roasted Peanuts (2 Tbsp), crushed
-			{FoodItemName: "Mayonnaise", FormName: "Kewpie Mayonnaise", Quantity: 45, Unit: "g", Purpose: "mayo base"}, // Kewpie Mayo (3 Tbsp)
-			{FoodItemName: "Sriracha Sauce", Quantity: 10, Unit: "ml", Purpose: "mayo heat"},                           // Sriracha Sauce (1-2 tsp)
-			{FoodItemName: "Honey", Quantity: 2.5, Unit: "g", Purpose: "mayo balance"},                                 // Honey (1/2 tsp)
-			{FoodItemName: "Lemon", FormName: "Lemon Juice", Quantity: 1, Unit: "ml", Purpose: "mayo brightness"},      // Lemon Juice (Few drops)
-			{FoodItemName: "Oil", FormName: "Sesame Oil", Quantity: 1, Unit: "ml", Purpose: "mayo aroma"},              // Sesame Oil (1/4 tsp / drop)
-			{FoodItemName: "Onion", FormName: "Spring Onion", Quantity: 20, Unit: "g", Purpose: "garnish"},             // Spring Onion, thinly sliced
+			{FoodItemName: "Cabbage", Quantity: 100, Unit: "g", Purpose: "slaw base"},                                   // Cabbage, shredded
+			{FoodItemName: "Carrot", Quantity: 1, Unit: "unit", Purpose: "slaw color"},                                  // Carrot, grated
+			{FoodItemName: "Cucumber", Quantity: 0.5, Unit: "unit", Purpose: "freshness"},                               // Cucumber (1/2), thinly sliced
+			{FoodItemName: "Peanut", FormName: "Roasted Peanut", Quantity: 25, Unit: "g", Purpose: "garnish texture"},   // Roasted Peanuts (2 Tbsp), crushed
+			{FoodItemName: "Mayonnaise", FormName: "Kewpie Mayonnaise", Quantity: 45, Unit: "ml", Purpose: "mayo base"}, // Kewpie Mayo (3 Tbsp)
+			{FoodItemName: "Sriracha Sauce", Quantity: 10, Unit: "ml", Purpose: "mayo heat"},                            // Sriracha Sauce (1-2 tsp)
+			{FoodItemName: "Honey", Quantity: 2.5, Unit: "ml", Purpose: "mayo balance"},                                 // Honey (1/2 tsp)
+			{FoodItemName: "Lemon", FormName: "Lemon Juice", Quantity: 1, Unit: "ml", Purpose: "mayo brightness"},       // Lemon Juice (Few drops)
+			{FoodItemName: "Oil", FormName: "Sesame Oil", Quantity: 1, Unit: "ml", Purpose: "mayo aroma"},               // Sesame Oil (1/4 tsp / drop)
+			{FoodItemName: "Onion", FormName: "Spring Onion", Quantity: 20, Unit: "g", Purpose: "garnish"},              // Spring Onion, thinly sliced
 		},
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Combine shredded cabbage and grated carrot in a bowl for the coleslaw base."},
@@ -723,6 +768,78 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Finish: Turn off heat. Stir through optional sesame oil (0.5 tsp). Season with salt and pepper to taste."},
 			{StepNumber: 2, Instruction: "Serve: Transfer noodle stir-fry to bowls/plates. Top with crispy chicken. Garnish with fresh herbs if desired."},
+		},
+	},
+	{
+		ID:          2001,
+		RecipeID:    4,
+		StepOrder:   1,
+		Title:       "Make Burger Sauce",
+		Description: "",
+		Ingredients: []dummyIngredientRef{
+			// Oil for stir-fry is listed as needed in method step 4
+			{FoodItemName: "Pickles", Quantity: 10, Unit: "g", Purpose: "sour"},
+			{FoodItemName: "Onion", FormName: "Red Onion", Quantity: 10, Unit: "g", Purpose: "aromatic/bite"},
+			{FoodItemName: "Mayonnaise", FormName: "Kewpie Mayonnaise", Quantity: 10, Unit: "g", Purpose: "umami/fat"},
+			{FoodItemName: "Mustard", FormName: "American Mustard", Quantity: 10, Unit: "g", Purpose: "sour"},
+			{FoodItemName: "Tomato Sauce", Quantity: 20, Unit: "g", Purpose: "sweet"},
+			{FoodItemName: "Smoked paprika", Quantity: 2, Unit: "dash", Purpose: "aromtic/smoke"},
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Combine all ingredients in a bowl."},
+			{StepNumber: 2, Instruction: "Taste and adjust as needed."},
+		},
+	},
+	{
+		ID:          2002,
+		RecipeID:    4,
+		StepOrder:   1,
+		Title:       "Make burger patties",
+		Description: "",
+		Ingredients: []dummyIngredientRef{
+			// Oil for stir-fry is listed as needed in method step 4
+			{FoodItemName: "Mince", Quantity: 280, Unit: "g", Purpose: "main"},
+			{FoodItemName: "Salt", FormName: "Kosher Salt", Quantity: 2, Unit: "dash", Purpose: "salty"},
+			{FoodItemName: "Cheese", FormName: "Cheese Slice", Quantity: 2, Unit: "unit", Purpose: "fat/creamy"},
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Preheat skillet over high heat"},
+			{StepNumber: 2, Instruction: "Divide mince into two balls."},
+			{StepNumber: 3, Instruction: "Add the burger patties and let them slightly to help prevent sticking. After a few seconds, flip them over and smash down each patty with your spatula."},
+			{StepNumber: 4, Instruction: "Add an additional sprinkle of salt on top of each patty and let them for a minute or so before flipping. "},
+			{StepNumber: 5, Instruction: "Once they are mostly cooked through, add a slice of cheese to each patty and stack them on top of each other. "},
+			{StepNumber: 6, Instruction: "Remove the patties from the heat once the cheese is melted."},
+		},
+	},
+	{
+		ID:          2003,
+		RecipeID:    4,
+		StepOrder:   1,
+		Title:       "Toast buns",
+		Description: "",
+		Ingredients: []dummyIngredientRef{
+			// Oil for stir-fry is listed as needed in method step 4
+			{FoodItemName: "Bun", FormName: "Brioche Bun", Quantity: 2, Unit: "unit", Purpose: ""},
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Add a bun to the preheated skillet and let it toast and crisp up."},
+		},
+	},
+	{
+		ID:          2004,
+		RecipeID:    4,
+		StepOrder:   1,
+		Title:       "Assemble",
+		Description: "",
+		Ingredients: []dummyIngredientRef{
+			{FoodItemName: "Lettuce", Quantity: 2, Unit: "unit", Purpose: ""},
+			{FoodItemName: "Cheese", FormName: "Cheese Slice", Quantity: 2, Unit: "unit", Purpose: "fat/creamy"},
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Finely slice lettuce"},
+			{StepNumber: 2, Instruction: "Add sauce to top and botton of the burger bun"},
+			{StepNumber: 3, Instruction: "Add meat, second cheese slice, and lettuce to the bun."},
+			{StepNumber: 3, Instruction: "Enjoy!"},
 		},
 	},
 }

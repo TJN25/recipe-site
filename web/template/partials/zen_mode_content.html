@@ -37,10 +37,10 @@
 
                                     {{ $ing := . }}
                                         {{ if not $ing.IsOptional }}
-                                            <li class="font-sans leading-relaxed">{{ formatIngredient $ing $step.BaseServings $.CurrentServings "use_other" | printf "%s" }}</li>
+                                            <li class="font-sans leading-relaxed">{{ formatIngredient $ing $step.BaseServings $.CurrentServings $.DisplaySystemPreference | printf "%s" }}</li>
                                         {{ else }}
                                             <template x-if="showOptionals">
-                                                 <li class="italic text-slate-500 dark:text-slate-400">{{ formatIngredient $ing $step.BaseServings $.CurrentServings "use_original" | printf "%s" }}</li>
+                                                 <li class="italic text-slate-500 dark:text-slate-400">{{ formatIngredient $ing $step.BaseServings $.CurrentServings $.DisplaySystemPreference | printf "%s" }}</li>
                                             </template>
                                         {{ end }}
                                 {{ end }}

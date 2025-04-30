@@ -13,7 +13,7 @@ import (
 
 var AllFoodItemsCache map[int64]model.FoodItem
 var AllFoodItemNamesCache map[string]int64
-var normalizedFormNameLookup map[string]string
+var NormalizedFormNameLookup map[string]string
 var AllDummyStepsCache map[int64]data.DummyRecipeStep
 
 func InitializeCaches() {
@@ -23,37 +23,37 @@ func InitializeCaches() {
 	// Ensure data.DummyFoodItems uses the NEW model.FoodItem structure
 	for _, item := range data.DummyFoodItems {
 		AllFoodItemsCache[item.ID] = item
-		normalizedKey := normalizeName(item.Name)
+		normalizedKey := NormalizeName(item.Name)
 		AllFoodItemNamesCache[normalizedKey] = item.ID
 		log.Debugf("Added to name cache: Key='%s', ID=%d", normalizedKey, item.ID)
 	}
 	log.Infof("Cached %d FoodItems", len(AllFoodItemsCache))
 	log.Infof("Cached %d FoodItemsNames", len(AllFoodItemNamesCache))
 
-	normalizedFormNameLookup = make(map[string]string)
+	NormalizedFormNameLookup = make(map[string]string)
 	for foodItemID, foodItem := range AllFoodItemsCache {
 		if foodItem.Forms == nil {
 			log.Warnf("FoodItem ID %d ('%s') has nil Forms map during form cache init.", foodItemID, foodItem.Name)
 			continue // Skip items with no forms map
 		}
 		for originalFormKey := range foodItem.Forms {
-			normalizedKey := normalizeName(originalFormKey) // Normalize the key
+			normalizedKey := NormalizeName(originalFormKey) // Normalize the key
 			if normalizedKey == "" {
 				log.Warnf("FoodItem ID %d ('%s') form key '%s' resulted in empty normalized key. Skipping.", foodItemID, foodItem.Name, originalFormKey)
 				continue
 			}
 
-			if existingOriginalKey, exists := normalizedFormNameLookup[normalizedKey]; exists {
+			if existingOriginalKey, exists := NormalizedFormNameLookup[normalizedKey]; exists {
 				log.Errorf("Normalized Form Name Collision: Normalized key '%s' produced by both '%s' and '%s' (FoodItem ID %d). Keeping first ('%s'). Check FoodItem definitions.",
 					normalizedKey, existingOriginalKey, originalFormKey, foodItemID, existingOriginalKey)
 				continue
 			} else {
-				normalizedFormNameLookup[normalizedKey] = originalFormKey
+				NormalizedFormNameLookup[normalizedKey] = originalFormKey
 				log.Debugf("Added to form name cache: Key='%s', Value='%s' (from FoodItem %d)", normalizedKey, originalFormKey, foodItemID)
 			}
 		}
 	}
-	log.Infof("Cached %d unique normalized form names", len(normalizedFormNameLookup))
+	log.Infof("Cached %d unique normalized form names", len(NormalizedFormNameLookup))
 
 	// Init Dummy Steps
 	AllDummyStepsCache = make(map[int64]data.DummyRecipeStep)
@@ -82,10 +82,10 @@ func InitializeCaches() {
 
 func findFoodItem(name string) (model.FoodItem, bool) {
 	log.Debugf("findFoodItem: %s", name)
-	normalizedSearchName := normalizeName(name)
+	normalizedSearchName := NormalizeName(name)
 	log.Debugf("findFoodItem: normalized %s", normalizedSearchName)
 	for _, item := range data.DummyFoodItems {
-		if normalizeName(item.Name) == normalizedSearchName {
+		if NormalizeName(item.Name) == normalizedSearchName {
 			return item, true
 		}
 	}
@@ -213,8 +213,8 @@ func GetRecipeByID(id int64) (*model.Recipe, error) {
 			}
 
 			// Now, validate that the determined targetFormName exists in the Forms map
-			normalisedTargetFormName := normalizeName(targetFormName)
-			lookupFormName, ok := normalizedFormNameLookup[normalisedTargetFormName]
+			normalisedTargetFormName := NormalizeName(targetFormName)
+			lookupFormName, ok := NormalizedFormNameLookup[normalisedTargetFormName]
 			if !ok {
 				log.Errorf("Target FormName '%s' for '%s' in Step %d not found in FormNameLookup. Trying original name.", targetFormName, ingRef.FoodItemName, dummyStep.StepOrder)
 				lookupFormName = targetFormName
@@ -284,7 +284,7 @@ func GetRecipes() []model.Recipe {
 	return recipes
 }
 
-func normalizeName(name string) string {
+func NormalizeName(name string) string {
 	// 1. Trim leading/trailing whitespace
 	processedName := strings.TrimSpace(name)
 	// 2. Convert to lowercase

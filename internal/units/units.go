@@ -1,6 +1,7 @@
 package units
 
 import (
+	"errors"
 	"fmt"
 	"html/template" // Needed for the return type of the main formatter
 	"math"
@@ -8,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/TJN25/recipe-site/internal/model"
+	"github.com/TJN25/recipe-site/internal/store"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -242,7 +244,8 @@ func FormatIngredientForDisplay(
 	log.Debugf("   Scaled quantity result: %.4f", scaledQuantity)
 
 	// 3. Handle "use_original" display system
-	if displaySystemKey == "use_original" {
+	switch displaySystemKey {
+	case "use_original":
 		log.Debugf("   Handling 'use_original' system.")
 		log.Debugf("   SpecifiedUnit for 'use_original': '%s'", ingredient.SpecifiedUnit)
 		normUnit, ok := normalizeUnit(ingredient.SpecifiedUnit)
@@ -258,7 +261,67 @@ func FormatIngredientForDisplay(
 		log.Debugf("   'use_original' - finalQuantity=%.4f, displayUnit='%s', roundingRule={%s, %.1f}",
 			finalQuantity, displayUnit, roundingRule.Type, roundingRule.Precision)
 
-	} else {
+	case "use_scales_metric":
+		log.Debugf("   Handling 'use_scales_metric' system.")
+
+		//Fetch foodItem so we can look up conversions
+		foodItem, ok := store.AllFoodItemsCache[ingredient.FoodItemID]
+		if !ok {
+			errMsg := fmt.Sprintf("Missing %d for %s in AllFoodItemsCache", ingredient.FoodItemID, ingredient.FoodItemName)
+			log.Errorf("  %s", errMsg)
+			return template.HTML(""), errors.New(errMsg) // Cannot proceed without form details
+		}
+
+		// Get details for the ingredient's specific form
+		normalisedTargetFormName := store.NormalizeName(ingredient.FormName)
+		lookupFormName, _ := store.NormalizedFormNameLookup[normalisedTargetFormName]
+		formDetails, formFound := foodItem.Forms[lookupFormName]
+		if !formFound {
+			errMsg := fmt.Sprintf("form '%s' not found for FoodItem %d ('%s')", ingredient.FormName, foodItem.ID, foodItem.Name)
+			log.Errorf("   %s", errMsg)
+			return template.HTML(""), errors.New(errMsg) // Cannot proceed without form details
+		}
+
+		// Check if the form's defined Unit has a ToGrams factor
+		normUnit, _ := normalizeUnit(ingredient.SpecifiedUnit)
+		if formDetails.ToGrams <= 0 {
+			// Cannot convert this form to grams, fallback to original display
+			log.Warnf("   Cannot convert Form '%s' (Unit '%s') to grams for ItemID %d. Missing ToGrams factor > 0. Falling back to original.",
+				ingredient.FormName, formDetails.Unit, ingredient.FoodItemID)
+			finalQuantity = float64(scaledQuantity)
+			displayUnit = normUnit
+			roundingRule = RoundingDetail{Type: "decimal", Precision: 1} // Basic fallback rule
+		} else {
+			// Convert scaledQuantity (in SpecifiedUnit) to the form's native Unit first (if different)
+			qtyInFormUnit := float64(scaledQuantity)
+			if normUnit != formDetails.Unit {
+				// Need to convert specified unit to form unit via canonical FIRST
+				// This requires converting both specified and form unit to g/ml etc.
+				// Let's simplify: assume for now SpecifiedUnit *matches* formDetails.Unit
+				// OR that ToGrams is grams per SpecifiedUnit (needs clarification in model/data)
+				// For now, assume scaledQuantity IS in formDetails.Unit
+				// TODO: Revisit this conversion if SpecifiedUnit can differ from FormDetails.Unit
+				log.Warnf("   Assuming scaledQuantity %.4f is already in form unit '%s' for conversion.", scaledQuantity, formDetails.Unit)
+			}
+
+			// Convert quantity (in form's unit) to grams using the form's factor
+			canonicalValueGrams := qtyInFormUnit * float64(formDetails.ToGrams)
+			log.Debugf("   Converted %.4f %s to %.4f grams", qtyInFormUnit, formDetails.Unit, canonicalValueGrams)
+
+			// Format the gram value using metric weight rules (finds g/kg, applies rounding rule)
+			var formatErr error
+			finalQuantity, displayUnit, roundingRule, formatErr = FormatWeight(canonicalValueGrams, string(SystemMetric)) // Use "metric" key
+			if formatErr != nil {
+				log.Errorf("   Error formatting weight for ingredient %d: %v. Falling back to original.", ingredient.FoodItemID, formatErr)
+				// Fallback on formatting error
+				finalQuantity = float64(scaledQuantity)
+				displayUnit = normUnit
+				roundingRule = RoundingDetail{Type: "decimal", Precision: 1}
+			}
+			log.Debugf("   Formatted weight output pre-final: Qty=%.4f, Unit='%s', Rule={%s, %.1f}",
+				finalQuantity, displayUnit, roundingRule.Type, roundingRule.Precision)
+		}
+	default:
 		log.Debugf("   Handling '%s' system.", displaySystemKey)
 
 		// 4a. Normalize the *original* unit & get its definition
@@ -282,14 +345,25 @@ func FormatIngredientForDisplay(
 		log.Debugf("   Unit definition found: Type='%s', FactorToStdBase=%.4f", unitDef.Type, unitDef.FactorToStdBase)
 
 		// Check if conversion is possible (must have a factor to base)
+		var formatErr error
 		if unitDef.FactorToStdBase == 0 {
-			// Cannot convert Count/Descriptive, treat as "use_original"
-			log.Warnf("Unit '%s' (type %s) cannot be converted for display system '%s'. Using original.", normUnit, unitDef.Type, displaySystemKey)
+			log.Debugf("Unit '%s' (type %s) is of type count '%s'.", normUnit, unitDef.Type, displaySystemKey)
 			finalQuantity = float64(scaledQuantity)
 			displayUnit = normUnit
 			roundingRule = RoundingDetail{Type: "decimal", Precision: 1} // Default basic rounding
-			log.Debugf("   Non-convertible fallback - finalQuantity=%.4f, displayUnit='%s', roundingRule={%s, %.1f}",
-				finalQuantity, displayUnit, roundingRule.Type, roundingRule.Precision)
+			finalQuantity, displayUnit, roundingRule, formatErr = FormatCount(finalQuantity, displaySystemKey)
+			log.Debugf("   FormatWeight/Volume result: finalQuantity=%.4f, displayUnit='%s', roundingRule={%s, %.1f}, err=%v",
+				finalQuantity, displayUnit, roundingRule.Type, roundingRule.Precision, formatErr)
+
+			if formatErr != nil {
+				log.Errorf("Error formatting value for ingredient %d: %v", ingredient.FoodItemID, formatErr)
+				finalQuantity = float64(scaledQuantity)
+				displayUnit = normUnit
+				roundingRule = RoundingDetail{Type: "decimal", Precision: 1} // Default basic rounding
+				log.Debugf("   Fallback after format error - finalQuantity=%.4f, displayUnit='%s', roundingRule={%s, %.1f}",
+					finalQuantity, displayUnit, roundingRule.Type, roundingRule.Precision)
+			}
+
 		} else {
 			// 4b. Convert scaled quantity to canonical base (g or ml)
 			canonicalValue := float64(scaledQuantity) * unitDef.FactorToStdBase
@@ -297,7 +371,6 @@ func FormatIngredientForDisplay(
 			log.Debugf("   Calculated canonical value: %.4f (%s)", canonicalValue, baseUnitType)
 
 			// 4c. Determine Display Unit, Unrounded Quantity, and Rounding Rule using FormatWeight/Volume
-			var formatErr error
 			if baseUnitType == TypeWeight {
 				log.Debugf("   Calling FormatWeight: baseGrams=%.4f, system='%s'", canonicalValue, displaySystemKey)
 				finalQuantity, displayUnit, roundingRule, formatErr = FormatWeight(canonicalValue, displaySystemKey)
@@ -356,6 +429,32 @@ func selectWeightFormattingRules(system string) (FormattingRuleSet, error) {
 	default:
 		return MetricWeightRules, nil
 	}
+}
+
+func selectCountFormattingRules() FormattingRuleSet {
+	return CountRules
+}
+
+func FormatCount(inputDisplayQty float64, system string) (displayQty float64, displayUnit string, roundingRule RoundingDetail, err error) {
+	rules := selectCountFormattingRules()
+
+	// Ensure rules are ordered high threshold to low in consts.go
+	for _, rule := range rules {
+		// Use a small tolerance for float comparisons if necessary, though >= should be okay
+		if inputDisplayQty >= rule.Threshold {
+			// Found the correct rule for this magnitude
+			if rule.FactorFromBase == 0 {
+				// Avoid division by zero issues if factor is zero (shouldn't happen for weight/volume)
+				return 0, "", rule.RoundingRule, fmt.Errorf("invalid zero FactorFromBase for rule threshold %.2f, unit %s", rule.Threshold, rule.DisplayUnit)
+			}
+			displayUnit = rule.DisplayUnit
+			roundingRule = rule.RoundingRule
+			return inputDisplayQty, displayUnit, roundingRule, nil // Found match, return
+		}
+	}
+
+	err = fmt.Errorf("no suitable formatting rule found for weight %.2f g in system '%s'", inputDisplayQty, system)
+	return 0, "", RoundingDetail{}, err
 }
 
 func FormatWeight(baseGrams float64, system string) (displayQty float64, displayUnit string, roundingRule RoundingDetail, err error) {
@@ -594,8 +693,56 @@ func formatFinalOutput(unroundedQty float64, displayUnit string, itemName string
 		}
 		return fmt.Sprintf("%s%s%s %s", qtyStr, unitSpace(unitStr), unitStr, itemName)
 	case "unit":
-		qtyStr := formatQuantityFloat(unroundedQty) // Basic format
+		unitDef, ok := UnitDefinitions[displayUnit] // Assuming displayUnit is normalized
+		if !ok {
+			qtyStr := formatQuantityFloat(unroundedQty) // Basic format
+			return fmt.Sprintf("%s %s", qtyStr, itemName)
+		}
+
+		var qtyStr string
+		roundedQty := applyRounding(unroundedQty, rule) // Apply rounding determined by FormatWeight/Volume rule
+
+		denominator := 4
+		if rule.Type == "fraction" && rule.Precision > 0 {
+			denominator = int(rule.Precision)
+		}
+		// Only use fraction formatting if the rounding type suggests it might be useful
+		// or if the unit itself implies it (like 'unit' for onion/carrot)
+		if rule.Type == "fraction" { // Or check specific units: unit, clove?
+			qtyStr = FormatFraction(roundedQty, denominator)
+		} else {
+			// Otherwise, format counts as integers or maybe 1 decimal place
+			qtyStr = formatQuantityFloat(roundedQty) // Default to decimal/int format
+		}
+		pluralUnit := pluralize(roundedQty, displayUnit)
+
+		unitDef, ok = UnitDefinitions[displayUnit]
+
+		if ok && unitDef.Type == TypeCount {
+			displayName := itemName
+			singularUnit := strings.TrimSuffix(pluralUnit, "s")
+
+			if singularUnit != "" && strings.Contains(strings.ToLower(displayName), strings.ToLower(singularUnit)) {
+				splitName := strings.Split(displayName, " ")
+				modifiedDisplayName := ""
+				count := 0
+				for _, word := range splitName {
+					if strings.Contains(strings.ToLower(word), strings.ToLower(singularUnit)) {
+						continue
+					}
+					if count > 0 {
+						modifiedDisplayName += " "
+					}
+					modifiedDisplayName += word
+					count += 1
+				}
+				return fmt.Sprintf(" %s %s", qtyStr, modifiedDisplayName)
+			}
+		}
+
+		// --- 5. Combine ---
 		return fmt.Sprintf("%s %s", qtyStr, itemName)
+
 	case "":
 		// Handle empty unit (error condition)
 		if unroundedQty != 0 {
@@ -676,7 +823,7 @@ func formatFinalOutput(unroundedQty float64, displayUnit string, itemName string
 				modifiedDisplayName += word
 				count += 1
 			}
-			return fmt.Sprintf("A %s of %s", pluralUnit, modifiedDisplayName)
+			return fmt.Sprintf("%s %s of %s", qtyStr, pluralUnit, modifiedDisplayName)
 		}
 	}
 
