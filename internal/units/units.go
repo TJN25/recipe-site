@@ -53,15 +53,21 @@ var UnitDefinitions = map[string]UnitDefinition{
 	"oz": {Type: TypeWeight, FactorToStdBase: 28.3495},
 	"lb": {Type: TypeWeight, FactorToStdBase: 453.592},
 	// Count/Desc -> Base conversion is item-specific or N/A
+	"cm":       {Type: TypeCount, FactorToStdBase: 0},
+	"inch":     {Type: TypeCount, FactorToStdBase: 0},
 	"clove":    {Type: TypeCount, FactorToStdBase: 0},
 	"unit":     {Type: TypeCount, FactorToStdBase: 0},
 	"slice":    {Type: TypeCount, FactorToStdBase: 0},
 	"head":     {Type: TypeCount, FactorToStdBase: 0},
+	"leaf":     {Type: TypeCount, FactorToStdBase: 0},
+	"piece":    {Type: TypeCount, FactorToStdBase: 0},
 	"sprig":    {Type: TypeCount, FactorToStdBase: 0},
 	"bunch":    {Type: TypeCount, FactorToStdBase: 0},
 	"can":      {Type: TypeCount, FactorToStdBase: 0},
+	"stalk":    {Type: TypeCount, FactorToStdBase: 0},
 	"pinch":    {Type: TypeDescriptive, FactorToStdBase: 0},
 	"dash":     {Type: TypeDescriptive, FactorToStdBase: 0},
+	"garnish":  {Type: TypeDescriptive, FactorToStdBase: 0},
 	"to taste": {Type: TypeDescriptive, FactorToStdBase: 0},
 }
 
