@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"math"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -106,9 +107,15 @@ func main() {
 	log.Info("Serving static files from ./web/static/ at /static/")
 
 	// --- Start Server ---
-	port := ":8080"
-	log.Infof("Starting server on http://localhost%s", port)
-	err := http.ListenAndServe(port, nil)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		log.Printf("INFO: No PORT environment variable detected, defaulting to %s", port)
+		// Use log.Infof if using a leveled logger like logrus
+	}
+	listenAddr := ":" + port
+	log.Infof("Starting server on http://localhost%s", listenAddr)
+	err := http.ListenAndServe(listenAddr, nil)
 	if err != nil {
 		log.Fatalf("Could not start server: %s\n", err)
 	}
