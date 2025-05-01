@@ -104,7 +104,8 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "g",
 		DefaultFormName:    "Kosher Salt",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Kosher Salt": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 0.83},
+			"Kosher Salt":    {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 0.83},
+			"Flaky Sea Salt": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 0.83},
 		},
 	},
 	{
@@ -401,7 +402,7 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Water",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Water": {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Water": {Unit: "ml", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.0},
 		},
 	},
 	{
@@ -449,6 +450,24 @@ var DummyFoodItems = []model.FoodItem{
 			"Lettuce leaf": {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 20.0},
 		},
 	},
+	{
+		ID:                 45,
+		Name:               "Yeast",
+		FormComparisonUnit: "g",
+		DefaultFormName:    "Active Dry Yeast",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Active Dry Yeast": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.25},
+		},
+	},
+	{
+		ID:                 46,
+		Name:               "Italian Herb",
+		FormComparisonUnit: "g",
+		DefaultFormName:    "Italian Herb",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Italian Herb": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 5},
+		},
+	},
 }
 
 var DummyEquipment = []model.Equipment{}
@@ -467,11 +486,11 @@ var DummyRecipes = []struct {
 	{
 		ID:            1,
 		RecipeStepIds: []int64{101, 102, 103},
-		Title:         "Mac and Cheese",
-		Description:   "Classic mac and cheese",
+		Title:         "Classic Mac and Cheese",
+		Description:   "A simple, comforting, and irresistibly cheesy homemade classic mac and cheese.",
 		Servings:      2,
 		Notes:         "Let rest 5 minutes before serving. Uses full fat milk for creaminess. Sauce should look slightly too saucy before baking; it will thicken.",
-		ImagePath:     "img/mac-and-cheese.png",
+		ImagePath:     "img/mac-and-cheese.jpg",
 	},
 	{
 		ID:            2,
@@ -480,7 +499,7 @@ var DummyRecipes = []struct {
 		Description:   "Crispy fried spiced chicken pieces served in soft bao buns with coleslaw, cucumber, peanuts, and a tangy sriracha mayo.",
 		Servings:      3,
 		Notes:         "Marinate chicken for 15-20 mins. Fry chicken in batches. Steam buns just before serving. Assemble just before eating for best texture contrast. Enhancements: Salt cucumber slices briefly before use. Toast peanuts before crushing.",
-		ImagePath:     "img/bao-buns-chicken.png", // Assign an appropriate image path
+		ImagePath:     "img/bao-buns.jpg", // Assign an appropriate image path
 	},
 	{
 		ID:            3,
@@ -489,16 +508,34 @@ var DummyRecipes = []struct {
 		Description:   "Crispy fried chicken pieces served over a flavorful stir-fry of vegetables and egg noodles.",
 		Servings:      2,
 		Notes:         "Wok Hei: Preheating the wok properly over high heat is crucial for achieving \"wok hei\" - the characteristic smoky flavour of good stir-fries.\nWok Frying: Be mindful when deep-frying/shallow-frying in a wok. The sloped sides mean oil depth varies. Keep pieces moving and adjust heat to prevent burning. Use a wok spatula or spider strainer for removal.\nStir-fry Motion: Use a scooping, tossing motion to move ingredients constantly, ensuring even cooking and preventing sticking. Add sauce around the perimeter to allow it to heat and reduce slightly before coating ingredients.\nSpeed: Wok cooking is fast. Have everything prepped and ready next to the stove before you start heating the wok.",
-		ImagePath:     "img/chicken-noodle-stirfry.png", // Placeholder path
+		ImagePath:     "img/noodles.jpg", // Placeholder path
 	},
 	{
 		ID:            4,
 		RecipeStepIds: []int64{2001, 2002, 2003, 2004},
 		Title:         "Cheesebuger with Smash Patty",
-		Description:   "Great tasting homemade cheeseburger",
+		Description:   "Enjoy a delicious homemade classic smash cheeseburger featuring thin, crispy-edged patties, perfectly melted cheese, and your favourite toppings on a toasted bun.",
 		Servings:      2,
-		Notes:         "To help melt the cheese, add a splash of water to the skillet and a metal bowl (or lid) on top of the patties which will let them . ",
-		ImagePath:     "img/chicken-noodle-stirfry.png", // Placeholder path
+		Notes:         "To help melt the cheese, add a splash of water to the frypan and a metal bowl (or lid) on top of the patties which will let them . ",
+		ImagePath:     "img/cheeseburger.jpg", // Placeholder path
+	},
+	{
+		ID:            5,
+		RecipeStepIds: []int64{5001, 5002, 5003, 5004, 5005, 5006},
+		Title:         "Pizza Dough",
+		Description:   "A reliable recipe for crafting delicious, chewy pizza dough ready in about 4-5 hours, perfect for a same-day pizza night.",
+		Servings:      2,
+		Notes:         "This recipe uses 75% hydration dough for a tender crumb. Warm water (40-46°C) is crucial for activating the yeast. Sugar feeds the yeast and helps with browning. Salt enhances flavor and controls fermentation. Olive oil adds tenderness and flavor.\n\nTo help the sauce thicken slightly and coat ingredients better, add it around the perimeter of the pan during stir-frying.\n\nOvernight Fermentation Option:\n- Reduce yeast to 1-2g (~1/4-1/3 tsp).\n- Complete only 1-2 stretch and folds.\n- Limit room temperature time to max 1 hour before refrigerating.\n- Start around 3pm for cooking at 7pm the next day.\n- Handle overproofed dough gently; it may be better suited for focaccia-style.\n- Remove cold dough from fridge 45-60 mins before cooking to warm up.",
+		ImagePath:     "img/pizza.jpg",
+	},
+	{
+		ID:            6,
+		RecipeStepIds: []int64{5001, 6002, 5003, 5004, 6005, 6006},                                                                                                                                                                                                                                                                                                                                                                                                                                                                       // Updated RecipeStep IDs
+		Title:         "Classic Focaccia",                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                // More descriptive title
+		Description:   "A simple and delicious classic focaccia with a tender interior, crispy crust, and fragrant olive oil and sea salt finish.",                                                                                                                                                                                                                                                                                                                                                                                       // Added description
+		Servings:      2,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // Assumes makes a batch equivalent to 2 pizzas
+		Notes:         "This recipe starts with a 75% hydration dough for a soft, open crumb. Baking it in a pan helps achieve the characteristic shape and texture. Be generous with the olive oil before baking for best results.\n\nHandling Overproofed Dough: If your pizza dough recipe (using reduced yeast for overnight fermentation) overproofs and becomes too delicate to stretch thinly for pizza, it can be successfully transformed into focaccia. Handle it gently and proceed with the shaping and baking steps below.", // Added relevant notes
+		ImagePath:     "img/focaccia.jpg",
 	},
 }
 
@@ -659,7 +696,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 			{FoodItemName: "Oil", Quantity: 45, Unit: "ml", Purpose: "frying"}, // Canola Oil (3 Tbsp)
 		},
 		MethodSteps: []model.MethodStep{
-			{StepNumber: 1, Instruction: "Heat canola oil in a wok or large, deep skillet over medium-high heat."},
+			{StepNumber: 1, Instruction: "Heat canola oil in a wok or large frypan over medium-high heat."},
 			{StepNumber: 2, Instruction: "Once oil is hot (a piece of batter sizzles immediately), carefully add chicken pieces in a single layer, working in batches to avoid overcrowding."},
 			{StepNumber: 3, Instruction: "Fry chicken for 2-3 minutes per side, or until golden brown, crispy, and cooked through."},
 			{StepNumber: 4, Instruction: "Use tongs or a slotted spoon to remove cooked chicken and place on a plate lined with paper towels to drain."},
@@ -786,35 +823,37 @@ var DummyRecipeSteps = []DummyRecipeStep{
 			{FoodItemName: "Smoked paprika", Quantity: 2, Unit: "dash", Purpose: "aromtic/smoke"},
 		},
 		MethodSteps: []model.MethodStep{
-			{StepNumber: 1, Instruction: "Combine all ingredients in a bowl."},
-			{StepNumber: 2, Instruction: "Taste and adjust as needed."},
+			{StepNumber: 1, Instruction: "Combine all ingredients for the burger sauce in a bowl."},
+			{StepNumber: 2, Instruction: "Mix well and taste, adjusting seasoning as needed. Set aside."},
 		},
 	},
 	{
 		ID:          2002,
 		RecipeID:    4,
-		StepOrder:   1,
+		StepOrder:   2,
 		Title:       "Make burger patties",
 		Description: "",
 		Ingredients: []dummyIngredientRef{
 			// Oil for stir-fry is listed as needed in method step 4
 			{FoodItemName: "Mince", Quantity: 280, Unit: "g", Purpose: "main"},
-			{FoodItemName: "Salt", FormName: "Kosher Salt", Quantity: 2, Unit: "dash", Purpose: "salty"},
 			{FoodItemName: "Cheese", FormName: "Cheese Slice", Quantity: 2, Unit: "unit", Purpose: "fat/creamy"},
 		},
 		MethodSteps: []model.MethodStep{
-			{StepNumber: 1, Instruction: "Preheat skillet over high heat"},
-			{StepNumber: 2, Instruction: "Divide mince into two balls."},
-			{StepNumber: 3, Instruction: "Add the burger patties and let them slightly to help prevent sticking. After a few seconds, flip them over and smash down each patty with your spatula."},
-			{StepNumber: 4, Instruction: "Add an additional sprinkle of salt on top of each patty and let them for a minute or so before flipping. "},
-			{StepNumber: 5, Instruction: "Once they are mostly cooked through, add a slice of cheese to each patty and stack them on top of each other. "},
-			{StepNumber: 6, Instruction: "Remove the patties from the heat once the cheese is melted."},
+			{StepNumber: 1, Instruction: "Preheat frypan (cast iron works best) over medium-high heat"},
+			{StepNumber: 2, Instruction: "Divide the ground mince into two (per burger) equal-sized balls."},
+			{StepNumber: 3, Instruction: "Carefully place the meat balls in the hot frypan, leaving some space between them. Let them sear for a few seconds to prevent sticking."},
+			{StepNumber: 4, Instruction: "Flip the meat balls over and use a sturdy, flat spatula to firmly smash each ball down into a thin patty. Apply good pressure."},
+			{StepNumber: 4, Instruction: "Let them cook undisturbed for 1-2 minutes until the edges are crispy and browned."},
+			{StepNumber: 5, Instruction: "Flip the patties. Let them further cook."},
+			{StepNumber: 6, Instruction: "Place a slice of cheese on top of each patty. Stack one cheeseburger patty on top of the other in the frypan"},
+			{StepNumber: 7, Instruction: "Cover (using the water/steam method from the notes if desired) and cook for another 30 seconds to 1 minute, or until the cheese is fully melted and the patties are cooked through."},
+			{StepNumber: 8, Instruction: "Remove the patties from the heat once the cheese is melted."},
 		},
 	},
 	{
 		ID:          2003,
 		RecipeID:    4,
-		StepOrder:   1,
+		StepOrder:   3,
 		Title:       "Toast buns",
 		Description: "",
 		Ingredients: []dummyIngredientRef{
@@ -822,13 +861,14 @@ var DummyRecipeSteps = []DummyRecipeStep{
 			{FoodItemName: "Bun", FormName: "Brioche Bun", Quantity: 2, Unit: "unit", Purpose: ""},
 		},
 		MethodSteps: []model.MethodStep{
-			{StepNumber: 1, Instruction: "Add a bun to the preheated skillet and let it toast and crisp up."},
+			{StepNumber: 1, Instruction: "Add a bun to the preheated frypan."},
+			{StepNumber: 2, Instruction: "Toast for 1-2 minutes until golden brown and slightly crispy."},
 		},
 	},
 	{
 		ID:          2004,
 		RecipeID:    4,
-		StepOrder:   1,
+		StepOrder:   4,
 		Title:       "Assemble",
 		Description: "",
 		Ingredients: []dummyIngredientRef{
@@ -836,10 +876,159 @@ var DummyRecipeSteps = []DummyRecipeStep{
 			{FoodItemName: "Cheese", FormName: "Cheese Slice", Quantity: 2, Unit: "unit", Purpose: "fat/creamy"},
 		},
 		MethodSteps: []model.MethodStep{
-			{StepNumber: 1, Instruction: "Finely slice lettuce"},
+			{StepNumber: 1, Instruction: "Finely slice your lettuce and prepare any other desired toppings."},
 			{StepNumber: 2, Instruction: "Add sauce to top and botton of the burger bun"},
-			{StepNumber: 3, Instruction: "Add meat, second cheese slice, and lettuce to the bun."},
-			{StepNumber: 3, Instruction: "Enjoy!"},
+			{StepNumber: 3, Instruction: "Spread a generous amount of the prepared burger sauce on the cut sides of both the top and bottom buns."},
+			{StepNumber: 4, Instruction: "Place the stacked cheeseburger patties on the bottom bun."},
+			{StepNumber: 5, Instruction: "Top with sliced lettuce and any other desired toppings."},
+			{StepNumber: 6, Instruction: "Add the top bun. Serve and enjoy!"},
+		},
+	},
+	{
+		ID:          5001,
+		RecipeID:    5,
+		StepOrder:   1,
+		Title:       "Activate Yeast",
+		Description: "",
+		Ingredients: []dummyIngredientRef{
+			{FoodItemName: "Water", Quantity: 210, Unit: "ml", Purpose: "hydration"},
+			{FoodItemName: "Yeast", FormName: "Active Dry Yeast", Quantity: 5, Unit: "g", Purpose: "leavening"},
+			{FoodItemName: "Sugar", FormName: "Raw Sugar", Quantity: 5, Unit: "g", Purpose: "yeast food, browning"},
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "In a medium bowl, mix the warm water (40-46°C) with the active dry yeast and raw sugar."},
+			{StepNumber: 2, Instruction: "Let the mixture stand for 10-15 minutes until it is foamy and bubbly. This confirms the yeast is active."},
+		},
+	},
+	{
+		ID:          5002,
+		RecipeID:    5,
+		StepOrder:   2,
+		Title:       "Make the Dough",
+		Description: "",
+		Ingredients: []dummyIngredientRef{
+			{FoodItemName: "Flour", FormName: "Bread Flour", Quantity: 280, Unit: "g", Purpose: "structure, gluten development"},
+			{FoodItemName: "Salt", FormName: "Kosher Salt", Quantity: 5, Unit: "g", Purpose: "flavor, fermentation control"},
+			{FoodItemName: "Oil", FormName: "Olive Oil", Quantity: 8, Unit: "g", Purpose: "tenderness, flavor"},
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "In a separate larger bowl, whisk together the bread flour and salt."},
+			{StepNumber: 2, Instruction: "Pour the activated yeast mixture and the olive oil into the bowl with the flour."},
+			{StepNumber: 3, Instruction: "Mix with a fork or spatula until there is no dry flour remaining and a shaggy dough forms."},
+			{StepNumber: 4, Instruction: "Cover the bowl and let the dough rest for 10 minutes."},
+		},
+	},
+	{
+		ID:          5003,
+		RecipeID:    5,
+		StepOrder:   3,
+		Title:       "Develop Gluten (Stretch and Folds)",
+		Description: "",
+		Ingredients: []dummyIngredientRef{}, // No new ingredients added in this step
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Perform the first set of stretch and folds: wet your hands slightly, grab an edge of the dough, stretch it upwards, and fold it back over the center. Repeat this process 3-4 times around the dough."},
+			{StepNumber: 2, Instruction: "Cover the bowl and let the dough rest for 30 minutes."},
+			{StepNumber: 3, Instruction: "Perform the second set of stretch and folds. Cover and rest for 30 minutes."},
+			{StepNumber: 4, Instruction: "Perform the third set of stretch and folds. Cover and rest for 30 minutes."},
+			{StepNumber: 5, Instruction: "Perform a final stretch and fold if needed (the dough should be noticeably smoother and stronger). Cover and rest for the final 30 minutes."},
+		},
+	},
+	{
+		ID:          5004,
+		RecipeID:    5,
+		StepOrder:   4,
+		Title:       "Divide and Shape Dough",
+		Description: "",
+		Ingredients: []dummyIngredientRef{}, // No new ingredients added in this step
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Turn the dough out onto a lightly floured surface."},
+			{StepNumber: 2, Instruction: "The total dough weight should be approximately 490g. Divide the dough into two equal portions, roughly 245g each."},
+			{StepNumber: 3, Instruction: "Shape each portion into a tight ball using the edge-folding technique (tuck the edges underneath the dough ball to create surface tension)."},
+			{StepNumber: 4, Instruction: "Place the dough balls on a lightly floured surface, cover loosely with plastic wrap or a damp towel, and let them rest at room temperature until you are ready to stretch and cook them."},
+		},
+	},
+	{
+		ID:          5005,
+		RecipeID:    5,
+		StepOrder:   5,
+		Title:       "Prepare for Cooking",
+		Description: "",
+		Ingredients: []dummyIngredientRef{}, // No new ingredients added in this step
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "While the dough completes its final rise, prepare all your pizza toppings."},
+			{StepNumber: 2, Instruction: "Set up your cold cast iron pan and lightly coat it with cooking spray."},
+			{StepNumber: 3, Instruction: "Gently stretch one dough ball into a 12-14 inch circle. If the dough resists stretching, cover it and let it rest for 5-10 minutes before trying again."},
+			{StepNumber: 4, Instruction: "Carefully transfer the stretched dough to the prepared cold cast iron pan."},
+		},
+	},
+	{
+		ID:          5006,
+		RecipeID:    5,
+		StepOrder:   6,
+		Title:       "Cook the Pizza",
+		Description: "",
+		Ingredients: []dummyIngredientRef{}, // No new ingredients added in this step
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Top the dough in the pan with your sauce, cheese, and desired ingredients."},
+			{StepNumber: 2, Instruction: "Preheat your oven to 250°C (Fan Bake)."},
+			{StepNumber: 3, Instruction: "Place the pan on a medium-high heat stovetop burner and cook for 5-7 minutes. Watch for slight bubbling on the top surface of the dough."},
+			{StepNumber: 4, Instruction: "Carefully transfer the pan from the stovetop to the preheated oven."},
+			{StepNumber: 5, Instruction: "Bake for an initial 10-12 minutes. After 10 minutes, check for doneness: the cheese should be fully melted and starting to brown, the crust edge should be golden brown, and the bottom should be crispy (lift with a spatula to check)."},
+			{StepNumber: 6, Instruction: "If needed, return the pizza to the oven for additional 2-minute intervals until desired doneness is reached."},
+			{StepNumber: 7, Instruction: "Once cooked, carefully remove the pan from the oven. Let the pizza rest for 2-3 minutes before slicing and serving."},
+		},
+	},
+	{
+		ID:          6002,
+		RecipeID:    6,
+		StepOrder:   2,
+		Title:       "Make the Dough",
+		Description: "",
+		Ingredients: []dummyIngredientRef{
+			{FoodItemName: "Flour", FormName: "Bread Flour", Quantity: 280, Unit: "g", Purpose: "structure, gluten development"},
+			{FoodItemName: "Salt", FormName: "Kosher Salt", Quantity: 5, Unit: "g", Purpose: "flavor, fermentation control"},
+			{FoodItemName: "Oil", FormName: "Olive Oil", Quantity: 15, Unit: "g", Purpose: "tenderness, flavor, rich flavour"},
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "In a separate larger bowl, whisk together the bread flour and salt."},
+			{StepNumber: 2, Instruction: "Pour the activated yeast mixture and the olive oil into the bowl with the flour."},
+			{StepNumber: 3, Instruction: "Mix with a fork or spatula until there is no dry flour remaining and a shaggy dough forms."},
+			{StepNumber: 4, Instruction: "Cover the bowl and let the dough rest for 10 minutes."},
+		},
+	},
+	{
+		ID:          6005, // New step for Focaccia Shaping and Preparation
+		RecipeID:    6,
+		StepOrder:   5,
+		Title:       "Shape and Prepare for Baking",
+		Description: "",
+		Ingredients: []dummyIngredientRef{
+			{FoodItemName: "Oil", FormName: "Olive Oil", Quantity: 0, Unit: "dash", Purpose: "topping, texture"},
+			{FoodItemName: "Salt", FormName: "Flaky Sea Salt", Quantity: 0, Unit: "pinch", Purpose: "topping, flavor"},
+			{FoodItemName: "Italian Herbs", Quantity: 0, Unit: "pinch", IsOptional: true, Purpose: "topping, aromatic, garnish"}, // Added optional Italian Herbs
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Take the dough portion(s) and gently press or stretch it into your desired shape and thickness (about 1/2 inch thick) in a well-oiled baking pan or tray."},
+			{StepNumber: 2, Instruction: "Cover the pan loosely and let the dough rise at room temperature for about 15 minutes while you preheat the oven."},
+			{StepNumber: 3, Instruction: "Using your fingertips, gently but firmly press deep dimples all over the surface of the dough."},
+			{StepNumber: 4, Instruction: "Generously drizzle the surface of the dough with olive oil."},
+			{StepNumber: 5, Instruction: "Sprinkle the top with flaky sea salt and any other desired toppings (like fresh rosemary)."},
+		},
+	},
+	{
+		ID:          6006, // New step for Focaccia Baking
+		RecipeID:    6,
+		StepOrder:   6,
+		Title:       "Bake and Finish",
+		Description: "",
+		Ingredients: []dummyIngredientRef{}, // No new ingredients added in this step
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Preheat your oven to 200°C (Fan Bake)."},
+			{StepNumber: 2, Instruction: "Place the pan in the preheated oven and bake for 15-18 minutes, or until the focaccia is golden brown on top and cooked through."},
+			{StepNumber: 3, Instruction: "Carefully remove the pan from the oven."},
+			{StepNumber: 4, Instruction: "For a softer crust, immediately transfer the hot focaccia to a wire rack and loosely wrap it in a clean tea towel for a few minutes to trap steam."},
+			{StepNumber: 5, Instruction: "Cut the focaccia into slices or squares."},
+			{StepNumber: 6, Instruction: "Serve warm, perhaps with extra olive oil for dipping, and enjoy!"},
 		},
 	},
 }
