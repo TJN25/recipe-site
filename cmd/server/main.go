@@ -16,9 +16,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// some relational linking of all the recipes by a score (shared ingredients, shared tags, shared equipment)
-// Matrix of Recipes, by Recipes with score (but maybe more efficient?)
-
 var templateSets map[string]*template.Template
 
 func main() {
@@ -191,9 +188,12 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	scalingFactor := float32(newServings) / float32(baseRecipe.Servings)
-	adjustedIngredients := calculateAdjustedIngredients(baseRecipe, scalingFactor)
 
-	log.Infof("HandleUpdateServings: Calculated adjustedIngredients (len %d): %+v", len(adjustedIngredients), adjustedIngredients)
+	modifiedRecipe := *baseRecipe
+	for idx, recipe_step := range baseRecipe.RecipeSteps {
+		modifiedRecipe.RecipeSteps[idx].Ingredients = calculateAdjustedIngredients(&recipe_step, scalingFactor)
+		log.Infof("HandleUpdateServings: Calculated adjustedIngredients (len %d): %+v", len(modifiedRecipe.RecipeSteps[idx].Ingredients), modifiedRecipe.RecipeSteps[idx].Ingredients)
+	}
 
 	tmplSet, found := templateSets["ingredient-list"]
 	if !found {
@@ -208,7 +208,7 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `<div id="%s">`, targetID)
 
 	// Execute the defined name "ingredient-list"
-	err := tmplSet.ExecuteTemplate(w, "ingredient-list", adjustedIngredients)
+	err := tmplSet.ExecuteTemplate(w, "ingredient-list", modifiedRecipe.RecipeSteps)
 	if err != nil { /* ... */
 	}
 	fmt.Fprintln(w, `</div>`)
@@ -216,24 +216,6 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	log.Infof("Served updated ingredients list for '%s' (%d servings)", baseRecipe.Title, newServings)
 
 }
-
-// func getRecipeDetailsFromRequest(r *http.Request) (id int64, recipe model.Recipe, found bool) {
-// 	idStr := strings.TrimPrefix(r.URL.Path, "/recipe/")
-// 	idStr = strings.TrimSuffix(idStr, "/")
-// 	recipeID, err := strconv.ParseInt(idStr, 10, 64)
-// 	if err != nil {
-// 		log.Warnf("Invalid recipe ID requested: %s", idStr)
-// 		return 0, model.Recipe{}, false
-// 	}
-// 	recipePtr, found := findRecipeByID(recipeID)
-// 	if !found {
-// 		log.Warnf("Recipe ID not found: %d", recipeID)
-// 		return recipeID, model.Recipe{}, false
-// 	}
-// 	recipeCopy := *recipePtr
-// 	recipeCopy.CalculateTotals()
-// 	return recipeID, recipeCopy, true
-// }
 
 func getUpdateServingsDetails(r *http.Request) (id int64, servings int, recipe *model.Recipe, ok bool) {
 	err := r.ParseForm()
@@ -265,16 +247,13 @@ func getUpdateServingsDetails(r *http.Request) (id int64, servings int, recipe *
 	return recipeID, newServings, baseRecipe, true
 }
 
-func calculateAdjustedIngredients(baseRecipe *model.Recipe, scalingFactor float32) []model.RecipeIngredient {
+func calculateAdjustedIngredients(recipeStep *model.RecipeStep, scalingFactor float32) []model.RecipeIngredient {
 	// 1. Aggregate all ingredients from the base recipe's steps
-	allBaseIngredients := []model.RecipeIngredient{}
-	for _, step := range baseRecipe.RecipeSteps {
-		allBaseIngredients = append(allBaseIngredients, step.Ingredients...)
-	}
+	baseIngredients := recipeStep.Ingredients
 
 	// 2. Apply scaling factor to the aggregated list
-	adjustedIngredients := make([]model.RecipeIngredient, len(allBaseIngredients))
-	for i, ing := range allBaseIngredients {
+	adjustedIngredients := make([]model.RecipeIngredient, len(baseIngredients))
+	for i, ing := range baseIngredients {
 		// Create a copy of the FoodItem to avoid modifying the original
 		foodItemCopy := ing.FoodItem
 		adjustedIngredients[i] = model.RecipeIngredient{
@@ -312,14 +291,20 @@ func formatQuantity(q float32) string {
 // Create a FuncMap to register the function
 var funcMap = template.FuncMap{
 	"formatQuantity": formatQuantity,
+	"len":            func(s []model.RecipeStep) int { return len(s) },
+	"add":            func(a, b int) int { return a + b },
+	"default": func(value, defaultValue string) string { // Keep if used
+		if value == "" {
+			return defaultValue
+		}
+		return value
+	},
+	"truncate": func(s string, length int) string { // New function
+		if len(s) <= length {
+			return s
+		}
+		// Consider rune length for Unicode safety if needed
+		// return string([]rune(s)[:length]) + "..."
+		return s[:length] + "..." // Simpler byte slice version
+	},
 }
-
-// func findRecipeByID(id int64) (*model.Recipe, bool) {
-// 	for i := range data.DummyRecipes {
-// 		if data.DummyRecipes[i].ID == id {
-// 			// Return a pointer to the recipe in the slice
-// 			return &data.DummyRecipes[i], true
-// 		}
-// 	}
-// 	return nil, false // Not found
-// }

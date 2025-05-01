@@ -9,44 +9,6 @@ const (
 	CleaningDifficultyHard                             // requires care, has things baked on, is very large, can't be cleaned while cooking e.g. caserole dish
 )
 
-type Nutrition struct {
-	CarbsGrams   float32 `json:"carbs_grams"`
-	FatGrams     float32 `json:"fat_grams"`
-	ProteinGrams float32 `json:"protein_grams"`
-	CaloriesKcal float32 `json:"calories_kcal"`
-}
-
-type FoodItem struct {
-	ID                      int64     `json:"id"`
-	Name                    string    `json:"name"`                // Unique name, e.g., "All-Purpose Flour"
-	BaseUnit                string    `json:"base_unit"`           // Canonical unit for price/nutrition (e.g., "g", "ml", "whole")
-	PricePerBaseUnit        float32   `json:"price_per_base_unit"` // Price for one BaseUnit
-	Nutrition               Nutrition `json:"nutrition"`           // Embedded nutrition info per BaseUnit
-	AlternateUnits          []string  `json:"alternate_units"`
-	AlternateUnitConversion []float32 `json:"alternate_unit_conversion"`
-	// Potential future fields: category, brand, substitutes[]
-}
-
-type RecipeIngredient struct {
-	FoodItem FoodItem `json:"food_item"` // The generic food item details (Name, Nutrition etc.) fetched via join
-
-	// Fields specific to the recipe usage (from recipe_ingredients join table)
-	Quantity   float32 `json:"quantity"`          // How much of the item is needed for the recipe servings
-	Unit       string  `json:"unit"`              // Unit for the quantity (e.g., "cup", "tbsp", "g", "clove")
-	IsOptional bool    `json:"is_optional"`       // Is this ingredient optional for the recipe?
-	Purpose    string  `json:"purpose,omitempty"` // Why this ingredient is used (e.g., "thickener", "acidity")
-}
-
-type MethodStep struct {
-	ID              int64  `json:"id"`
-	RecipeID        int64  `json:"-"`                 // Foreign key back to Recipe (db only)
-	StepNumber      int    `json:"step_number"`       // Order of the step (unique per recipe)
-	Instruction     string `json:"instruction"`       // What to do in this step
-	PrepTimeMinutes int    `json:"prep_time_minutes"` // Active time for this step
-	CookTimeMinutes int    `json:"cook_time_minutes"` // Passive/cooking time for this step
-	// Potential V2: IngredientsUsed []int64, EquipmentUsed []int64
-}
-
 type RecipeStep struct {
 	ID       int64 `json:"id"`        // Will be DB ID later
 	RecipeID int64 `json:"recipe_id"` // can be used in multiple recipes
@@ -62,10 +24,48 @@ type RecipeStep struct {
 	// Tags        []Tag           `json:"tags"`        // We need this for enabling searching for steps as though they are recipes e.g. bao bun chicken, roux for mac and cheese, mexican chicken marinade.
 }
 
-type Tag struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"` // e.g., "Indian", "Quick", "Winter", "Pasta Bake"
-	Type string `json:"type"` // e.g., "cuisine", "duration", "season", "dish_type", "technique", "mood"
+type RecipeIngredient struct {
+	FoodItem FoodItem `json:"food_item"` // The generic food item details (Name, Nutrition etc.) fetched via join
+
+	// Fields specific to the recipe usage (from recipe_ingredients join table)
+	Quantity   float32 `json:"quantity"`          // How much of the item is needed for the recipe servings
+	Unit       string  `json:"unit"`              // Unit for the quantity (e.g., "cup", "tbsp", "g", "clove")
+	IsOptional bool    `json:"is_optional"`       // Is this ingredient optional for the recipe?
+	Purpose    string  `json:"purpose,omitempty"` // Why this ingredient is used (e.g., "thickener", "acidity")
+}
+
+type FoodItem struct {
+	ID                      int64     `json:"id"`
+	Name                    string    `json:"name"`                // Unique name, e.g., "All-Purpose Flour"
+	BaseUnit                string    `json:"base_unit"`           // Canonical unit for price/nutrition (e.g., "g", "ml", "whole")
+	PricePerBaseUnit        float32   `json:"price_per_base_unit"` // Price for one BaseUnit
+	Nutrition               Nutrition `json:"nutrition"`           // Embedded nutrition info per BaseUnit
+	AlternateUnits          []string  `json:"alternate_units"`
+	AlternateUnitConversion []float32 `json:"alternate_unit_conversion"`
+	// Potential future fields: category, brand, substitutes[]
+}
+
+type FoodItemGeneric struct {
+	ID   int64  `json:"id"`   // Database primary key for the generic item
+	Name string `json:"name"` // The common name (e.g., "Garlic") - Should be unique
+	// Potential future fields: DefaultBaseUnit? Category ("Spice", "Vegetable", "Dairy")?
+}
+
+type Nutrition struct {
+	CarbsGrams   float32 `json:"carbs_grams"`
+	FatGrams     float32 `json:"fat_grams"`
+	ProteinGrams float32 `json:"protein_grams"`
+	CaloriesKcal float32 `json:"calories_kcal"`
+}
+
+type MethodStep struct {
+	ID              int64  `json:"id"`
+	RecipeID        int64  `json:"-"`                 // Foreign key back to Recipe (db only)
+	StepNumber      int    `json:"step_number"`       // Order of the step (unique per recipe)
+	Instruction     string `json:"instruction"`       // What to do in this step
+	PrepTimeMinutes int    `json:"prep_time_minutes"` // Active time for this step
+	CookTimeMinutes int    `json:"cook_time_minutes"` // Passive/cooking time for this step
+	// Potential V2: IngredientsUsed []int64, EquipmentUsed []int64
 }
 
 type Equipment struct {
@@ -73,6 +73,12 @@ type Equipment struct {
 	Name               string             `json:"name"` // Unique name, e.g., "Large Saucepan"
 	Type               string             `json:"type"` // e.g., "Cookware", "Utensil", "Appliance"
 	CleaningDifficulty CleaningDifficulty `json:"cleaning_difficulty"`
+}
+
+type Tag struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"` // e.g., "Indian", "Quick", "Winter", "Pasta Bake"
+	Type string `json:"type"` // e.g., "cuisine", "duration", "season", "dish_type", "technique", "mood"
 }
 
 type Recipe struct {
