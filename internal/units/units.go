@@ -66,6 +66,7 @@ var UnitDefinitions = map[string]UnitDefinition{
 	"can":      {Type: TypeCount, FactorToStdBase: 0},
 	"stalk":    {Type: TypeCount, FactorToStdBase: 0},
 	"pinch":    {Type: TypeDescriptive, FactorToStdBase: 0},
+	"handful":  {Type: TypeDescriptive, FactorToStdBase: 0},
 	"dash":     {Type: TypeDescriptive, FactorToStdBase: 0},
 	"garnish":  {Type: TypeDescriptive, FactorToStdBase: 0},
 	"to taste": {Type: TypeDescriptive, FactorToStdBase: 0},
