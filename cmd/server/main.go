@@ -13,6 +13,7 @@ import (
 
 	"github.com/TJN25/recipe-site/internal/model"
 	"github.com/TJN25/recipe-site/internal/store"
+	"github.com/TJN25/recipe-site/internal/units"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,7 +23,8 @@ func main() {
 	log.SetFormatter(&log.TextFormatter{})
 	log.SetLevel(log.InfoLevel)
 
-	// Initialize the map
+	// Initialize the maps
+	store.InitializeCaches()
 	templateSets = make(map[string]*template.Template)
 
 	// --- PARSE TEMPLATES AT STARTUP (Separate Sets Pattern) ---
@@ -49,6 +51,7 @@ func main() {
 		filepath.Join(templateDir, "recipe_page.html"),
 		// We can omit ingredients.html for this minimal test if recipe_page doesn't {{template}} it
 		filepath.Join(templateDir, "partials", "ingredients.html"),
+		filepath.Join(templateDir, "partials", "zen_mode_content.html"),
 	}
 	log.Printf("Parsing set 'recipe': %v", recipePageFiles)
 	recipeSet := template.Must(template.New(filepath.Base(baseFile)). // Rooted at base.html
@@ -74,10 +77,28 @@ func main() {
 	templateSets["ingredient-list"] = ingredientSet
 	log.Printf("Stored template set: ingredient-list")
 
+	zenPartialFiles := []string{
+		filepath.Join(templateDir, "partials", "zen_mode_content.html"),
+	}
+	log.Printf("Parsing set 'zen-mode-content': %v", zenPartialFiles)
+
+	// *** CHANGE NAME IN New() HERE ***
+	// Use a different root name for the set, e.g., "ingredients-root" or just the filename base
+	zenSet := template.Must(template.New(filepath.Base(zenPartialFiles[0])). // Use "ingredients.html" as root name
+											Funcs(funcMap).
+											ParseFiles(zenPartialFiles...))
+	// **********************************
+
+	// Keep storing under the logical key "ingredient-list"
+	templateSets["zen-mode-content"] = zenSet
+	log.Printf("Stored template set: zen-mode-content")
+
 	// --- Setup Routes ---
 	http.HandleFunc("/", handleIndexPage)
 	http.HandleFunc("/recipe/", handleShowRecipe)
-	http.HandleFunc("/update-servings", handleUpdateServings)
+	http.HandleFunc("/update-servings-trigger/{id}", handleUpdateServings)
+	http.HandleFunc("/render-full-ingredients/", handleRenderFullIngredients)
+	http.HandleFunc("/render-zen-mode-content/", handleRenderZenContent)
 
 	// --- Serve Static Files ---
 	fs := http.FileServer(http.Dir("./web/static/"))
@@ -152,8 +173,10 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"Recipe":      recipe, // Pass the fully assembled recipe from the store
-		"CurrentYear": time.Now().Year(),
+		"Recipe":                  recipe, // Pass the fully assembled recipe from the store
+		"CurrentServings":         2,
+		"DisplaySystemPreference": "use_metric_default",
+		"CurrentYear":             time.Now().Year(),
 	}
 
 	// Retrieve the pre-parsed set for "recipe"
@@ -176,45 +199,170 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
-	log.Info("HandleUpdateServings: Received request")
+	log.Info("HandleUpdateServingsTrigger: Received request") // Update log message
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusInternalServerError) // Corrected Status Code
-		return
-	}
-	_, newServings, baseRecipe, ok := getUpdateServingsDetails(r)
-	if !ok {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed) // Use correct status code
 		return
 	}
 
-	scalingFactor := float32(newServings) / float32(baseRecipe.Servings)
+	// --- Parse the POST form data ---
+	err := r.ParseForm()
+	if err != nil {
+		log.Errorf("HandleUpdateServingsTrigger: Error parsing form: %v", err)
+		http.Error(w, "Bad Request: Cannot parse form", http.StatusBadRequest)
+		return
+	}
 
-	modifiedRecipe := *baseRecipe
-	for idx, recipe_step := range baseRecipe.RecipeSteps {
-		modifiedRecipe.RecipeSteps[idx].Ingredients = calculateAdjustedIngredients(&recipe_step, scalingFactor)
-		log.Infof("HandleUpdateServings: Calculated adjustedIngredients (len %d): %+v", len(modifiedRecipe.RecipeSteps[idx].Ingredients), modifiedRecipe.RecipeSteps[idx].Ingredients)
+	// --- Read 'id' from the parsed form data ---
+	recipeIDStr := r.FormValue("id") // Read the 'id' field sent by hx-vals
+	log.Debugf("HandleUpdateServingsTrigger: Raw form 'id' value = '%s'", recipeIDStr)
+
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
+	if err != nil {
+		// Updated error messages for clarity
+		log.Errorf("HandleUpdateServingsTrigger: Error parsing recipeID from form value '%s': %v", recipeIDStr, err)
+		log.Errorf("Request details: %+v", r) // Log request details for more context if needed
+		http.Error(w, "Bad Request: Invalid id parameter", http.StatusBadRequest)
+		return
+	}
+	log.Infof("HandleUpdateServingsTrigger: Parsed RecipeID: %d", recipeID)
+
+	// --- GET SERVINGS (Add this part) ---
+	servingsStr := r.FormValue("servings") // Get servings (assuming name="servings" in hx-include/hx-vals)
+	newServings, err := strconv.Atoi(servingsStr)
+	if err != nil || newServings <= 0 {
+		log.Warnf("HandleUpdateServingsTrigger: Invalid or missing 'servings' form value: '%s'. Using default/previous might be needed.", servingsStr)
+		newServings = 2 // Or fetch default
+	}
+
+	unitSystem := r.FormValue("unit-system")
+	log.Infof("HandleUpdateServingsTrigger: Parsed unitSystem: %s", unitSystem)
+
+	log.Infof("HandleUpdateServingsTrigger: Target Servings: %d", newServings)
+
+	// --- Respond with HX-Trigger ---
+	w.Header().Set("HX-Trigger", fmt.Sprintf(`{"servingsUpdated": {"newServings": %d, "newSystem": "%s"}}`, newServings, unitSystem))
+	w.WriteHeader(http.StatusOK)
+}
+
+func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/render-full-ingredients/")
+	idStr = strings.TrimSuffix(idStr, "/")
+	recipeID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("RenderFullIngredients: Invalid recipe ID in path '%s': %v", idStr, err)
+		http.Error(w, "Invalid Recipe ID", http.StatusBadRequest)
+		return
+	}
+
+	servingsStr := r.URL.Query().Get("servings")
+	unitSystem := r.URL.Query().Get("displaySystem")
+	log.Infof("handleRenderFull: Parsed unitSystem: %s", unitSystem)
+	targetServings, err := strconv.Atoi(servingsStr)
+	if err != nil || targetServings <= 0 {
+		tempRecipe, tempErr := store.GetRecipeByID(recipeID)
+		if tempErr != nil {
+			log.Errorf("RenderFullIngredients: Error getting recipe %d for default servings: %v", recipeID, tempErr)
+			http.Error(w, "Recipe not found", http.StatusNotFound)
+			return
+		}
+		targetServings = tempRecipe.Servings
+		log.Warnf("RenderFullIngredients: Invalid/missing servings param '%s' for recipe %d. Using default %d.", servingsStr, recipeID, targetServings)
+	}
+
+	recipe, err := store.GetRecipeByID(recipeID)
+	if err != nil {
+		log.Errorf("RenderFullIngredients: Error getting recipe %d from store: %v", recipeID, err)
+		if errors.Is(err, store.ErrNotFound) {
+			http.NotFound(w, r)
+		} else {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	templateData := map[string]interface{}{
+		"Recipe":                  recipe,
+		"CurrentServings":         targetServings,
+		"DisplaySystemPreference": unitSystem,
 	}
 
 	tmplSet, found := templateSets["ingredient-list"]
 	if !found {
 		log.Error("Template set 'ingredient-list' not found")
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Internal Server Error: Template missing", http.StatusInternalServerError)
+		return
+	}
+
+	log.Infof("handleRenderZenContent: TemplateData map: %+v", templateData)
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmplSet.ExecuteTemplate(w, "ingredient-list", templateData)
+	if err != nil {
+		log.Errorf("Error executing ingredient-list template for recipe %d: %v", recipeID, err)
+		return
+	}
+
+	log.Infof("RenderFullIngredients: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d, and Unit System %s.", recipeID, targetServings, unitSystem)
+}
+
+func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/render-zen-mode-content/")
+	idStr = strings.TrimSuffix(idStr, "/")
+	recipeID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("RenderZenContent: Invalid recipe ID in path '%s': %v", idStr, err)
+		http.Error(w, "Invalid Recipe ID", http.StatusBadRequest)
+		return
+	}
+
+	servingsStr := r.URL.Query().Get("servings")
+	unitSystem := r.URL.Query().Get("displaySystem")
+	log.Infof("handleRenderZen: Parsed unitSystem: %s", unitSystem)
+	targetServings, err := strconv.Atoi(servingsStr)
+	if err != nil || targetServings <= 0 {
+		tempRecipe, tempErr := store.GetRecipeByID(recipeID)
+		if tempErr != nil {
+			log.Errorf("RenderZenContent: Error getting recipe %d for default servings: %v", recipeID, tempErr)
+			http.Error(w, "Recipe not found", http.StatusNotFound)
+			return
+		}
+		targetServings = tempRecipe.Servings
+		log.Warnf("RenderZenContent: Invalid/missing servings param '%s' for recipe %d. Using default %d.", servingsStr, recipeID, targetServings)
+	}
+
+	recipe, err := store.GetRecipeByID(recipeID)
+	if err != nil {
+		log.Errorf("RenderZenContent: Error getting recipe %d from store: %v", recipeID, err)
+		if errors.Is(err, store.ErrNotFound) {
+			http.NotFound(w, r)
+		} else {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	templateData := map[string]interface{}{
+		"Recipe":                  recipe,
+		"CurrentServings":         targetServings,
+		"DisplaySystemPreference": unitSystem,
+	}
+
+	tmplSet, found := templateSets["zen-mode-content"]
+	if !found {
+		log.Error("Template set 'zen-mode-content' not found")
+		http.Error(w, "Internal Server Error: Template missing", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	targetID := "ingredients-list-container"
-	fmt.Fprintf(w, `<div id="%s">`, targetID)
-
-	// Execute the defined name "ingredient-list"
-	err := tmplSet.ExecuteTemplate(w, "ingredient-list", modifiedRecipe.RecipeSteps)
-	if err != nil { /* ... */
+	err = tmplSet.ExecuteTemplate(w, "zen-mode-content", templateData)
+	if err != nil {
+		log.Errorf("Error executing zen-mode-content template for recipe %d: %v", recipeID, err)
+		return
 	}
-	fmt.Fprintln(w, `</div>`)
 
-	log.Infof("Served updated ingredients list for '%s' (%d servings)", baseRecipe.Title, newServings)
-
+	log.Infof("RenderZenContent: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d.", recipeID, targetServings)
 }
 
 func getUpdateServingsDetails(r *http.Request) (id int64, servings int, recipe *model.Recipe, ok bool) {
@@ -255,13 +403,13 @@ func calculateAdjustedIngredients(recipeStep *model.RecipeStep, scalingFactor fl
 	adjustedIngredients := make([]model.RecipeIngredient, len(baseIngredients))
 	for i, ing := range baseIngredients {
 		// Create a copy of the FoodItem to avoid modifying the original
-		foodItemCopy := ing.FoodItem
+		foodItemCopy := ing.FoodItemID
 		adjustedIngredients[i] = model.RecipeIngredient{
-			FoodItem:   foodItemCopy,                 // Use the copy
-			Quantity:   ing.Quantity * scalingFactor, // Scale the quantity
-			Unit:       ing.Unit,
-			IsOptional: ing.IsOptional,
-			Purpose:    ing.Purpose,
+			FoodItemID:    foodItemCopy,                 // Use the copy
+			Quantity:      ing.Quantity * scalingFactor, // Scale the quantity
+			SpecifiedUnit: ing.SpecifiedUnit,
+			IsOptional:    ing.IsOptional,
+			Purpose:       ing.Purpose,
 		}
 	}
 	return adjustedIngredients
@@ -288,6 +436,54 @@ func formatQuantity(q float32) string {
 	return sFixed
 }
 
+func getFoodItem(id int64) model.FoodItem {
+	item, found := store.AllFoodItemsCache[id]
+	if !found {
+		log.Warnf("FoodItem with ID %d not found in cache", id)
+		// Return an empty struct to avoid template errors, log the issue.
+		return model.FoodItem{}
+	}
+	return item
+}
+
+func getFormDetails(item model.FoodItem, formName string) model.FoodItemFormDetails {
+	// Handle potential nil map if FoodItem wasn't found or has no forms
+	if item.Forms == nil {
+		log.Warnf("FoodItem ID %d has nil Forms map when looking for form '%s'", item.ID, formName)
+		return model.FoodItemFormDetails{}
+	}
+	details, found := item.Forms[formName]
+	if !found {
+		// Attempt to use DefaultFormName if provided formName is not found
+		if item.DefaultFormName != "" && formName != item.DefaultFormName {
+			log.Warnf("Form '%s' not found for FoodItem ID %d. Trying default '%s'", formName, item.ID, item.DefaultFormName)
+			details, found = item.Forms[item.DefaultFormName]
+			if !found {
+				log.Errorf("Default form '%s' ALSO not found for FoodItem ID %d", item.DefaultFormName, item.ID)
+				return model.FoodItemFormDetails{} // Return empty if default also fails
+			}
+		} else {
+			// If the requested name WAS the default, or default is empty, and it wasn't found.
+			log.Errorf("Form '%s' not found for FoodItem ID %d and no default fallback available or default also missing.", formName, item.ID)
+			return model.FoodItemFormDetails{} // Return empty
+		}
+	}
+	return details
+}
+
+func unitSpace(unit string) string {
+	// List of units that should NOT have a preceding space
+	noSpaceUnits := map[string]bool{
+		"g":  true,
+		"ml": true,
+		// Add other symbols like °C, °F if needed
+	}
+	if _, found := noSpaceUnits[unit]; found || unit == "" {
+		return "" // No space for these units or empty unit
+	}
+	return " " // Add space for others (cup, tsp, clove, unit, etc.)
+}
+
 // Create a FuncMap to register the function
 var funcMap = template.FuncMap{
 	"formatQuantity": formatQuantity,
@@ -307,4 +503,8 @@ var funcMap = template.FuncMap{
 		// return string([]rune(s)[:length]) + "..."
 		return s[:length] + "..." // Simpler byte slice version
 	},
+	"getFoodItem":      getFoodItem,
+	"getFormDetails":   getFormDetails,
+	"unitSpace":        unitSpace,
+	"formatIngredient": units.FormatIngredientForDisplay,
 }
