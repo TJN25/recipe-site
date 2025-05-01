@@ -402,7 +402,7 @@ var DummyFoodItems = []model.FoodItem{
 		FormComparisonUnit: "ml",
 		DefaultFormName:    "Water",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Water": {Unit: "ml", ConversionScaleFactor: 1.0},
+			"Water": {Unit: "ml", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.0},
 		},
 	},
 	{
@@ -454,9 +454,9 @@ var DummyFoodItems = []model.FoodItem{
 		ID:                 45,
 		Name:               "Yeast",
 		FormComparisonUnit: "g",
-		DefaultFormName:    "Active Dry",
+		DefaultFormName:    "Active Dry Yeast",
 		Forms: map[string]model.FoodItemFormDetails{
-			"Active Dry": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.25},
+			"Active Dry Yeast": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 1.25},
 		},
 	},
 	{
@@ -490,7 +490,7 @@ var DummyRecipes = []struct {
 		Description:   "A simple, comforting, and irresistibly cheesy homemade classic mac and cheese.",
 		Servings:      2,
 		Notes:         "Let rest 5 minutes before serving. Uses full fat milk for creaminess. Sauce should look slightly too saucy before baking; it will thicken.",
-		ImagePath:     "img/mac-and-cheese.png",
+		ImagePath:     "img/mac-and-cheese.jpg",
 	},
 	{
 		ID:            2,
@@ -499,7 +499,7 @@ var DummyRecipes = []struct {
 		Description:   "Crispy fried spiced chicken pieces served in soft bao buns with coleslaw, cucumber, peanuts, and a tangy sriracha mayo.",
 		Servings:      3,
 		Notes:         "Marinate chicken for 15-20 mins. Fry chicken in batches. Steam buns just before serving. Assemble just before eating for best texture contrast. Enhancements: Salt cucumber slices briefly before use. Toast peanuts before crushing.",
-		ImagePath:     "img/bao-buns-chicken.png", // Assign an appropriate image path
+		ImagePath:     "img/bao-buns.jpg", // Assign an appropriate image path
 	},
 	{
 		ID:            3,
@@ -508,7 +508,7 @@ var DummyRecipes = []struct {
 		Description:   "Crispy fried chicken pieces served over a flavorful stir-fry of vegetables and egg noodles.",
 		Servings:      2,
 		Notes:         "Wok Hei: Preheating the wok properly over high heat is crucial for achieving \"wok hei\" - the characteristic smoky flavour of good stir-fries.\nWok Frying: Be mindful when deep-frying/shallow-frying in a wok. The sloped sides mean oil depth varies. Keep pieces moving and adjust heat to prevent burning. Use a wok spatula or spider strainer for removal.\nStir-fry Motion: Use a scooping, tossing motion to move ingredients constantly, ensuring even cooking and preventing sticking. Add sauce around the perimeter to allow it to heat and reduce slightly before coating ingredients.\nSpeed: Wok cooking is fast. Have everything prepped and ready next to the stove before you start heating the wok.",
-		ImagePath:     "img/chicken-noodle-stirfry.png", // Placeholder path
+		ImagePath:     "img/noodles.jpg", // Placeholder path
 	},
 	{
 		ID:            4,
@@ -517,7 +517,7 @@ var DummyRecipes = []struct {
 		Description:   "Enjoy a delicious homemade classic smash cheeseburger featuring thin, crispy-edged patties, perfectly melted cheese, and your favourite toppings on a toasted bun.",
 		Servings:      2,
 		Notes:         "To help melt the cheese, add a splash of water to the frypan and a metal bowl (or lid) on top of the patties which will let them . ",
-		ImagePath:     "img/chicken-noodle-stirfry.png", // Placeholder path
+		ImagePath:     "img/cheeseburger.jpg", // Placeholder path
 	},
 	{
 		ID:            5,
@@ -526,7 +526,7 @@ var DummyRecipes = []struct {
 		Description:   "A reliable recipe for crafting delicious, chewy pizza dough ready in about 4-5 hours, perfect for a same-day pizza night.",
 		Servings:      2,
 		Notes:         "This recipe uses 75% hydration dough for a tender crumb. Warm water (40-46°C) is crucial for activating the yeast. Sugar feeds the yeast and helps with browning. Salt enhances flavor and controls fermentation. Olive oil adds tenderness and flavor.\n\nTo help the sauce thicken slightly and coat ingredients better, add it around the perimeter of the pan during stir-frying.\n\nOvernight Fermentation Option:\n- Reduce yeast to 1-2g (~1/4-1/3 tsp).\n- Complete only 1-2 stretch and folds.\n- Limit room temperature time to max 1 hour before refrigerating.\n- Start around 3pm for cooking at 7pm the next day.\n- Handle overproofed dough gently; it may be better suited for focaccia-style.\n- Remove cold dough from fridge 45-60 mins before cooking to warm up.",
-		ImagePath:     "img/pizza-dough.png",
+		ImagePath:     "img/pizza.jpg",
 	},
 	{
 		ID:            6,
@@ -535,7 +535,7 @@ var DummyRecipes = []struct {
 		Description:   "A simple and delicious classic focaccia with a tender interior, crispy crust, and fragrant olive oil and sea salt finish.",                                                                                                                                                                                                                                                                                                                                                                                       // Added description
 		Servings:      2,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // Assumes makes a batch equivalent to 2 pizzas
 		Notes:         "This recipe starts with a 75% hydration dough for a soft, open crumb. Baking it in a pan helps achieve the characteristic shape and texture. Be generous with the olive oil before baking for best results.\n\nHandling Overproofed Dough: If your pizza dough recipe (using reduced yeast for overnight fermentation) overproofs and becomes too delicate to stretch thinly for pizza, it can be successfully transformed into focaccia. Handle it gently and proceed with the shaping and baking steps below.", // Added relevant notes
-		ImagePath:     "img/focaccia.png",
+		ImagePath:     "img/focaccia.jpg",
 	},
 }
 
@@ -891,7 +891,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Title:       "Activate Yeast",
 		Description: "",
 		Ingredients: []dummyIngredientRef{
-			{FoodItemName: "Water", Quantity: 210, Unit: "g", Purpose: "hydration"},
+			{FoodItemName: "Water", Quantity: 210, Unit: "ml", Purpose: "hydration"},
 			{FoodItemName: "Yeast", FormName: "Active Dry Yeast", Quantity: 5, Unit: "g", Purpose: "leavening"},
 			{FoodItemName: "Sugar", FormName: "Raw Sugar", Quantity: 5, Unit: "g", Purpose: "yeast food, browning"},
 		},
@@ -1005,7 +1005,7 @@ var DummyRecipeSteps = []DummyRecipeStep{
 		Ingredients: []dummyIngredientRef{
 			{FoodItemName: "Oil", FormName: "Olive Oil", Quantity: 0, Unit: "dash", Purpose: "topping, texture"},
 			{FoodItemName: "Salt", FormName: "Flaky Sea Salt", Quantity: 0, Unit: "pinch", Purpose: "topping, flavor"},
-			{FoodItemName: "Italian Herbs", Quantity: 0, Unit: "garnish", IsOptional: true, Purpose: "topping, aromatic"}, // Added optional Italian Herbs
+			{FoodItemName: "Italian Herbs", Quantity: 0, Unit: "pinch", IsOptional: true, Purpose: "topping, aromatic, garnish"}, // Added optional Italian Herbs
 		},
 		MethodSteps: []model.MethodStep{
 			{StepNumber: 1, Instruction: "Take the dough portion(s) and gently press or stretch it into your desired shape and thickness (about 1/2 inch thick) in a well-oiled baking pan or tray."},
