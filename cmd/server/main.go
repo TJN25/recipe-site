@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -491,6 +492,14 @@ func unitSpace(unit string) string {
 	return " " // Add space for others (cup, tsp, clove, unit, etc.)
 }
 
+func marshal(v interface{}) (template.JS, error) {
+	a, err := json.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+	return template.JS(a), nil // Return as template.JS to prevent over-escaping
+}
+
 // Create a FuncMap to register the function
 var funcMap = template.FuncMap{
 	"formatQuantity": formatQuantity,
@@ -514,4 +523,5 @@ var funcMap = template.FuncMap{
 	"getFormDetails":   getFormDetails,
 	"unitSpace":        unitSpace,
 	"formatIngredient": units.FormatIngredientForDisplay,
+	"marshal":          marshal,
 }
