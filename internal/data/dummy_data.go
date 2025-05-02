@@ -468,6 +468,24 @@ var DummyFoodItems = []model.FoodItem{
 			"Italian Herb": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 5},
 		},
 	},
+	{
+		ID:                 47,
+		Name:               "Potato",
+		FormComparisonUnit: "g",
+		DefaultFormName:    "Potato",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Potato": {Unit: "unit", ConversionScaleFactor: 1.0, ToGrams: 200.0},
+		},
+	},
+	{
+		ID:                 48,
+		Name:               "Cayenne Pepper",
+		FormComparisonUnit: "g",
+		DefaultFormName:    "Cayenne Pepper",
+		Forms: map[string]model.FoodItemFormDetails{
+			"Cayenne Pepper": {Unit: "g", ConversionScaleFactor: 1.0, ToGrams: 1.0, ToMl: 2.0},
+		},
+	},
 }
 
 var DummyEquipment = []model.Equipment{}
@@ -536,6 +554,15 @@ var DummyRecipes = []struct {
 		Servings:      2,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // Assumes makes a batch equivalent to 2 pizzas
 		Notes:         "This recipe starts with a 75% hydration dough for a soft, open crumb. Baking it in a pan helps achieve the characteristic shape and texture. Be generous with the olive oil before baking for best results.\n\nHandling Overproofed Dough: If your pizza dough recipe (using reduced yeast for overnight fermentation) overproofs and becomes too delicate to stretch thinly for pizza, it can be successfully transformed into focaccia. Handle it gently and proceed with the shaping and baking steps below.", // Added relevant notes
 		ImagePath:     "img/focaccia.jpg",
+	},
+	{
+		ID:            7,
+		RecipeStepIds: []int64{7001, 7002, 7003, 7004},
+		Title:         "Agria Potato Wedges",
+		Description:   "Crispy and fluffy Agria potato wedges seasoned with a savoury blend of paprika, garlic, and herbs, perfect as a side dish or snack.",
+		Servings:      2,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   // Assuming 2 medium potatoes serves 2 as a side
+		Notes:         "Using Agria potatoes yields a fluffy interior and crisp exterior. Leaving the skin on adds texture and nutrients. Soaking removes excess starch for crispiness. Patting dry is essential for crispy wedges. Avocado oil has a high smoke point suitable for high heat. For extra crispy wedges, parboil the potatoes for 5 minutes before seasoning and baking.\n\nEnhancements:\n- Texture: Parboil potatoes for 5 mins before seasoning and baking.\n- Flavor: Add 1 tbsp finely grated parmesan during the last 5 mins of cooking.\n- Dipping Sauce: Serve with Greek yogurt + pinch smoked paprika + minced garlic.\n\nUser Note: Adding ½ tsp cayenne and using canola oil also works well, and cook time may vary (e.g., ~25 mins in oven).", // Consolidated notes
+		ImagePath:     "img/wedges.jpg",                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    // Suggested image path
 	},
 }
 
@@ -1029,6 +1056,68 @@ var DummyRecipeSteps = []DummyRecipeStep{
 			{StepNumber: 4, Instruction: "For a softer crust, immediately transfer the hot focaccia to a wire rack and loosely wrap it in a clean tea towel for a few minutes to trap steam."},
 			{StepNumber: 5, Instruction: "Cut the focaccia into slices or squares."},
 			{StepNumber: 6, Instruction: "Serve warm, perhaps with extra olive oil for dipping, and enjoy!"},
+		},
+	},
+	{
+		ID:          7001, // Placeholder ID
+		RecipeID:    7,
+		StepOrder:   1,
+		Title:       "Prepare the Potatoes",
+		Description: "Prepare the potatoes to ensure maximum crispiness and flavour.",
+		Ingredients: []dummyIngredientRef{
+			{FoodItemName: "Potato", Quantity: 2, Unit: "unit", Purpose: "starchy, fluffy interior, crisp exterior"},
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Wash and scrub the Agria potatoes thoroughly, leaving the skin on for extra texture and nutrients."},
+			{StepNumber: 2, Instruction: "Cut each potato in half lengthwise, then cut each half into 3-4 wedges."},
+			{StepNumber: 3, Instruction: "Place the cut wedges in a bowl of cold water for 5 minutes to remove excess starch."},
+			{StepNumber: 4, Instruction: "Drain the wedges and pat them dry thoroughly with paper towels. This is a crucial step for achieving crispiness."},
+		},
+	},
+	{
+		ID:          7002, // Placeholder ID
+		RecipeID:    7,
+		StepOrder:   2,
+		Title:       "Make the Seasoning Mix",
+		Description: "Combine the oil and spices to create the flavour coating for the wedges.",
+		Ingredients: []dummyIngredientRef{
+			{FoodItemName: "Oil", FormName: "Avocado Oil", Quantity: 2, Unit: "tbsp", Purpose: "high heat tolerance, neutral flavor"},
+			{FoodItemName: "Smoked Paprika", Quantity: 1, Unit: "tsp", Purpose: "smoky flavor, color"},
+			{FoodItemName: "Garlic", FormName: "Garlic Powder", Quantity: 0.5, Unit: "tsp", Purpose: "aromatic, flavor"},
+			{FoodItemName: "Salt", FormName: "Kosher Salt", Quantity: 0.5, Unit: "tsp", Purpose: "seasoning"},
+			{FoodItemName: "Pepper", FormName: "Ground Black Pepper", Quantity: 0.25, Unit: "tsp", Purpose: "heat, seasoning"},
+			{FoodItemName: "Italian Herbs", Quantity: 1, Unit: "tsp", Purpose: "aromatic, flavor complexity"},
+			{FoodItemName: "Cayenne Pepper", Quantity: 0.5, Unit: "tsp", IsOptional: true, Purpose: "heat"},
+		},
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "In a large bowl, mix together the avocado oil, smoked paprika, garlic powder, salt, black pepper, and mixed herbs until well combined."},
+		},
+	},
+	{
+		ID:          7003, // Placeholder ID
+		RecipeID:    7,
+		StepOrder:   3,
+		Title:       "Season and Arrange Wedges",
+		Description: "Coat the dried potato wedges evenly with the seasoning mix and arrange for cooking.",
+		Ingredients: []dummyIngredientRef{}, // Ingredients are from the previous step
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Add the dried potato wedges to the bowl with the seasoning mixture."},
+			{StepNumber: 2, Instruction: "Toss the wedges until they are evenly coated with the oil and spices."},
+			{StepNumber: 3, Instruction: "Arrange the seasoned wedges in a single layer on a baking tray (preferably on a frying rack) or in your air fryer basket."},
+		},
+	},
+	{
+		ID:          7004, // Placeholder ID
+		RecipeID:    7,
+		StepOrder:   4,
+		Title:       "Cook the Wedges",
+		Description: "Cook the wedges until golden brown and crispy, using either an air fryer or oven.",
+		Ingredients: []dummyIngredientRef{}, // Ingredients are from previous steps
+		MethodSteps: []model.MethodStep{
+			{StepNumber: 1, Instruction: "Preheat your air fryer to 200°C or oven to 230°C on a fan forced setting."},
+			{StepNumber: 2, Instruction: "Cook the wedges for 25-30 minutes, flipping halfway through if using an oven tray without a rack or if needed for even cooking in the air fryer."},
+			{StepNumber: 3, Instruction: "The wedges are done when they are golden brown and crispy on the outside and fluffy on the inside."},
+			{StepNumber: 4, Instruction: "Remove from the heat and let them cool slightly before serving."},
 		},
 	},
 }
