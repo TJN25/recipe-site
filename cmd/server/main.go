@@ -27,6 +27,8 @@ func main() {
 
 	// Initialize the maps
 	store.InitializeCaches()
+	store.InitializeUserState()
+
 	templateSets = make(map[string]*template.Template)
 
 	// --- PARSE TEMPLATES AT STARTUP (Separate Sets Pattern) ---
@@ -53,6 +55,7 @@ func main() {
 		filepath.Join(templateDir, "recipe_page.html"),
 		// We can omit ingredients.html for this minimal test if recipe_page doesn't {{template}} it
 		filepath.Join(templateDir, "partials", "ingredients.html"),
+		filepath.Join(templateDir, "partials", "methods.html"),
 		filepath.Join(templateDir, "partials", "zen_mode_content.html"),
 	}
 	log.Printf("Parsing set 'recipe': %v", recipePageFiles)
@@ -67,17 +70,28 @@ func main() {
 		filepath.Join(templateDir, "partials", "ingredients.html"),
 	}
 	log.Printf("Parsing set 'ingredient-list': %v", ingredientPartialFiles)
-
-	// *** CHANGE NAME IN New() HERE ***
-	// Use a different root name for the set, e.g., "ingredients-root" or just the filename base
 	ingredientSet := template.Must(template.New(filepath.Base(ingredientPartialFiles[0])). // Use "ingredients.html" as root name
 												Funcs(funcMap).
 												ParseFiles(ingredientPartialFiles...))
+	templateSets["ingredient-list"] = ingredientSet
+	log.Printf("Stored template set: ingredient-list")
+
+	methodsPartialFiles := []string{
+		filepath.Join(templateDir, "partials", "methods.html"),
+	}
+	log.Printf("Parsing set 'ingredient-list': %v", methodsPartialFiles)
+
+	methodsSet := template.Must(template.New(filepath.Base(methodsPartialFiles[0])). // Use "ingredients.html" as root name
+												Funcs(funcMap).
+												ParseFiles(methodsPartialFiles...))
+	templateSets["methods-list"] = methodsSet
+	log.Printf("Stored template set: methods-list")
+
+	// *** CHANGE NAME IN New() HERE ***
+	// Use a different root name for the set, e.g., "ingredients-root" or just the filename base
 	// **********************************
 
 	// Keep storing under the logical key "ingredient-list"
-	templateSets["ingredient-list"] = ingredientSet
-	log.Printf("Stored template set: ingredient-list")
 
 	zenPartialFiles := []string{
 		filepath.Join(templateDir, "partials", "zen_mode_content.html"),
@@ -179,11 +193,19 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	RecipeStepsAll := recipe.RecipeSteps
+
+	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
+	if exists {
+		recipe.RecipeStepIds = recipeConfig.ActiveRecipeStepIDs
+		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
+	}
 
 	data := map[string]interface{}{
 		"Recipe":                  recipe, // Pass the fully assembled recipe from the store
 		"CurrentServings":         2,
 		"DisplaySystemPreference": "use_metric_default",
+		"RecipeStepsAll":          RecipeStepsAll,
 		"CurrentYear":             time.Now().Year(),
 	}
 
@@ -235,7 +257,6 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Infof("HandleUpdateServingsTrigger: Parsed RecipeID: %d", recipeID)
 
-	// --- GET SERVINGS (Add this part) ---
 	servingsStr := r.FormValue("servings") // Get servings (assuming name="servings" in hx-include/hx-vals)
 	newServings, err := strconv.Atoi(servingsStr)
 	if err != nil || newServings <= 0 {
@@ -245,6 +266,30 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 
 	unitSystem := r.FormValue("unit-system")
 	log.Infof("HandleUpdateServingsTrigger: Parsed unitSystem: %s", unitSystem)
+
+	recipeSteps := r.FormValue("activeStepIDs")
+	log.Infof("HandleUpdateServingsTrigger: Recipe steps: %s", recipeSteps)
+
+	if recipeSteps != "" {
+		var recipeStepsArray []int64
+		err := json.Unmarshal([]byte(recipeSteps), &recipeStepsArray)
+		if err != nil {
+			fmt.Println("Error unmarshaling JSON:", err)
+			return
+		}
+		recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
+		if !exists {
+			recipeConfig := model.RecipeUserConfig{
+				ActiveRecipeStepIDs: recipeStepsArray,
+			}
+			store.SaveRecipeConfiguration(recipeID, recipeConfig)
+			log.Infof("No config for recipe %d", recipeID)
+		} else {
+			recipeConfig.ActiveRecipeStepIDs = recipeStepsArray
+			log.Infof("Recipe Config: %v", recipeConfig)
+			store.SaveRecipeConfiguration(recipeID, recipeConfig)
+		}
+	}
 
 	log.Infof("HandleUpdateServingsTrigger: Target Servings: %d", newServings)
 
@@ -287,6 +332,12 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
 		return
+	}
+
+	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
+	if exists {
+		recipe.RecipeStepIds = recipeConfig.ActiveRecipeStepIDs
+		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
 	}
 
 	templateData := map[string]interface{}{
@@ -350,6 +401,12 @@ func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
+	if exists {
+		recipe.RecipeStepIds = recipeConfig.ActiveRecipeStepIDs
+		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
+	}
+
 	templateData := map[string]interface{}{
 		"Recipe":                  recipe,
 		"CurrentServings":         targetServings,
@@ -371,6 +428,21 @@ func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Infof("RenderZenContent: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d.", recipeID, targetServings)
+}
+
+func filterRecipeIds(objects []model.RecipeStep, ids []int64) []model.RecipeStep {
+	idMap := make(map[int64]bool)
+	for _, id := range ids {
+		idMap[id] = true
+	}
+
+	filtered := []model.RecipeStep{}
+	for _, obj := range objects {
+		if _, ok := idMap[obj.ID]; ok {
+			filtered = append(filtered, obj)
+		}
+	}
+	return filtered
 }
 
 func getUpdateServingsDetails(r *http.Request) (id int64, servings int, recipe *model.Recipe, ok bool) {

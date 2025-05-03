@@ -127,89 +127,21 @@ type Recipe struct {
 	CalculatedPrice      float32   `json:"calculated_price"`
 }
 
-// Helper function to calculate total nutrition for a recipe (example)
-// func (r *Recipe) CalculateTotals() {
-// 	// Reset calculated fields
-// 	r.TotalPrepTimeMinutes = 0
-// 	r.TotalCookTimeMinutes = 0
-// 	r.TotalCleaningScore = 0
-// 	r.CalculatedPrice = 0.0
-// 	r.CalculatedNutrition = Nutrition{} // Zero out nutrition
-//
-// 	// Use maps to track unique equipment and aggregate ingredients
-// 	uniqueEquipment := make(map[int64]Equipment) // Assuming Equipment has an ID
-// 	allIngredients := []RecipeIngredient{}       // To calculate total nutrition/price
-//
-// 	// Iterate through each major step/stage (RecipeStep)
-// 	for _, recipeStep := range r.RecipeSteps {
-// 		// Aggregate ingredients from this step
-// 		allIngredients = append(allIngredients, recipeStep.Ingredients...)
-//
-// 		// Sum time from sub-steps (MethodStep)
-// 		for _, methodStep := range recipeStep.MethodSteps {
-// 			r.TotalPrepTimeMinutes += methodStep.PrepTimeMinutes
-// 			r.TotalCookTimeMinutes += methodStep.CookTimeMinutes
-// 		}
-//
-// 		// Track unique equipment used in this step
-// 		// Note: Assumes Equipment struct has an ID field populated.
-// 		// If not, use Name as the map key.
-// 		for _, eq := range recipeStep.Equipment {
-// 			if eq.ID != 0 { // Use ID if available
-// 				uniqueEquipment[eq.ID] = eq
-// 			} else if eq.Name != "" { // Fallback to Name if ID is 0 (dummy data)
-// 				// Need a way to handle equipment without ID/Name uniquely if possible
-// 				// For now, just add based on Name if ID is missing
-// 				key := int64(0) // Or generate a temporary key/hash if needed
-// 				if _, exists := uniqueEquipment[key]; !exists || uniqueEquipment[key].Name != eq.Name {
-// 					// Crude check, assumes name is unique if ID is 0
-// 					uniqueEquipment[key] = eq
-// 					key-- // Ensure next potential 0-ID item gets a different temp key
-// 				}
-// 			}
-// 		}
-// 	}
-//
-// 	// Calculate cleaning score from unique equipment
-// 	for _, eq := range uniqueEquipment {
-// 		r.TotalCleaningScore += int(eq.CleaningDifficulty)
-// 	}
-//
-// 	// --- Calculate price and nutrition from aggregated ingredients ---
-// 	var totalNutrition Nutrition
-// 	var totalPrice float32
-// 	// IMPORTANT: This aggregation assumes quantities are directly comparable
-// 	//            WITHOUT UNIT CONVERSION, which is INCORRECT for real use.
-// 	//            We need the FoodItem lookup and conversion logic here eventually.
-// 	for _, ri := range allIngredients {
-// 		if ri.FoodItemID == 0 && ri.FormName == "" {
-// 			continue
-// 		} // Skip empty items
-//
-// 		// !!! --- Placeholder --- !!! Needs unit conversion
-// 		factor := ri.Quantity
-// 		if ri.FoodItem.BaseUnit != "" && ri.Unit == ri.FoodItem.BaseUnit { // Basic check
-// 			totalPrice += ri.FoodItem.PricePerBaseUnit * factor
-// 			totalNutrition.CarbsGrams += ri.FoodItem.Nutrition.CarbsGrams * factor
-// 			totalNutrition.FatGrams += ri.FoodItem.Nutrition.FatGrams * factor
-// 			totalNutrition.ProteinGrams += ri.FoodItem.Nutrition.ProteinGrams * factor
-// 			totalNutrition.CaloriesKcal += ri.FoodItem.Nutrition.CaloriesKcal * factor
-// 		} else {
-// 			// TODO: Implement unit conversion logic here
-// 			// log.Printf("Warning: Unit conversion needed for %s (%s vs %s)", ri.FoodItem.Name, ri.Unit, ri.FoodItem.BaseUnit)
-// 		}
-// 		// !!! --- End Placeholder --- !!!
-// 	}
-//
-// 	// Calculate per serving
-// 	if r.Servings > 0 {
-// 		r.CalculatedPrice = totalPrice / float32(r.Servings)
-// 		r.CalculatedNutrition.CarbsGrams = totalNutrition.CarbsGrams / float32(r.Servings)
-// 		r.CalculatedNutrition.FatGrams = totalNutrition.FatGrams / float32(r.Servings)
-// 		r.CalculatedNutrition.ProteinGrams = totalNutrition.ProteinGrams / float32(r.Servings)
-// 		r.CalculatedNutrition.CaloriesKcal = totalNutrition.CaloriesKcal / float32(r.Servings)
-// 	}
-//
-// 	// Optional: Store the aggregated list if needed elsewhere
-// 	// r.AllIngredients = allIngredients
-// }
+type GlobalUserSettings struct {
+	DefaultServings   int
+	DisplayUnitSystem string
+	ShowOptions       bool
+}
+
+type RecipeUserConfig struct {
+	ActiveRecipeStepIDs []int64
+	//      Let's use a composite key string "RecipeID-RecipeStepID-IngredientIndex" for now, needs refinement.
+	IngredientOverrides map[string]IngredientUserOverride
+	ShowOptionals       bool
+}
+
+type IngredientUserOverride struct {
+	SelectedFormName   string
+	SelectedUnitName   string
+	QuantityMultiplier float64 //
+}

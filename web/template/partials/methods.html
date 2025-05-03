@@ -1,0 +1,27 @@
+{{ define "methods-list" }}
+    <div id="method-steps-display ">
+        <ol class="list-decimal pl-5 mt-0 font-sans leading-relaxed"> 
+            {{ range $index, $step := .Recipe.RecipeSteps }}
+        <!--<div class="p-6 rounded-2xl transition-colors duration-150 ease-in-out hover:bg-accent-50 dark:hover:bg-accent-700">-->
+        <div class="rounded-2xl pl-7 pr-6 transition-colors duration-150 ease-in-out"
+             :class="{ 'bg-accent-50 dark:bg-accent-700': hoveredStepId == {{ $step.ID }} }"
+            @click="
+                hoveredStepId = (hoveredStepId == {{ $step.ID }}) ? null : {{ $step.ID }}
+                zenModeIndex = {{ $index }};"
+            >
+                    <template x-if="showMethods">
+                        <h3 class="text-lg font-serif font-semibold mt-3 mb-1">{{ $step.Title }}</h3>
+                    </template>
+                    {{ range $step.MethodSteps }}
+                        <li class="mb-2 font-sans leading-relaxed">{{ .Instruction }}</li>
+                    {{ else }}
+                        <li class="list-none italic text-sm text-slate-500">No method steps available for this recipe.</li>
+                    {{ end }}
+        </div>
+            {{ else }}
+                    <li class="list-none">Method steps not available.</li>
+            {{ end }}
+        </ol>
+    </div>
+{{ end }}
+

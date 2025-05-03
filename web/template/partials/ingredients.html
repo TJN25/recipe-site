@@ -8,7 +8,6 @@
                 @click="
                     hoveredStepId = (hoveredStepId == {{ $step.ID }}) ? null : {{ $step.ID }}
                     zenModeIndex = {{ $index }};"
-        x-show="activeStepIDs.includes({{ $step.ID }})"
     >
         {{ if $step.Ingredients }}
             <template x-if="showMethods">

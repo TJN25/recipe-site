@@ -4,6 +4,7 @@ import (
 	"errors" // For returning errors
 	"fmt"    // For potential error messages
 	"strings"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 
@@ -15,6 +16,54 @@ var AllFoodItemsCache map[int64]model.FoodItem
 var AllFoodItemNamesCache map[string]int64
 var NormalizedFormNameLookup map[string]string
 var AllDummyStepsCache map[int64]data.DummyRecipeStep
+
+// setting up the temp storage of 'user' preferences
+
+var stateMutex sync.RWMutex
+
+var userGlobalSettings model.GlobalUserSettings
+
+func InitializeUserState() {
+	stateMutex.Lock()
+	defer stateMutex.Unlock()
+
+	userGlobalSettings = model.GlobalUserSettings{
+		DefaultServings:   2,
+		DisplayUnitSystem: "use_original",
+		ShowOptions:       false,
+	}
+	userRecipeConfigs = make(map[int64]model.RecipeUserConfig)
+	log.Info("In-memory user state initialized.")
+}
+
+var userRecipeConfigs = make(map[int64]model.RecipeUserConfig)
+
+func GetGlobalPreferences() model.GlobalUserSettings {
+	stateMutex.RLock()
+	defer stateMutex.RUnlock()
+	return userGlobalSettings
+}
+
+func UpdateGlobalDisplaySystem(newSystem string) {
+	stateMutex.RLock()
+	defer stateMutex.RUnlock()
+	userGlobalSettings.DisplayUnitSystem = newSystem
+	log.Infof("Global display system updated to: %s", newSystem)
+}
+
+func GetRecipeUserConfig(recipeID int64) (model.RecipeUserConfig, bool) {
+	stateMutex.RLock()
+	defer stateMutex.RUnlock()
+	config, exists := userRecipeConfigs[recipeID]
+	return config, exists
+}
+
+func SaveRecipeConfiguration(recipeID int64, config model.RecipeUserConfig) {
+	stateMutex.Lock()
+	defer stateMutex.Unlock()
+	userRecipeConfigs[recipeID] = config
+	log.Debugf("Saved configuration for recipe %d: %+v", recipeID, config)
+}
 
 func InitializeCaches() {
 	log.Info("Initializing store caches...")

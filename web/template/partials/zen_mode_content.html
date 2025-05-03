@@ -30,7 +30,6 @@
                         
                         {{ if $step.Ingredients }}
                         <div class="md:w-2/5 lg:w-1/3 border border-slate-200 dark:border-slate-700 rounded-md p-3"
-                        x-show="activeStepIDs.includes({{ $step.ID }})"
                     >
                             <h3 class="text-lg font-semibold mb-2 text-slate-700 dark:text-slate-300">Ingredients</h3>
 
@@ -53,7 +52,6 @@
                         
                          {{ if $step.MethodSteps }}
                         <div class="flex-1 border border-slate-200 dark:border-slate-700 rounded-md p-3"
-                        x-show="activeStepIDs.includes({{ $step.ID }})"
                     >
                              <h3 class="text-lg font-semibold mb-2 text-slate-700 dark:text-slate-300">Method</h3>
                              <ol class="list-decimal pl-5 space-y-2">
