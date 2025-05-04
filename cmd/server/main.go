@@ -95,7 +95,7 @@ func main() {
 
 	selectRecipeStepsSet := template.Must(template.New(filepath.Base(selectRecipeStepsPartialFiles[0])). // Use "ingredients.html" as root name
 														Funcs(funcMap).
-														ParseFiles(methodsPartialFiles...))
+														ParseFiles(selectRecipeStepsPartialFiles...))
 	templateSets["select-recipe-steps"] = selectRecipeStepsSet
 	log.Printf("Stored template set: select-recipe-steps")
 
@@ -126,6 +126,7 @@ func main() {
 	http.HandleFunc("/recipe/", handleShowRecipe)
 	http.HandleFunc("/update-servings-trigger/{id}", handleUpdateServings)
 	http.HandleFunc("/render-full-ingredients/", handleRenderFullIngredients)
+	http.HandleFunc("/render-recipe-steps/", handleRenderRecipeSteps)
 	http.HandleFunc("/render-zen-mode-content/", handleRenderZenContent)
 
 	// --- Serve Static Files ---
@@ -230,7 +231,6 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 		recipe.RecipeStepIds = activeRecipeStepIds
 	}
 
-	log.Infof("HandleShowRecipe: Recipe: %v", recipe)
 	data := map[string]interface{}{
 		"Recipe":                  recipe, // Pass the fully assembled recipe from the store
 		"CurrentServings":         2,
@@ -371,6 +371,76 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	// --- Respond with HX-Trigger ---
 	w.Header().Set("HX-Trigger", fmt.Sprintf(`{"servingsUpdated": {"newServings": %d, "newSystem": "%s"}}`, newServings, unitSystem))
 	w.WriteHeader(http.StatusOK)
+}
+
+func handleRenderRecipeSteps(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/render-recipe-steps/")
+	idStr = strings.TrimSuffix(idStr, "/")
+	recipeID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("RenderRecipeSteps: Invalid recipe ID in path '%s': %v", idStr, err)
+		http.Error(w, "Invalid Recipe ID", http.StatusBadRequest)
+		return
+	}
+
+	recipe, err := store.GetRecipeByID(recipeID)
+	if err != nil {
+		log.Errorf("RenderRecipeSteps: Error getting recipe %d from store: %v", recipeID, err)
+		if errors.Is(err, store.ErrNotFound) {
+			http.NotFound(w, r)
+		} else {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	RecipeStepsAll := recipe.RecipeSteps
+
+	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
+	if exists {
+		additionalRecipes := recipeConfig.AdditionalRecipes
+		if additionalRecipes != nil && len(additionalRecipes) > 0 {
+			log.Infof("HandleShowRecipe: Additional recipes found: %v", additionalRecipes)
+			for ID, additionalRecipeSteps := range additionalRecipes {
+				additionalRecipe, err := store.GetRecipeByID(ID)
+				if err != nil {
+					log.Errorf("Cannot get recipe %d: %v", ID, err)
+				}
+				RecipeStepsAll = append(additionalRecipe.RecipeSteps, RecipeStepsAll...)
+				recipe.RecipeSteps = append(additionalRecipe.RecipeSteps, recipe.RecipeSteps...)
+				recipe.RecipeStepIds = append(additionalRecipeSteps.ActiveRecipeStepIDs, recipe.RecipeStepIds...)
+			}
+		}
+		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
+		var activeRecipeStepIds []int64
+		for _, recipeStep := range recipe.RecipeSteps {
+			activeRecipeStepIds = append(activeRecipeStepIds, recipeStep.ID)
+		}
+		recipe.RecipeStepIds = activeRecipeStepIds
+	}
+
+	templateData := map[string]interface{}{
+		"Recipe":         recipe,
+		"RecipeStepsAll": RecipeStepsAll,
+	}
+
+	tmplSet, found := templateSets["select-recipe-steps"]
+	if !found {
+		log.Error("Template set 'select-recipe-steps' not found")
+		http.Error(w, "Internal Server Error: Template missing", http.StatusInternalServerError)
+		return
+	}
+
+	log.Infof("handleRenderRecipeSteps: TemplateData map: %+v", templateData)
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmplSet.ExecuteTemplate(w, "select-recipe-steps", templateData)
+	if err != nil {
+		log.Errorf("Error executing select-recipe-steps template for recipe %d: %v", recipeID, err)
+		return
+	}
+
+	log.Infof("RenderRecipeSteps: Sent updated steps list fragment for Recipe ID %d", recipeID)
 }
 
 func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
