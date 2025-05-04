@@ -232,7 +232,7 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 
 	data := map[string]interface{}{
 		"Recipe":                  recipe, // Pass the fully assembled recipe from the store
-		"CurrentServings":         2,
+		"CurrentServings":         recipe.Servings,
 		"DisplaySystemPreference": "use_metric_default",
 		"RecipeStepsAll":          RecipeStepsAll,
 		"CurrentYear":             time.Now().Year(),
@@ -248,7 +248,6 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// *** EXECUTE "base.html" within the 'recipe' set ***
 	err = tmplSet.ExecuteTemplate(w, "base.html", data)
 	if err != nil {
 		log.Errorf("Error executing recipe page template set for ID %d: %v", recipeID, err)
@@ -357,6 +356,7 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 		additionalSteps := model.ActiveRecipeSteps{
 			ActiveRecipeStepIDs: additionalRecipe.RecipeStepIds,
 		}
+
 		var recipeConfig model.RecipeUserConfig
 		recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
 		if !exists {
