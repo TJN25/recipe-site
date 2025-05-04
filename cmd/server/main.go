@@ -56,6 +56,7 @@ func main() {
 		// We can omit ingredients.html for this minimal test if recipe_page doesn't {{template}} it
 		filepath.Join(templateDir, "partials", "ingredients.html"),
 		filepath.Join(templateDir, "partials", "methods.html"),
+		filepath.Join(templateDir, "partials", "select-recipe-steps.html"),
 		filepath.Join(templateDir, "partials", "zen_mode_content.html"),
 	}
 	log.Printf("Parsing set 'recipe': %v", recipePageFiles)
@@ -79,13 +80,24 @@ func main() {
 	methodsPartialFiles := []string{
 		filepath.Join(templateDir, "partials", "methods.html"),
 	}
-	log.Printf("Parsing set 'ingredient-list': %v", methodsPartialFiles)
+	log.Printf("Parsing set 'methods-list': %v", methodsPartialFiles)
 
 	methodsSet := template.Must(template.New(filepath.Base(methodsPartialFiles[0])). // Use "ingredients.html" as root name
 												Funcs(funcMap).
 												ParseFiles(methodsPartialFiles...))
 	templateSets["methods-list"] = methodsSet
 	log.Printf("Stored template set: methods-list")
+
+	selectRecipeStepsPartialFiles := []string{
+		filepath.Join(templateDir, "partials", "select-recipe-steps.html"),
+	}
+	log.Printf("Parsing set 'select-recipe-steps': %v", selectRecipeStepsPartialFiles)
+
+	selectRecipeStepsSet := template.Must(template.New(filepath.Base(selectRecipeStepsPartialFiles[0])). // Use "ingredients.html" as root name
+														Funcs(funcMap).
+														ParseFiles(methodsPartialFiles...))
+	templateSets["select-recipe-steps"] = selectRecipeStepsSet
+	log.Printf("Stored template set: select-recipe-steps")
 
 	// *** CHANGE NAME IN New() HERE ***
 	// Use a different root name for the set, e.g., "ingredients-root" or just the filename base
@@ -197,10 +209,28 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 
 	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
 	if exists {
-		recipe.RecipeStepIds = recipeConfig.ActiveRecipeStepIDs
+		additionalRecipes := recipeConfig.AdditionalRecipes
+		if additionalRecipes != nil && len(additionalRecipes) > 0 {
+			log.Infof("HandleShowRecipe: Additional recipes found: %v", additionalRecipes)
+			for ID, additionalRecipeSteps := range additionalRecipes {
+				additionalRecipe, err := store.GetRecipeByID(ID)
+				if err != nil {
+					log.Errorf("Cannot get recipe %d: %v", ID, err)
+				}
+				RecipeStepsAll = append(additionalRecipe.RecipeSteps, RecipeStepsAll...)
+				recipe.RecipeSteps = append(additionalRecipe.RecipeSteps, recipe.RecipeSteps...)
+				recipe.RecipeStepIds = append(additionalRecipeSteps.ActiveRecipeStepIDs, recipe.RecipeStepIds...)
+			}
+		}
 		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
+		var activeRecipeStepIds []int64
+		for _, recipeStep := range recipe.RecipeSteps {
+			activeRecipeStepIds = append(activeRecipeStepIds, recipeStep.ID)
+		}
+		recipe.RecipeStepIds = activeRecipeStepIds
 	}
 
+	log.Infof("HandleShowRecipe: Recipe: %v", recipe)
 	data := map[string]interface{}{
 		"Recipe":                  recipe, // Pass the fully assembled recipe from the store
 		"CurrentServings":         2,
@@ -281,12 +311,57 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 		if !exists {
 			recipeConfig := model.RecipeUserConfig{
 				ActiveRecipeStepIDs: recipeStepsArray,
+				AdditionalRecipes:   make(map[int64]model.ActiveRecipeSteps),
 			}
 			store.SaveRecipeConfiguration(recipeID, recipeConfig)
 			log.Infof("No config for recipe %d", recipeID)
 		} else {
 			recipeConfig.ActiveRecipeStepIDs = recipeStepsArray
 			log.Infof("Recipe Config: %v", recipeConfig)
+			store.SaveRecipeConfiguration(recipeID, recipeConfig)
+		}
+	}
+
+	// A bunch of changes need to be made with other parts of the code regarding ActiveRecipeSteps
+	additionalRecipeIDstr := r.FormValue("add-id") // Read the 'id' field sent by hx-vals
+	if additionalRecipeIDstr != "" {
+		additionalRecipeID, err := strconv.Atoi(additionalRecipeIDstr)
+		if err != nil {
+			log.Errorf("Cannot parse additionalRecipeID from form value '%s': %v", additionalRecipeIDstr, err)
+			http.Error(w, "Invalid Recipe ID", http.StatusBadRequest)
+			return
+		}
+		log.Infof("HandleUpdateServingsTrigger: Raw form 'add-id' value = '%d'", additionalRecipeID)
+
+		additionalRecipe, err := store.GetRecipeByID(int64(additionalRecipeID))
+		if err != nil {
+			log.Errorf("Recipe: %d does not exist: %v", additionalRecipeID, err)
+			http.Error(w, "Cannot find recipe", http.StatusBadRequest)
+			return
+		}
+
+		additionalSteps := model.ActiveRecipeSteps{
+			ActiveRecipeStepIDs: additionalRecipe.RecipeStepIds,
+		}
+		var recipeConfig model.RecipeUserConfig
+		recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
+		if !exists {
+			recipeConfig = model.RecipeUserConfig{
+				AdditionalRecipes: make(map[int64]model.ActiveRecipeSteps),
+			}
+			log.Infof("Creating config for recipe %d", recipeID)
+			if len(recipeConfig.ActiveRecipeStepIDs) == 0 {
+				recipe, err := store.GetRecipeByID(recipeID)
+				if err != nil {
+					log.Errorf("Cannot find recipe: %v", err)
+					http.Error(w, "Cannot find recipe", http.StatusBadRequest)
+					return
+				}
+				recipeConfig.ActiveRecipeStepIDs = append(additionalSteps.ActiveRecipeStepIDs, recipe.RecipeStepIds...)
+			} else {
+				recipeConfig.ActiveRecipeStepIDs = append(additionalSteps.ActiveRecipeStepIDs, recipeConfig.ActiveRecipeStepIDs...)
+			}
+			recipeConfig.AdditionalRecipes[int64(additionalRecipeID)] = additionalSteps
 			store.SaveRecipeConfiguration(recipeID, recipeConfig)
 		}
 	}
@@ -336,9 +411,23 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 
 	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
 	if exists {
-		recipe.RecipeStepIds = recipeConfig.ActiveRecipeStepIDs
+		log.Infof("RenderFullIngredients: User Config found: %v", recipeConfig)
+
+		additionalRecipes := recipeConfig.AdditionalRecipes
+		if additionalRecipes != nil && len(additionalRecipes) > 0 {
+			log.Infof("RenderFullIngredients: Additional recipes found: %v", additionalRecipes)
+			for ID := range additionalRecipes {
+				additionalRecipe, err := store.GetRecipeByID(ID)
+				if err != nil {
+					log.Errorf("Cannot get recipe %d: %v", ID, err)
+				}
+				recipe.RecipeStepIds = recipeConfig.ActiveRecipeStepIDs
+				recipe.RecipeSteps = append(additionalRecipe.RecipeSteps, recipe.RecipeSteps...)
+			}
+		}
 		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
 	}
+	log.Infof("RenderFullIngredients: recipe.RecipeStepIds: %v", recipe.RecipeStepIds)
 
 	templateData := map[string]interface{}{
 		"Recipe":                  recipe,

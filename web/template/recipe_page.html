@@ -143,6 +143,16 @@
 
     <!-- 1. Banner & Description (Collapsible) -->
     <div x-show="activeTab === 'full'">
+    <button type="button"
+            class="px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm"
+            hx-post="/update-servings-trigger/{{.Recipe.ID}}"
+            hx-trigger="click delay:300ms" 
+            hx-include="[id='servings-options-{{ .Recipe.ID }}'], [id='unit-system-select']"
+            hx-vals='js:{ "id": {{ .Recipe.ID }}, "add-id": 1}'
+            hx-swap="none"
+        >
+        Add Mac and Cheese
+    </button>
     <div class="recipe-summary-section"> 
         <h1  class="font-serif text-3xl font-bold cursor-pointer mb-4 text-accent-900 dark:text-accent-100">
             {{ .Recipe.Title }} 
@@ -171,40 +181,7 @@
         </h1>
         <div  class="mb-3">
             <div id="recipe-steps-modifier-container">
-
-                {{ $recipe := .Recipe}}
-                {{ range $index, $step := .RecipeStepsAll }}
-                             <div class="my-0.5">
-                        <h3 class="font-serif text-medium font-normal text-slate-800 dark:text-slate-200
-                                inline-block
-                                p-1 pl-4 pr-6 rounded-2xl cursor-pointer transition-opacity duration-150 ease-in-out border border-transparent" 
-                         :class="{
-                            'opacity-100 bg-accent-50 dark:bg-accent-700': activeStepIDs.includes({{ $step.ID }}),
-                            'opacity-50 hover:opacity-100 hover:border-slate-300 dark:hover:border-slate-600': !activeStepIDs.includes({{ $step.ID }})
-                         }"
-                         @click="
-                            const id = {{ $step.ID }};
-                            const index = activeStepIDs.indexOf(id);
-                            if (index > -1) {
-                                activeStepIDs.splice(index, 1);
-                            } else {
-                                activeStepIDs.push(id);
-                            }
-                         "
-                        x-init="$el.addEventListener('htmx:configRequest', (event) => {
-                            event.detail.parameters.activeStepIDs = JSON.stringify(activeStepIDs); 
-                        })"
-                        hx-post="/update-servings-trigger/{{$recipe.ID}}"
-                        hx-trigger="click delay:300ms" 
-                        hx-include="[id='servings-options-{{ $recipe.ID }}'], [id='unit-system-select']"
-                        hx-vals='js:{ "id": {{ $recipe.ID }} }'
-                        hx-swap="none"
-                            >
-                         {{ $step.Title }}
-                     </h3>
-
-                        </div>
-                {{ end }}
+                    {{ template "select-recipe-steps" . }}
             </div>
         </div>
 

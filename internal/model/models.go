@@ -138,6 +138,13 @@ type RecipeUserConfig struct {
 	//      Let's use a composite key string "RecipeID-RecipeStepID-IngredientIndex" for now, needs refinement.
 	IngredientOverrides map[string]IngredientUserOverride
 	ShowOptionals       bool
+
+	// Add additional recipes e.g. include a full sauce recipe at an 'add sauce' step
+	AdditionalRecipes map[int64]ActiveRecipeSteps
+}
+
+type ActiveRecipeSteps struct {
+	ActiveRecipeStepIDs []int64
 }
 
 type IngredientUserOverride struct {
