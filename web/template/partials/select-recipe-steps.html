@@ -24,7 +24,7 @@
                         hx-post="/update-servings-trigger/{{$recipe.ID}}"
                         hx-trigger="click delay:300ms" 
                         hx-include="[id='servings-options-{{ $recipe.ID }}'], [id='unit-system-select']"
-                        hx-vals='js:{ "id": {{ $recipe.ID }} }'
+                        hx-vals='{ "id": {{ $recipe.ID }}, "step-id": {{ $step.ID }} }'
                         hx-swap="none"
                             >
                          {{ $step.Title }}

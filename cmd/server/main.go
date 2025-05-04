@@ -206,10 +206,13 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
 	RecipeStepsAll := recipe.RecipeSteps
 
 	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
 	if exists {
+
+		// obtain complete list of recipe steps
 		additionalRecipes := recipeConfig.AdditionalRecipes
 		if additionalRecipes != nil && len(additionalRecipes) > 0 {
 			log.Infof("HandleShowRecipe: Additional recipes found: %v", additionalRecipes)
@@ -224,11 +227,7 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
-		var activeRecipeStepIds []int64
-		for _, recipeStep := range recipe.RecipeSteps {
-			activeRecipeStepIds = append(activeRecipeStepIds, recipeStep.ID)
-		}
-		recipe.RecipeStepIds = activeRecipeStepIds
+		recipe.RecipeStepIds = recipeConfig.ActiveRecipeStepIDs
 	}
 
 	data := map[string]interface{}{
@@ -297,18 +296,31 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	unitSystem := r.FormValue("unit-system")
 	log.Infof("HandleUpdateServingsTrigger: Parsed unitSystem: %s", unitSystem)
 
-	recipeSteps := r.FormValue("activeStepIDs")
-	log.Infof("HandleUpdateServingsTrigger: Recipe steps: %s", recipeSteps)
+	stepIdStr := r.FormValue("step-id") // Read the 'id' field sent by hx-vals
+	log.Debugf("HandleUpdateServingsTrigger: Raw form 'id' value = '%s'", stepIdStr)
 
-	if recipeSteps != "" {
-		var recipeStepsArray []int64
-		err := json.Unmarshal([]byte(recipeSteps), &recipeStepsArray)
+	if stepIdStr != "" {
+		stepID, err := strconv.ParseInt(stepIdStr, 10, 64)
 		if err != nil {
-			fmt.Println("Error unmarshaling JSON:", err)
+			log.Errorf("HandleUpdateServingsTrigger: Error parsing stepID from form value '%s': %v", stepIdStr, err)
+			log.Errorf("Request details: %+v", r) // Log request details for more context if needed
+			http.Error(w, "Bad Request: Invalid id parameter", http.StatusBadRequest)
 			return
 		}
+		log.Infof("HandleUpdateServingsTrigger: Parsed stepID: %d", stepID)
+
+		recipe, err := store.GetRecipeByID(recipeID)
+		if err != nil {
+			log.Errorf("HandleUpdateServingsTrigger: Recipe not found for id '%d': %v", recipeID, err)
+			log.Errorf("Request details: %+v", r)
+			http.Error(w, "Bad Request: Invalid id parameter", http.StatusBadRequest)
+			return
+		}
+
 		recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
 		if !exists {
+			recipeStepsArray := recipe.RecipeStepIds
+			removeInt64FromArray(&recipeStepsArray, stepID)
 			recipeConfig := model.RecipeUserConfig{
 				ActiveRecipeStepIDs: recipeStepsArray,
 				AdditionalRecipes:   make(map[int64]model.ActiveRecipeSteps),
@@ -316,9 +328,11 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 			store.SaveRecipeConfiguration(recipeID, recipeConfig)
 			log.Infof("No config for recipe %d", recipeID)
 		} else {
+			recipeStepsArray := recipeConfig.ActiveRecipeStepIDs
+			toggleInt64InArray(&recipeStepsArray, stepID)
 			recipeConfig.ActiveRecipeStepIDs = recipeStepsArray
-			log.Infof("Recipe Config: %v", recipeConfig)
 			store.SaveRecipeConfiguration(recipeID, recipeConfig)
+			log.Infof("Recipe Config: %v", recipeConfig)
 		}
 	}
 
@@ -587,6 +601,43 @@ func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Infof("RenderZenContent: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d.", recipeID, targetServings)
+}
+
+func addInt64ToArray(array *[]int64, value int64) {
+	log.Infof("Input array: %v, value: %d", *array, value)
+	for _, v := range *array {
+		if v == value {
+			log.Infof("Output array: %v, value: %d", *array, value)
+			return
+		}
+	}
+	*array = append(*array, value)
+	log.Infof("Output array: %v, value: %d", *array, value)
+}
+
+func removeInt64FromArray(array *[]int64, value int64) {
+	log.Infof("Input array: %v, value: %d", *array, value)
+	result := []int64{}
+	for _, v := range *array {
+		if v != value {
+			result = append(result, v)
+		}
+	}
+	*array = result
+	log.Infof("Output array: %v, value: %d", *array, value)
+
+}
+
+func toggleInt64InArray(array *[]int64, value int64) {
+	log.Infof("Input array: %v, value: %d", *array, value)
+	for _, v := range *array {
+		if v == value {
+			removeInt64FromArray(array, value)
+			return
+		}
+	}
+	addInt64ToArray(array, value)
+	log.Infof("Output array: %v, value: %d", *array, value)
 }
 
 func filterRecipeIds(objects []model.RecipeStep, ids []int64) []model.RecipeStep {
