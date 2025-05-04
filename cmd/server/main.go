@@ -364,20 +364,24 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 				AdditionalRecipes: make(map[int64]model.ActiveRecipeSteps),
 			}
 			log.Infof("Creating config for recipe %d", recipeID)
-			if len(recipeConfig.ActiveRecipeStepIDs) == 0 {
-				recipe, err := store.GetRecipeByID(recipeID)
-				if err != nil {
-					log.Errorf("Cannot find recipe: %v", err)
-					http.Error(w, "Cannot find recipe", http.StatusBadRequest)
-					return
-				}
-				recipeConfig.ActiveRecipeStepIDs = append(additionalSteps.ActiveRecipeStepIDs, recipe.RecipeStepIds...)
-			} else {
-				recipeConfig.ActiveRecipeStepIDs = append(additionalSteps.ActiveRecipeStepIDs, recipeConfig.ActiveRecipeStepIDs...)
-			}
+		} else {
 			recipeConfig.AdditionalRecipes[int64(additionalRecipeID)] = additionalSteps
-			store.SaveRecipeConfiguration(recipeID, recipeConfig)
 		}
+
+		if len(recipeConfig.ActiveRecipeStepIDs) == 0 {
+			recipe, err := store.GetRecipeByID(recipeID)
+			if err != nil {
+				log.Errorf("Cannot find recipe: %v", err)
+				http.Error(w, "Cannot find recipe", http.StatusBadRequest)
+				return
+			}
+			recipeConfig.ActiveRecipeStepIDs = append(additionalSteps.ActiveRecipeStepIDs, recipe.RecipeStepIds...)
+		} else {
+			recipeConfig.ActiveRecipeStepIDs = append(additionalSteps.ActiveRecipeStepIDs, recipeConfig.ActiveRecipeStepIDs...)
+		}
+		recipeConfig.AdditionalRecipes[int64(additionalRecipeID)] = additionalSteps
+		store.SaveRecipeConfiguration(recipeID, recipeConfig)
+
 	}
 
 	log.Infof("HandleUpdateServingsTrigger: Target Servings: %d", newServings)
@@ -388,6 +392,7 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleRenderRecipeSteps(w http.ResponseWriter, r *http.Request) {
+	log.Infof("RenderRecipeSteps called")
 	idStr := strings.TrimPrefix(r.URL.Path, "/render-recipe-steps/")
 	idStr = strings.TrimSuffix(idStr, "/")
 	recipeID, err := strconv.ParseInt(idStr, 10, 64)
@@ -396,6 +401,7 @@ func handleRenderRecipeSteps(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid Recipe ID", http.StatusBadRequest)
 		return
 	}
+	log.Infof("RenderRecipeSteps: recipeID '%d'", recipeID)
 
 	recipe, err := store.GetRecipeByID(recipeID)
 	if err != nil {
@@ -415,18 +421,17 @@ func handleRenderRecipeSteps(w http.ResponseWriter, r *http.Request) {
 		additionalRecipes := recipeConfig.AdditionalRecipes
 		if additionalRecipes != nil && len(additionalRecipes) > 0 {
 			log.Infof("HandleShowRecipe: Additional recipes found: %v", additionalRecipes)
-			for ID, additionalRecipeSteps := range additionalRecipes {
+			for ID := range additionalRecipes {
 				additionalRecipe, err := store.GetRecipeByID(ID)
 				if err != nil {
 					log.Errorf("Cannot get recipe %d: %v", ID, err)
 				}
 				RecipeStepsAll = append(additionalRecipe.RecipeSteps, RecipeStepsAll...)
-				recipe.RecipeSteps = append(additionalRecipe.RecipeSteps, recipe.RecipeSteps...)
-				recipe.RecipeStepIds = append(additionalRecipeSteps.ActiveRecipeStepIDs, recipe.RecipeStepIds...)
 			}
 		}
-		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
+		getUserRecipeSteps(&recipeConfig, recipe)
 		var activeRecipeStepIds []int64
+
 		for _, recipeStep := range recipe.RecipeSteps {
 			activeRecipeStepIds = append(activeRecipeStepIds, recipeStep.ID)
 		}
@@ -455,6 +460,7 @@ func handleRenderRecipeSteps(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Infof("RenderRecipeSteps: Sent updated steps list fragment for Recipe ID %d", recipeID)
+	w.WriteHeader(http.StatusOK)
 }
 
 func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
@@ -495,21 +501,7 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 
 	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
 	if exists {
-		log.Infof("RenderFullIngredients: User Config found: %v", recipeConfig)
-
-		additionalRecipes := recipeConfig.AdditionalRecipes
-		if additionalRecipes != nil && len(additionalRecipes) > 0 {
-			log.Infof("RenderFullIngredients: Additional recipes found: %v", additionalRecipes)
-			for ID := range additionalRecipes {
-				additionalRecipe, err := store.GetRecipeByID(ID)
-				if err != nil {
-					log.Errorf("Cannot get recipe %d: %v", ID, err)
-				}
-				recipe.RecipeStepIds = recipeConfig.ActiveRecipeStepIDs
-				recipe.RecipeSteps = append(additionalRecipe.RecipeSteps, recipe.RecipeSteps...)
-			}
-		}
-		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
+		getUserRecipeSteps(&recipeConfig, recipe)
 	}
 	log.Infof("RenderFullIngredients: recipe.RecipeStepIds: %v", recipe.RecipeStepIds)
 
@@ -576,8 +568,7 @@ func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
 
 	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
 	if exists {
-		recipe.RecipeStepIds = recipeConfig.ActiveRecipeStepIDs
-		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
+		getUserRecipeSteps(&recipeConfig, recipe)
 	}
 
 	templateData := map[string]interface{}{
@@ -601,6 +592,24 @@ func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Infof("RenderZenContent: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d.", recipeID, targetServings)
+}
+
+func getUserRecipeSteps(recipeConfig *model.RecipeUserConfig, recipe *model.Recipe) {
+	log.Infof("getUserRecipeSteps: User Config found: %v", recipeConfig)
+
+	additionalRecipes := recipeConfig.AdditionalRecipes
+	if additionalRecipes != nil && len(additionalRecipes) > 0 {
+		log.Infof("RenderFullIngredients: Additional recipes found: %v", additionalRecipes)
+		for ID := range additionalRecipes {
+			additionalRecipe, err := store.GetRecipeByID(ID)
+			if err != nil {
+				log.Errorf("Cannot get recipe %d: %v", ID, err)
+			}
+			recipe.RecipeStepIds = recipeConfig.ActiveRecipeStepIDs
+			recipe.RecipeSteps = append(additionalRecipe.RecipeSteps, recipe.RecipeSteps...)
+		}
+	}
+	recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
 }
 
 func addInt64ToArray(array *[]int64, value int64) {
@@ -782,6 +791,16 @@ func marshal(v interface{}) (template.JS, error) {
 	return template.JS(a), nil // Return as template.JS to prevent over-escaping
 }
 
+func containsInt64(slice []int64, value int64) bool {
+	log.Infof("ContainsInt64: %v, %d", slice, value)
+	for _, item := range slice {
+		if item == value {
+			return true
+		}
+	}
+	return false
+}
+
 // Create a FuncMap to register the function
 var funcMap = template.FuncMap{
 	"formatQuantity": formatQuantity,
@@ -806,4 +825,5 @@ var funcMap = template.FuncMap{
 	"unitSpace":        unitSpace,
 	"formatIngredient": units.FormatIngredientForDisplay,
 	"marshal":          marshal,
+	"containsInt64":    containsInt64,
 }
