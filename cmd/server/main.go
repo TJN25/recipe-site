@@ -256,6 +256,7 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 	log.Infof("Served recipe page for: %s (ID: %d)", recipe.Title, recipe.ID)
 }
 
+// TODO: Split this out into separate '/update-' endpoints: 'servings', 'display-units', 'active-steps', 'additional-recipe'
 func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	log.Info("HandleUpdateServingsTrigger: Received request") // Update log message
 	if r.Method != http.MethodPost {
