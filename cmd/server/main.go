@@ -256,15 +256,26 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 	log.Infof("Served recipe page for: %s (ID: %d)", recipe.Title, recipe.ID)
 }
 
+func getIDFromURL(r *http.Request) (int64, error) {
+	recipeIDStr := r.FormValue("id") // Read the 'id' field sent by hx-vals
+	log.Debugf("GetIDFromURL: Raw form 'id' value = '%s'", recipeIDStr)
+
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
+	if err != nil {
+		return -1, err
+	}
+	log.Infof("GetIDFromURL: Parsed RecipeID: %d", recipeID)
+	return recipeID, nil
+}
+
 // TODO: Split this out into separate '/update-' endpoints: 'servings', 'display-units', 'active-steps', 'additional-recipe'
 func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	log.Info("HandleUpdateServingsTrigger: Received request") // Update log message
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed) // Use correct status code
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// --- Parse the POST form data ---
 	err := r.ParseForm()
 	if err != nil {
 		log.Errorf("HandleUpdateServingsTrigger: Error parsing form: %v", err)
@@ -272,7 +283,57 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// --- Read 'id' from the parsed form data ---
+	recipeID, err := getIDFromURL(r)
+	if err != nil {
+		log.Errorf("HandleUpdateServingsTrigger: Error parsing recipeID from form value '%d': %v", recipeID, err)
+		log.Errorf("Request details: %+v", r) // Log request details for more context if needed
+		http.Error(w, "Bad Request: Invalid id parameter", http.StatusBadRequest)
+	}
+
+	// Get and handle servings
+	servingsStr := r.FormValue("servings")
+	newServings, err := strconv.Atoi(servingsStr)
+	if err != nil || newServings <= 0 {
+		log.Warnf("HandleUpdateServingsTrigger: Invalid or missing 'servings' form value: '%s'. Using default/previous might be needed.", servingsStr)
+		newServings = 2 // Or fetch default
+	}
+
+	// TODO: Fetch the UserRecipeConfig and update the servings for the given recipe
+	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
+	if !exists {
+		recipeConfig := model.RecipeUserConfig{
+			Servings:          newServings,
+			AdditionalRecipes: make(map[int64]model.ActiveRecipeSteps),
+		}
+		store.SaveRecipeConfiguration(recipeID, recipeConfig)
+		log.Infof("No config for recipe %d", recipeID)
+	} else {
+		recipeConfig.Servings = newServings
+		store.SaveRecipeConfiguration(recipeID, recipeConfig)
+		log.Infof("Recipe Config: %v", recipeConfig)
+	}
+	log.Infof("HandleUpdateServingsTrigger: Target Servings: %d", newServings)
+
+	// --- Respond with HX-Trigger ---
+	w.Header().Set("HX-Trigger", fmt.Sprintf(`{"servingsUpdated": {"newServings": %d, "newSystem": "%s"}}`, newServings, "use_metric_default"))
+	w.WriteHeader(http.StatusOK)
+}
+
+func handleUpdateServingsOri(w http.ResponseWriter, r *http.Request) {
+	log.Info("HandleUpdateServingsTrigger: Received request") // Update log message
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		log.Errorf("HandleUpdateServingsTrigger: Error parsing form: %v", err)
+		http.Error(w, "Bad Request: Cannot parse form", http.StatusBadRequest)
+		return
+	}
+
+	// TODO: break this out into a helper for getIDFromURL()
 	recipeIDStr := r.FormValue("id") // Read the 'id' field sent by hx-vals
 	log.Debugf("HandleUpdateServingsTrigger: Raw form 'id' value = '%s'", recipeIDStr)
 
@@ -286,19 +347,25 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Infof("HandleUpdateServingsTrigger: Parsed RecipeID: %d", recipeID)
 
-	servingsStr := r.FormValue("servings") // Get servings (assuming name="servings" in hx-include/hx-vals)
+	// Get and handle servings
+	servingsStr := r.FormValue("servings")
 	newServings, err := strconv.Atoi(servingsStr)
 	if err != nil || newServings <= 0 {
 		log.Warnf("HandleUpdateServingsTrigger: Invalid or missing 'servings' form value: '%s'. Using default/previous might be needed.", servingsStr)
 		newServings = 2 // Or fetch default
 	}
 
+	// TODO: Fetch the UserRecipeConfig and update the servings for the given recipe
+
+	// Get unit system
 	unitSystem := r.FormValue("unit-system")
 	log.Infof("HandleUpdateServingsTrigger: Parsed unitSystem: %s", unitSystem)
 
+	// Get step
 	stepIdStr := r.FormValue("step-id") // Read the 'id' field sent by hx-vals
 	log.Debugf("HandleUpdateServingsTrigger: Raw form 'id' value = '%s'", stepIdStr)
 
+	// Handle step
 	if stepIdStr != "" {
 		stepID, err := strconv.ParseInt(stepIdStr, 10, 64)
 		if err != nil {
@@ -336,6 +403,7 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Get and handle additional recipe
 	// A bunch of changes need to be made with other parts of the code regarding ActiveRecipeSteps
 	additionalRecipeIDstr := r.FormValue("add-id") // Read the 'id' field sent by hx-vals
 	if additionalRecipeIDstr != "" {
@@ -451,7 +519,7 @@ func handleRenderRecipeSteps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Infof("handleRenderRecipeSteps: TemplateData map: %+v", templateData)
+	log.Tracef("handleRenderRecipeSteps: TemplateData map: %+v", templateData)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = tmplSet.ExecuteTemplate(w, "select-recipe-steps", templateData)
@@ -474,20 +542,8 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	servingsStr := r.URL.Query().Get("servings")
 	unitSystem := r.URL.Query().Get("displaySystem")
 	log.Infof("handleRenderFull: Parsed unitSystem: %s", unitSystem)
-	targetServings, err := strconv.Atoi(servingsStr)
-	if err != nil || targetServings <= 0 {
-		tempRecipe, tempErr := store.GetRecipeByID(recipeID)
-		if tempErr != nil {
-			log.Errorf("RenderFullIngredients: Error getting recipe %d for default servings: %v", recipeID, tempErr)
-			http.Error(w, "Recipe not found", http.StatusNotFound)
-			return
-		}
-		targetServings = tempRecipe.Servings
-		log.Warnf("RenderFullIngredients: Invalid/missing servings param '%s' for recipe %d. Using default %d.", servingsStr, recipeID, targetServings)
-	}
 
 	recipe, err := store.GetRecipeByID(recipeID)
 	if err != nil {
@@ -499,10 +555,14 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	targetServings := recipe.Servings
 
 	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
 	if exists {
 		getUserRecipeSteps(&recipeConfig, recipe)
+		if recipeConfig.Servings > 0 {
+			targetServings = recipeConfig.Servings
+		}
 	}
 	log.Infof("RenderFullIngredients: recipe.RecipeStepIds: %v", recipe.RecipeStepIds)
 
