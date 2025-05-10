@@ -9,14 +9,13 @@
                             'opacity-100 bg-accent-50 dark:bg-accent-700 hover:bg-accent-100': {{ containsInt64 $recipe.RecipeStepIds $step.ID }},
                             'opacity-50 hover:opacity-100 ...': !{{ containsInt64 $recipe.RecipeStepIds $step.ID }}
                          }"
-                        hx-post="/update-servings-trigger/{{$recipe.ID}}"
+                        hx-post="/update-recipe-steps-trigger/{{$recipe.ID}}"
                         hx-trigger="click delay:150ms" 
                         hx-vals='{ "id": {{ $recipe.ID }}, "step-id": {{ $step.ID }} }'
                         hx-swap="none"
                             >
                          {{ $step.Title }}
                      </h3>
-
                         </div>
                 {{ end }}
 {{ end }}

@@ -125,6 +125,7 @@ func main() {
 	http.HandleFunc("/", handleIndexPage)
 	http.HandleFunc("/recipe/", handleShowRecipe)
 	http.HandleFunc("/update-servings-trigger/{id}", handleUpdateServings)
+	http.HandleFunc("/update-recipe-steps-trigger/{id}", handleUpdateRecipeSteps)
 	http.HandleFunc("/render-full-ingredients/", handleRenderFullIngredients)
 	http.HandleFunc("/render-recipe-steps/", handleRenderRecipeSteps)
 	http.HandleFunc("/render-zen-mode-content/", handleRenderZenContent)
@@ -256,7 +257,7 @@ func handleShowRecipe(w http.ResponseWriter, r *http.Request) {
 	log.Infof("Served recipe page for: %s (ID: %d)", recipe.Title, recipe.ID)
 }
 
-func getIDFromURL(r *http.Request) (int64, error) {
+func getRecipeIDFromURL(r *http.Request) (int64, error) {
 	recipeIDStr := r.FormValue("id") // Read the 'id' field sent by hx-vals
 	log.Debugf("GetIDFromURL: Raw form 'id' value = '%s'", recipeIDStr)
 
@@ -266,6 +267,18 @@ func getIDFromURL(r *http.Request) (int64, error) {
 	}
 	log.Infof("GetIDFromURL: Parsed RecipeID: %d", recipeID)
 	return recipeID, nil
+}
+
+func getStepIDFromURL(r *http.Request) (int64, error) {
+	stepIDStr := r.FormValue("step-id")
+	log.Debugf("GetStepIDFromUrl: Raw form 'step-id' value = '%s'", stepIDStr)
+
+	stepID, err := strconv.ParseInt(stepIDStr, 10, 64)
+	if err != nil {
+		return -1, err
+	}
+	log.Infof("GetStepIDFromUrl: Parsed stepID: %d", stepID)
+	return stepID, nil
 }
 
 // TODO: Split this out into separate '/update-' endpoints: 'servings', 'display-units', 'active-steps', 'additional-recipe'
@@ -283,7 +296,7 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recipeID, err := getIDFromURL(r)
+	recipeID, err := getRecipeIDFromURL(r)
 	if err != nil {
 		log.Errorf("HandleUpdateServingsTrigger: Error parsing recipeID from form value '%d': %v", recipeID, err)
 		log.Errorf("Request details: %+v", r) // Log request details for more context if needed
@@ -315,6 +328,68 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 
 	// --- Respond with HX-Trigger ---
 	w.Header().Set("HX-Trigger", fmt.Sprint("recipeUpdated"))
+	w.WriteHeader(http.StatusOK)
+}
+
+func handleUpdateRecipeSteps(w http.ResponseWriter, r *http.Request) {
+	log.Info("HandleUpdateServingsTrigger: Received request") // Update log message
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		log.Errorf("HandleUpdateRecipeStepsTrigger: Error parsing form: %v", err)
+		http.Error(w, "Bad Request: Cannot parse form", http.StatusBadRequest)
+		return
+	}
+
+	recipeID, err := getRecipeIDFromURL(r)
+	if err != nil {
+		log.Errorf("HandleUpdateRecipeStepsTrigger: Error parsing recipeID from form value '%d': %v", recipeID, err)
+		log.Errorf("Request details: %+v", r) // Log request details for more context if needed
+		http.Error(w, "Bad Request: Invalid id parameter", http.StatusBadRequest)
+	}
+
+	// Get step
+	stepID, err := getRecipeIDFromURL(r)
+	if err != nil {
+		log.Errorf("HandleUpdateRecipeStepsTrigger: Error parsing stepID from form value '%d': %v", stepID, err)
+		log.Errorf("Request details: %+v", r) // Log request details for more context if needed
+		http.Error(w, "Bad Request: Invalid id parameter", http.StatusBadRequest)
+	}
+	log.Infof("HandleUpdateServingsTrigger: Parsed stepID: %d", stepID)
+
+	recipe, err := store.GetRecipeByID(recipeID)
+	if err != nil {
+		log.Errorf("HandleUpdateServingsTrigger: Recipe not found for id '%d': %v", recipeID, err)
+		log.Errorf("Request details: %+v", r)
+		http.Error(w, "Bad Request: Invalid id parameter", http.StatusBadRequest)
+		return
+	}
+
+	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
+	if !exists {
+		recipeStepsArray := recipe.RecipeStepIds
+		removeInt64FromArray(&recipeStepsArray, stepID)
+		recipeConfig := model.RecipeUserConfig{
+			ActiveRecipeStepIDs: recipeStepsArray,
+			AdditionalRecipes:   make(map[int64]model.ActiveRecipeSteps),
+		}
+		store.SaveRecipeConfiguration(recipeID, recipeConfig)
+		log.Infof("No config for recipe %d", recipeID)
+	} else {
+		recipeStepsArray := recipeConfig.ActiveRecipeStepIDs
+		toggleInt64InArray(&recipeStepsArray, stepID)
+		recipeConfig.ActiveRecipeStepIDs = recipeStepsArray
+		store.SaveRecipeConfiguration(recipeID, recipeConfig)
+		log.Infof("Recipe Config: %v", recipeConfig)
+	}
+
+	log.Infof("HandleUpdateRecipeStepsTrigger: stepID: %d", stepID)
+
+	w.Header().Set("HX-Trigger", fmt.Sprintf("recipeUpdated"))
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -497,6 +572,8 @@ func handleRenderRecipeSteps(w http.ResponseWriter, r *http.Request) {
 				RecipeStepsAll = append(additionalRecipe.RecipeSteps, RecipeStepsAll...)
 			}
 		}
+
+		// this updates recipe in place and sets the activeRecipeSteps to recipe.RecipeStepIds
 		getUserRecipeSteps(&recipeConfig, recipe)
 		var activeRecipeStepIds []int64
 
@@ -662,7 +739,9 @@ func getUserRecipeSteps(recipeConfig *model.RecipeUserConfig, recipe *model.Reci
 			recipe.RecipeSteps = append(additionalRecipe.RecipeSteps, recipe.RecipeSteps...)
 		}
 	}
-	recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
+	if len(recipeConfig.ActiveRecipeStepIDs) > 0 {
+		recipe.RecipeSteps = filterRecipeIds(recipe.RecipeSteps, recipeConfig.ActiveRecipeStepIDs)
+	}
 }
 
 func addInt64ToArray(array *[]int64, value int64) {
