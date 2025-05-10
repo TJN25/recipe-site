@@ -65,6 +65,30 @@ func SaveRecipeConfiguration(recipeID int64, config model.RecipeUserConfig) {
 	log.Debugf("Saved configuration for recipe %d: %+v", recipeID, config)
 }
 
+func GetCurrentServings(recipeID int64) (int, error) {
+	config, exists := userRecipeConfigs[recipeID]
+	recipe, err := GetRecipeByID(recipeID)
+	if err != nil {
+		return -1, err
+	}
+	currentServings := recipe.Servings
+	if exists {
+		if config.Servings > 0 {
+			currentServings = config.Servings
+		}
+	}
+
+	return currentServings, nil
+}
+
+func GetBaseServings(recipeID int64) (int, error) {
+	recipe, err := GetRecipeByID(recipeID)
+	if err != nil {
+		return -1, err
+	}
+	return recipe.Servings, nil
+}
+
 func InitializeCaches() {
 	log.Info("Initializing store caches...")
 	AllFoodItemsCache = make(map[int64]model.FoodItem)

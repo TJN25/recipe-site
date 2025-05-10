@@ -1,6 +1,7 @@
 {{ define "zen-mode-content" }}
 
 <div class="zen-step-content">
+        {{ $recipe := .Recipe }}
         {{ $steps := .Recipe.RecipeSteps }}
         {{ $totalSteps := len $steps }}
         {{ if $steps }}
@@ -38,10 +39,10 @@
 
                                     {{ $ing := . }}
                                         {{ if not $ing.IsOptional }}
-                                            <li class="font-sans leading-relaxed">{{ formatIngredient $ing $step.BaseServings $.CurrentServings $.DisplaySystemPreference | printf "%s" }}</li>
+                                            <li class="font-sans leading-relaxed">{{ formatIngredient $ing $step.BaseServings $recipe.ID| printf "%s" }}</li>
                                         {{ else }}
                                             <template x-if="showOptionals">
-                                                 <li class="italic text-slate-500 dark:text-slate-400">{{ formatIngredient $ing $step.BaseServings $.CurrentServings $.DisplaySystemPreference | printf "%s" }}</li>
+                                                 <li class="italic text-slate-500 dark:text-slate-400">{{ formatIngredient $ing $step.BaseServings $recipe.ID| printf "%s" }}</li>
                                             </template>
                                         {{ end }}
                                 {{ end }}

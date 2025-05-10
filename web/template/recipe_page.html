@@ -181,7 +181,7 @@
         </h1>
         <div  class="mb-3">
             <div id="recipe-steps-modifier-container"
-                hx-trigger="servingsUpdated from:window"
+                hx-trigger="recipeUpdated from:window"
                 hx-get="/render-recipe-steps/{{ .Recipe.ID }}"
                 hx-vals='js:{ "id": {{ .Recipe.ID }} }'
                     >
@@ -202,9 +202,8 @@
             </h1>
             <div  class="mb-3">
                 <div id="ingredients-list-container"
-                    hx-trigger="servingsUpdated from:window"
+                    hx-trigger="recipeUpdated from:window"
                      hx-get="/render-full-ingredients/{{ .Recipe.ID }}"
-                    hx-vals='js:{"servings": event.detail.newServings, "displaySystem": event.detail.newSystem }'
                      hx-target="this"
                      hx-swap="innerHTML">
                     {{ template "ingredient-list" . }}
@@ -221,9 +220,8 @@
             </h1>
             <div  class="mb-3">
                 <div id="methods-list-container"
-                    hx-trigger="servingsUpdated from:window"
+                    hx-trigger="recipeUpdated from:window"
                      hx-get="/render-full-ingredients/{{ .Recipe.ID }}"
-                    hx-vals='js:{"servings": event.detail.newServings, "displaySystem": event.detail.newSystem }'
                      hx-target="this"
                      hx-swap="innerHTML">
                     {{ template "methods-list" . }}
@@ -246,9 +244,8 @@
         <div x-show="activeTab === 'zen'">
 
         <div id="zen-content-wrapper"
-            hx-trigger="servingsUpdated from:window"
+            hx-trigger="recipeUpdated from:window"
             hx-get="/render-zen-mode-content/{{ .Recipe.ID }}"
-            hx-vals='js:{"servings": event.detail.newServings, "displaySystem": event.detail.newSystem }'
             hx-target="this"
             hx-swap="innerHTML">
                     {{ template "zen-mode-content" . }}

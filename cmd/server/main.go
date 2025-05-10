@@ -298,7 +298,6 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 		newServings = 2 // Or fetch default
 	}
 
-	// TODO: Fetch the UserRecipeConfig and update the servings for the given recipe
 	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
 	if !exists {
 		recipeConfig := model.RecipeUserConfig{
@@ -315,7 +314,7 @@ func handleUpdateServings(w http.ResponseWriter, r *http.Request) {
 	log.Infof("HandleUpdateServingsTrigger: Target Servings: %d", newServings)
 
 	// --- Respond with HX-Trigger ---
-	w.Header().Set("HX-Trigger", fmt.Sprintf(`{"servingsUpdated": {"newServings": %d, "newSystem": "%s"}}`, newServings, "use_metric_default"))
+	w.Header().Set("HX-Trigger", fmt.Sprint("recipeUpdated"))
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -542,7 +541,8 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	unitSystem := r.URL.Query().Get("displaySystem")
+	// TODO: fetch from global user settings
+	unitSystem := "use_metric_default"
 	log.Infof("handleRenderFull: Parsed unitSystem: %s", unitSystem)
 
 	recipe, err := store.GetRecipeByID(recipeID)
@@ -555,15 +555,7 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	targetServings := recipe.Servings
-
-	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
-	if exists {
-		getUserRecipeSteps(&recipeConfig, recipe)
-		if recipeConfig.Servings > 0 {
-			targetServings = recipeConfig.Servings
-		}
-	}
+	targetServings, _ := store.GetCurrentServings(recipeID)
 	log.Infof("RenderFullIngredients: recipe.RecipeStepIds: %v", recipe.RecipeStepIds)
 
 	templateData := map[string]interface{}{

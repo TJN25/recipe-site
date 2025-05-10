@@ -217,15 +217,23 @@ var CountRules = FormattingRuleSet{
 func FormatIngredientForDisplay(
 	ingredient model.RecipeIngredient,
 	stepBaseServings int,
-	targetServings int,
-	displaySystemKey string, // e.g., "use_original", "use_metric", "use_us_customary"
+	recipeID int64,
 ) (template.HTML, error) {
-	log.Debugf("-> FormatIngredient Entry: ItemID=%d, Form='%s', Qty=%.2f, Unit='%s', BaseServ=%d, TargetServ=%d, System='%s'",
-		ingredient.FoodItemID, ingredient.FormName, ingredient.Quantity, ingredient.SpecifiedUnit, stepBaseServings, targetServings, displaySystemKey)
+	log.Debugf("-> FormatIngredient Entry: ItemID=%d, Form='%s', Qty=%.2f, Unit='%s', BaseServ=%d",
+		ingredient.FoodItemID, ingredient.FormName, ingredient.Quantity, ingredient.SpecifiedUnit, stepBaseServings)
 
+	// TODO: fetch from global user settings
+	displaySystemKey := "use_metric_default"
 	var finalQuantity float64
 	var displayUnit string
 	var roundingRule RoundingDetail
+
+	targetServings, err := store.GetCurrentServings(recipeID)
+	if err != nil {
+		errMsg := fmt.Sprintf("Missing Recipe: %d while calling FoodItem: %s", recipeID, ingredient.FoodItemName)
+		log.Errorf("  %s", errMsg)
+		return template.HTML(""), errors.New(errMsg) // Cannot proceed without form details
+	}
 
 	log.Debugf("   SpecifiedUnit to normalize: '%s'", ingredient.SpecifiedUnit)
 	normalizedUnit, _ := normalizeUnit(ingredient.SpecifiedUnit)
