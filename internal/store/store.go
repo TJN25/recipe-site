@@ -81,12 +81,50 @@ func GetCurrentServings(recipeID int64) (int, error) {
 	return currentServings, nil
 }
 
+func UpdateServings(recipeID int64, newServings int) {
+	recipeConfig, exists := GetRecipeUserConfig(recipeID)
+	if !exists {
+		recipeConfig := model.RecipeUserConfig{
+			Servings:          newServings,
+			AdditionalRecipes: make(map[int64]model.ActiveRecipeSteps),
+		}
+		SaveRecipeConfiguration(recipeID, recipeConfig)
+		log.Infof("No config for recipe %d", recipeID)
+	} else {
+		recipeConfig.Servings = newServings
+		SaveRecipeConfiguration(recipeID, recipeConfig)
+		log.Infof("Recipe Config: %v", recipeConfig)
+	}
+	log.Infof("UpdateServings: Target Servings: %d", newServings)
+}
+
 func GetBaseServings(recipeID int64) (int, error) {
 	recipe, err := GetRecipeByID(recipeID)
 	if err != nil {
 		return -1, err
 	}
 	return recipe.Servings, nil
+}
+
+func UpdateRecipeStep(recipeID int64, recipeStepsArray []int64, stepID int64) {
+	recipeConfig, exists := GetRecipeUserConfig(recipeID)
+	if !exists {
+		removeInt64FromArray(&recipeStepsArray, stepID)
+		recipeConfig := model.RecipeUserConfig{
+			ActiveRecipeStepIDs: recipeStepsArray,
+			AdditionalRecipes:   make(map[int64]model.ActiveRecipeSteps),
+		}
+		SaveRecipeConfiguration(recipeID, recipeConfig)
+		log.Infof("No config for recipe %d", recipeID)
+	} else {
+		recipeStepsArray := recipeConfig.ActiveRecipeStepIDs
+		toggleInt64InArray(&recipeStepsArray, stepID)
+		recipeConfig.ActiveRecipeStepIDs = recipeStepsArray
+		SaveRecipeConfiguration(recipeID, recipeConfig)
+		log.Infof("Recipe Config: %v", recipeConfig)
+	}
+
+	log.Infof("UpdateRecipeStep: stepID: %d", stepID)
 }
 
 func InitializeCaches() {
@@ -383,7 +421,39 @@ func NormalizeName(name string) string {
 	return processedName
 }
 
-// Use the following to find the correct form for the recipe, and ensure units are correct (along with quantity)
-// func FindFoodItemForm(unit string, forms map[string]model.FoodItemFormDetails) (string, string) // find the FormName based on the unit
-// // Not sure if we need to do this
-// func SetFoodItemQuantity(q float64, unit string, form model.FoodItemFormDetails) (float64, string) // take the relevant Form, the current unit and the current quantity and set the new quantity and unit based on the default for that form
+func addInt64ToArray(array *[]int64, value int64) {
+	log.Infof("Add: Input array: %v, value: %d", *array, value)
+	for _, v := range *array {
+		if v == value {
+			log.Infof("Output array: %v, value: %d", *array, value)
+			return
+		}
+	}
+	*array = append(*array, value)
+	log.Infof("Add: Output array: %v, value: %d", *array, value)
+}
+
+func removeInt64FromArray(array *[]int64, value int64) {
+	log.Infof("Remove: Input array: %v, value: %d", *array, value)
+	result := []int64{}
+	for _, v := range *array {
+		if v != value {
+			result = append(result, v)
+		}
+	}
+	*array = result
+	log.Infof("Remove: Output array: %v, value: %d", *array, value)
+
+}
+
+func toggleInt64InArray(array *[]int64, value int64) {
+	log.Infof("Toggle: Input array: %v, value: %d", *array, value)
+	for _, v := range *array {
+		if v == value {
+			removeInt64FromArray(array, value)
+			return
+		}
+	}
+	addInt64ToArray(array, value)
+	log.Infof("Toggle: Output array: %v, value: %d", *array, value)
+}
