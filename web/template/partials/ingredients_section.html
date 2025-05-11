@@ -1,0 +1,16 @@
+{{ define "ingredients_section" }}
+        <div class="recipe-ingredients-section"> 
+             <h1 class="font-serif text-xl font-bold cursor-pointer mb-4 text-accent-900 dark:text-accent-100">
+                Ingredients
+            </h1>
+            <div  class="mb-3">
+                <div id="ingredients-list-container"
+                    hx-trigger="recipeUpdated from:window"
+                     hx-get="/render-full-ingredients/{{ .Recipe.ID }}"
+                     hx-target="this"
+                     hx-swap="innerHTML">
+                    {{ template "ingredient-list" . }}
+                </div>
+            </div>
+        </div>
+{{ end }}

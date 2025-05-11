@@ -1,0 +1,35 @@
+{{ define "full_look_content" }}
+    <button type="button"
+            class="px-3 py-1 bg-accent-100 hover:bg-accent-300 text-accent-950 rounded text-sm"
+            hx-post="/update-servings-trigger/{{.Recipe.ID}}"
+            hx-trigger="click delay:300ms" 
+            hx-include="[id='servings-options-{{ .Recipe.ID }}'], [id='unit-system-select']"
+            hx-vals='js:{ "id": {{ .Recipe.ID }}, "add-id": 1}'
+            hx-swap="none"
+        >
+        Add Mac and Cheese
+    </button>
+
+    {{ template "banner_description" . }}
+    <hr class="my-6 border-slate-200 dark:border-slate-700">
+
+    <template x-if="showStepSelector">
+        {{ template "select_steps_section" . }}
+    </template>
+
+    <div style="margin-bottom: 10px;">
+        {{ template "ingredients_section" . }}
+        <hr class="my-6 border-slate-200 dark:border-slate-700">
+        {{ template "methods_section" . }}
+    </div>
+
+    <hr class="my-6 border-slate-200 dark:border-slate-700">
+
+    <!-- 5. Notes (Collapsible) -->
+    <div class="recipe-notes-section">
+        <h1 class="font-serif text-xl font-bold cursor-pointer mb-4 text-accent-900 dark:text-accent-100">
+            Notes
+        </h1>
+        <p>{{ .Recipe.Notes }}</p>
+    </div>
+{{ end }}

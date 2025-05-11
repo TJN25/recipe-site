@@ -1,0 +1,10 @@
+{{ define "zen_mode_content_wrapper" }}
+
+        <div id="zen-content-wrapper"
+            hx-trigger="recipeUpdated from:window"
+            hx-get="/render-zen-mode-content/{{ .Recipe.ID }}"
+            hx-target="this"
+            hx-swap="innerHTML">
+                    {{ template "zen-mode-content" . }}
+            </div> 
+{{ end }}

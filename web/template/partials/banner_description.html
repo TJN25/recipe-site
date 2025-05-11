@@ -1,0 +1,19 @@
+{{ define "banner_description" }}
+    <div class="recipe-summary-section"> 
+        <h1  class="font-serif text-3xl font-bold cursor-pointer mb-4 text-accent-900 dark:text-accent-100">
+            {{ .Recipe.Title }} 
+        </h1>
+            <span x-text="currentServings === 1 ? 'Makes 1 serving' : 'Makes ' + currentServings + ' servings'"></span>
+        <div  class="recipe-banner mb-5 text-center">
+            {{ if .Recipe.ImagePath }}
+                <img src="/static/{{ .Recipe.ImagePath }}" alt="{{ .Recipe.Title }}" class="max-w-full h-auto max-h-[300px] rounded-md inline-block">
+            {{ else }}
+                 <div class="recipe-banner-placeholder h-[200px] bg-accent-100 dark:bg-accent-800 flex items-center justify-center text-slate-500 dark:text-slate-400 italic rounded-md">[ No Recipe Image Available ]</div>
+            {{ end }}
+        </div>
+        <p class="recipe-description mt-3 font-sans leading-relaxed">
+            <em>{{ .Recipe.Description }}</em>
+        </p>
+
+    </div>
+{{ end }}

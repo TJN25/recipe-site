@@ -8,13 +8,13 @@ import (
 	"math"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/TJN25/recipe-site/internal/model"
 	"github.com/TJN25/recipe-site/internal/store"
+	"github.com/TJN25/recipe-site/internal/templating"
 	"github.com/TJN25/recipe-site/internal/units"
 	log "github.com/sirupsen/logrus"
 )
@@ -29,97 +29,7 @@ func main() {
 	store.InitializeCaches()
 	store.InitializeUserState()
 
-	templateSets = make(map[string]*template.Template)
-
-	// --- PARSE TEMPLATES AT STARTUP (Separate Sets Pattern) ---
-	log.Println("Parsing templates...")
-	templateDir := "web/template"
-	baseFile := filepath.Join(templateDir, "layouts", "base.html")
-
-	// 1. Parse template set for the Index Page
-	indexPageFiles := []string{
-		baseFile,
-		filepath.Join(templateDir, "index.html"),
-	}
-	log.Printf("Parsing set 'index': %v", indexPageFiles)
-	// Parse using the base name of baseFile ("base.html") as the root name
-	indexSet := template.Must(template.New(filepath.Base(baseFile)).
-		Funcs(funcMap). // Include funcs if base or index needs them
-		ParseFiles(indexPageFiles...))
-	templateSets["index"] = indexSet
-	log.Printf("Stored template set: index")
-
-	// 2. Parse template set for the Recipe Page (keep for later)
-	recipePageFiles := []string{
-		baseFile, // web/template/layouts/base.html
-		filepath.Join(templateDir, "recipe_page.html"),
-		// We can omit ingredients.html for this minimal test if recipe_page doesn't {{template}} it
-		filepath.Join(templateDir, "partials", "ingredients.html"),
-		filepath.Join(templateDir, "partials", "methods.html"),
-		filepath.Join(templateDir, "partials", "select-recipe-steps.html"),
-		filepath.Join(templateDir, "partials", "zen_mode_content.html"),
-	}
-	log.Printf("Parsing set 'recipe': %v", recipePageFiles)
-	recipeSet := template.Must(template.New(filepath.Base(baseFile)). // Rooted at base.html
-										Funcs(funcMap).
-										ParseFiles(recipePageFiles...))
-	templateSets["recipe"] = recipeSet
-	log.Printf("Stored template set: recipe")
-
-	// 3. Parse standalone partial for HTMX swap (ingredients.html) (keep for later)
-	ingredientPartialFiles := []string{
-		filepath.Join(templateDir, "partials", "ingredients.html"),
-	}
-	log.Printf("Parsing set 'ingredient-list': %v", ingredientPartialFiles)
-	ingredientSet := template.Must(template.New(filepath.Base(ingredientPartialFiles[0])). // Use "ingredients.html" as root name
-												Funcs(funcMap).
-												ParseFiles(ingredientPartialFiles...))
-	templateSets["ingredient-list"] = ingredientSet
-	log.Printf("Stored template set: ingredient-list")
-
-	methodsPartialFiles := []string{
-		filepath.Join(templateDir, "partials", "methods.html"),
-	}
-	log.Printf("Parsing set 'methods-list': %v", methodsPartialFiles)
-
-	methodsSet := template.Must(template.New(filepath.Base(methodsPartialFiles[0])). // Use "ingredients.html" as root name
-												Funcs(funcMap).
-												ParseFiles(methodsPartialFiles...))
-	templateSets["methods-list"] = methodsSet
-	log.Printf("Stored template set: methods-list")
-
-	selectRecipeStepsPartialFiles := []string{
-		filepath.Join(templateDir, "partials", "select-recipe-steps.html"),
-	}
-	log.Printf("Parsing set 'select-recipe-steps': %v", selectRecipeStepsPartialFiles)
-
-	selectRecipeStepsSet := template.Must(template.New(filepath.Base(selectRecipeStepsPartialFiles[0])). // Use "ingredients.html" as root name
-														Funcs(funcMap).
-														ParseFiles(selectRecipeStepsPartialFiles...))
-	templateSets["select-recipe-steps"] = selectRecipeStepsSet
-	log.Printf("Stored template set: select-recipe-steps")
-
-	// *** CHANGE NAME IN New() HERE ***
-	// Use a different root name for the set, e.g., "ingredients-root" or just the filename base
-	// **********************************
-
-	// Keep storing under the logical key "ingredient-list"
-
-	zenPartialFiles := []string{
-		filepath.Join(templateDir, "partials", "zen_mode_content.html"),
-	}
-	log.Printf("Parsing set 'zen-mode-content': %v", zenPartialFiles)
-
-	// *** CHANGE NAME IN New() HERE ***
-	// Use a different root name for the set, e.g., "ingredients-root" or just the filename base
-	zenSet := template.Must(template.New(filepath.Base(zenPartialFiles[0])). // Use "ingredients.html" as root name
-											Funcs(funcMap).
-											ParseFiles(zenPartialFiles...))
-	// **********************************
-
-	// Keep storing under the logical key "ingredient-list"
-	templateSets["zen-mode-content"] = zenSet
-	log.Printf("Stored template set: zen-mode-content")
+	templateSets = templating.InitTemplates(funcMap)
 
 	// --- Setup Routes ---
 	http.HandleFunc("/", handleIndexPage)
@@ -127,6 +37,7 @@ func main() {
 	http.HandleFunc("/update-servings-trigger/{id}", handleUpdateServings)
 	http.HandleFunc("/update-recipe-steps-trigger/{id}", handleUpdateRecipeSteps)
 	http.HandleFunc("/render-full-ingredients/", handleRenderFullIngredients)
+	http.HandleFunc("/render-full-methods/", handleRenderFullMethods)
 	http.HandleFunc("/render-recipe-steps/", handleRenderRecipeSteps)
 	http.HandleFunc("/render-zen-mode-content/", handleRenderZenContent)
 
@@ -586,10 +497,6 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: fetch from global user settings
-	unitSystem := "use_metric_default"
-	log.Infof("handleRenderFull: Parsed unitSystem: %s", unitSystem)
-
 	recipe, err := store.GetRecipeByID(recipeID)
 	if err != nil {
 		log.Errorf("RenderFullIngredients: Error getting recipe %d from store: %v", recipeID, err)
@@ -600,13 +507,16 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	targetServings, _ := store.GetCurrentServings(recipeID)
+
+	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
+	if exists {
+		getUserRecipeSteps(&recipeConfig, recipe)
+	}
+
 	log.Infof("RenderFullIngredients: recipe.RecipeStepIds: %v", recipe.RecipeStepIds)
 
 	templateData := map[string]interface{}{
-		"Recipe":                  recipe,
-		"CurrentServings":         targetServings,
-		"DisplaySystemPreference": unitSystem,
+		"Recipe": recipe,
 	}
 
 	tmplSet, found := templateSets["ingredient-list"]
@@ -625,7 +535,59 @@ func handleRenderFullIngredients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Infof("RenderFullIngredients: Sent updated ingredient list fragment for Recipe ID %d with Target Servings %d, and Unit System %s.", recipeID, targetServings, unitSystem)
+	log.Infof("RenderFullIngredients: Sent updated ingredient list fragment for Recipe ID %d.", recipeID)
+}
+
+func handleRenderFullMethods(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/render-full-methods/")
+	idStr = strings.TrimSuffix(idStr, "/")
+
+	recipeID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Errorf("RenderFullMethods: Invalid recipe ID in path '%s': %v", idStr, err)
+		http.Error(w, "Invalid Recipe ID", http.StatusBadRequest)
+		return
+	}
+
+	recipe, err := store.GetRecipeByID(recipeID)
+	if err != nil {
+		log.Errorf("RenderFullMethods: Error getting recipe %d from store: %v", recipeID, err)
+		if errors.Is(err, store.ErrNotFound) {
+			http.NotFound(w, r)
+		} else {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	recipeConfig, exists := store.GetRecipeUserConfig(recipeID)
+	if exists {
+		getUserRecipeSteps(&recipeConfig, recipe)
+	}
+
+	log.Infof("RenderFullMethods: recipe.RecipeStepIds: %v", recipe.RecipeStepIds)
+
+	templateData := map[string]interface{}{
+		"Recipe": recipe,
+	}
+
+	tmplSet, found := templateSets["methods-list"]
+	if !found {
+		log.Error("Template set 'methods-list' not found")
+		http.Error(w, "Internal Server Error: Template missing", http.StatusInternalServerError)
+		return
+	}
+
+	log.Infof("handleRenderFullMethods: TemplateData map: %+v", templateData)
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err = tmplSet.ExecuteTemplate(w, "methods-list", templateData)
+	if err != nil {
+		log.Errorf("Error executing methods-list template for recipe %d: %v", recipeID, err)
+		return
+	}
+
+	log.Infof("RenderFullMethods: Sent updated methods-list fragment for Recipe ID %d.", recipeID)
 }
 
 func handleRenderZenContent(w http.ResponseWriter, r *http.Request) {
@@ -864,6 +826,21 @@ func containsInt64(slice []int64, value int64) bool {
 	return false
 }
 
+func dict(values ...interface{}) (map[string]interface{}, error) {
+	if len(values)%2 != 0 {
+		return nil, fmt.Errorf("dict expects an even number of arguments (key-value pairs)")
+	}
+	d := make(map[string]interface{}, len(values)/2)
+	for i := 0; i < len(values); i += 2 {
+		key, ok := values[i].(string)
+		if !ok {
+			return nil, fmt.Errorf("dict keys must be strings")
+		}
+		d[key] = values[i+1]
+	}
+	return d, nil
+}
+
 // Create a FuncMap to register the function
 var funcMap = template.FuncMap{
 	"formatQuantity": formatQuantity,
@@ -889,4 +866,5 @@ var funcMap = template.FuncMap{
 	"formatIngredient": units.FormatIngredientForDisplay,
 	"marshal":          marshal,
 	"containsInt64":    containsInt64,
+	"dict":             dict,
 }

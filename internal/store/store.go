@@ -106,6 +106,10 @@ func GetBaseServings(recipeID int64) (int, error) {
 	return recipe.Servings, nil
 }
 
+func GetUnitSystem() string {
+	return "use_metric_default"
+}
+
 func UpdateRecipeStep(recipeID int64, recipeStepsArray []int64, stepID int64) {
 	recipeConfig, exists := GetRecipeUserConfig(recipeID)
 	if !exists {

@@ -1,0 +1,23 @@
+{{ define "tabs" }}
+    <div class="text-xl border-b border-slate-200 dark:border-slate-700 flex justify-evenly">
+        <button type="button"
+                @click="activeTab = 'full'"
+                :class="{
+                    'border-accent-500 text-accent-600 dark:text-accent-400': activeTab === 'full',
+                    'border-transparent text-slate-500 hover:text-slate-700 hover:border-accent-300 dark:text-accent-400 dark:hover:text-accent-200 dark:hover:border-accent-500': activeTab !== 'full'
+                }"
+                class="py-3 px-4 text-center font-medium border-b-2 -mb-px transition-colors duration-150 ease-in-out focus:outline-none">
+            Full Look
+        </button>
+
+        <button type="button"
+                @click="activeTab = 'zen'"
+                :class="{
+                    'border-accent-500 text-accent-600 dark:text-accent-400': activeTab === 'zen',
+                    'border-transparent text-slate-500 hover:text-slate-700 hover:border-accent-300 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:border-accent-500': activeTab !== 'zen'
+                }"
+                class="py-3 px-4 text-center font-medium border-b-2 -mb-px transition-colors duration-150 ease-in-out focus:outline-none">
+            Zen Mode
+        </button>
+    </div>
+{{ end }}

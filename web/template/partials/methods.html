@@ -2,7 +2,6 @@
     <div id="method-steps-display ">
         <ol class="list-decimal pl-5 mt-0 font-sans leading-relaxed"> 
             {{ range $index, $step := .Recipe.RecipeSteps }}
-        <!--<div class="p-6 rounded-2xl transition-colors duration-150 ease-in-out hover:bg-accent-50 dark:hover:bg-accent-700">-->
         <div class="rounded-2xl pl-7 pr-6 transition-colors duration-150 ease-in-out"
              :class="{ 'bg-accent-50 dark:bg-accent-700': hoveredStepId == {{ $step.ID }} }"
             @click="
