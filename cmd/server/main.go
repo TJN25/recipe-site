@@ -36,6 +36,7 @@ func main() {
 	http.HandleFunc("/recipe/", handleShowRecipe)
 	http.HandleFunc("/update-servings-trigger/{id}", handleUpdateServings)
 	http.HandleFunc("/update-recipe-steps-trigger/{id}", handleUpdateRecipeSteps)
+	http.HandleFunc("/update-unit-system-trigger/{id}", handleUpdateUnitSystem)
 	http.HandleFunc("/render-full-ingredients/", handleRenderFullIngredients)
 	http.HandleFunc("/render-full-methods/", handleRenderFullMethods)
 	http.HandleFunc("/render-recipe-steps/", handleRenderRecipeSteps)
@@ -267,6 +268,32 @@ func handleUpdateRecipeSteps(w http.ResponseWriter, r *http.Request) {
 
 	store.UpdateRecipeStep(recipeID, recipe.RecipeStepIds, stepID)
 
+	w.Header().Set("HX-Trigger", fmt.Sprintf("recipeUpdated"))
+	w.WriteHeader(http.StatusOK)
+}
+
+func handleUpdateUnitSystem(w http.ResponseWriter, r *http.Request) {
+	log.Info("HandleUpdateUnitSystemTrigger: Received request") // Update log message
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		log.Errorf("HandleUpdateUnitSystemTrigger: Error parsing form: %v", err)
+		http.Error(w, "Bad Request: Cannot parse form", http.StatusBadRequest)
+		return
+	}
+
+	// Get unit system
+	unitSystem := r.FormValue("unit-system")
+	log.Infof("HandleUpdateServingsTrigger: Parsed unitSystem: %s", unitSystem)
+	if unitSystem != "" {
+		store.UpdateGlobalDisplaySystem(unitSystem)
+	}
+
+	// --- Respond with HX-Trigger ---
 	w.Header().Set("HX-Trigger", fmt.Sprintf("recipeUpdated"))
 	w.WriteHeader(http.StatusOK)
 }

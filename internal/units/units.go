@@ -222,7 +222,8 @@ func FormatIngredientForDisplay(
 	log.Debugf("-> FormatIngredient Entry: ItemID=%d, Form='%s', Qty=%.2f, Unit='%s', BaseServ=%d",
 		ingredient.FoodItemID, ingredient.FormName, ingredient.Quantity, ingredient.SpecifiedUnit, stepBaseServings)
 
-	displaySystemKey := store.GetUnitSystem()
+	globalPrefs := store.GetGlobalPreferences()
+	displaySystemKey := globalPrefs.DisplayUnitSystem
 	var finalQuantity float64
 	var displayUnit string
 	var roundingRule RoundingDetail
